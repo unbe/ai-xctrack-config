@@ -6,6 +6,7 @@ import { PageManagerPanel } from './components/sidebar/PageManagerPanel';
 import { WidgetPalettePanel } from './components/sidebar/WidgetPalettePanel';
 import { LayerOrderPanel } from './components/sidebar/LayerOrderPanel';
 import { WidgetPropertyInspector } from './components/inspector/WidgetPropertyInspector';
+import { PreferencesEditor } from './components/preferences/PreferencesEditor';
 import { useEditorStore, editorStore } from './store/useEditorStore';
 import { parseXcfg } from './utils/xcfgSerializer';
 import sample2026Backup from '../2026-03-12_backup-00.xcfg?raw';
@@ -121,14 +122,7 @@ export const App: React.FC = () => {
         )}
 
         {store.activeTab === 'preferences' && (
-          <div className="flex-1 flex items-center justify-center text-gray-400 p-8">
-            <div className="max-w-md text-center">
-              <h2 className="text-lg font-semibold text-white mb-2">Preferences & Full Backup Editor</h2>
-              <p className="text-xs text-gray-400">
-                Full visual editor for Glider/Pilot settings, 16-point custom acoustic vario curve, triggers, and sensor configuration (Task 4).
-              </p>
-            </div>
-          </div>
+          <PreferencesEditor />
         )}
 
         {store.activeTab === 'json' && (

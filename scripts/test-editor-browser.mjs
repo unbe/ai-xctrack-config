@@ -13,25 +13,54 @@ async function testEditor() {
 
   console.log('Navigating to http://localhost:3000/...');
   await page.goto('http://localhost:3000/', { waitUntil: 'networkidle0' });
-
   await page.waitForSelector('header', { timeout: 8000 });
 
-  // Click on Widget Palette tab
-  console.log('Clicking Widget Palette tab...');
-  const paletteBtn = await page.$('button[title="Widget Palette"]');
-  if (paletteBtn) {
-    await paletteBtn.click();
-    await new Promise((r) => setTimeout(r, 400));
+  // 1. Switch to Preferences & Backup tab
+  console.log('Clicking "Preferences & Backup" tab...');
+  const buttons = await page.$$('header button');
+  for (const btn of buttons) {
+    const text = await page.evaluate((el) => el.textContent, btn);
+    if (text && text.includes('Preferences')) {
+      await btn.click();
+      break;
+    }
   }
 
-  // Click on speed widget on canvas (index 1)
-  console.log('Clicking widget 1 (Speed)...');
-  await page.click('[data-widget-index="1"]');
+  await new Promise((r) => setTimeout(r, 600));
+
+  // 2. Click "Acoustic Vario & Sounds" subtab
+  console.log('Clicking "Acoustic Vario & Sounds" tab...');
+  const subtabButtons = await page.$$('button');
+  for (const btn of subtabButtons) {
+    const text = await page.evaluate((el) => el.textContent, btn);
+    if (text && text.includes('Acoustic Vario')) {
+      await btn.click();
+      break;
+    }
+  }
+
+  await new Promise((r) => setTimeout(r, 600));
+
+  const varioScreenshotPath = '/home/artem.guest/.gemini/antigravity-cli/brain/33708484-59c7-457a-b870-40bb8416630e/preferences_preview.png';
+  await page.screenshot({ path: varioScreenshotPath });
+  console.log('Saved vario preferences screenshot to:', varioScreenshotPath);
+
+  // 3. Switch back to "Screen Layouts" and select a widget to keep the main editor preview up to date
+  for (const btn of buttons) {
+    const text = await page.evaluate((el) => el.textContent, btn);
+    if (text && text.includes('Screen Layouts')) {
+      await btn.click();
+      break;
+    }
+  }
+  await new Promise((r) => setTimeout(r, 600));
+
+  await page.click('[data-widget-index="0"]');
   await new Promise((r) => setTimeout(r, 400));
 
-  const screenshotPath = '/home/artem.guest/.gemini/antigravity-cli/brain/33708484-59c7-457a-b870-40bb8416630e/editor_preview.png';
-  await page.screenshot({ path: screenshotPath });
-  console.log('Saved screenshot to:', screenshotPath);
+  const editorScreenshotPath = '/home/artem.guest/.gemini/antigravity-cli/brain/33708484-59c7-457a-b870-40bb8416630e/editor_preview.png';
+  await page.screenshot({ path: editorScreenshotPath });
+  console.log('Saved editor preview screenshot to:', editorScreenshotPath);
 
   await page.close();
   await browser.disconnect();

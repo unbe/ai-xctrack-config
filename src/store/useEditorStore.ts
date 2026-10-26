@@ -7,6 +7,7 @@ import { createBlankXcfg } from '../utils/xcfgSerializer';
 
 export interface EditorState {
   config: XcfgFile;
+  originalConfig: XcfgFile;
   filename: string;
   activeOrientation: Orientation;
   activePageIndex: number;
@@ -28,6 +29,7 @@ const initialConfig = createBlankXcfg('backup', 'Google Pixel 8 Pro');
 
 let currentState: EditorState = {
   config: initialConfig,
+  originalConfig: initialConfig,
   filename: 'untitled.xcfg',
   activeOrientation: 'portrait',
   activePageIndex: 0,
@@ -74,9 +76,11 @@ export const editorStore = {
 
   loadConfig(config: XcfgFile, filename = 'config.xcfg') {
     const matchedDevice = findMatchingDevice(config.info?.device);
+    const cloned = JSON.parse(JSON.stringify(config));
     currentState = {
       ...currentState,
-      config: JSON.parse(JSON.stringify(config)),
+      config: cloned,
+      originalConfig: JSON.parse(JSON.stringify(config)),
       filename,
       activeDevice: matchedDevice,
       activePageIndex: 0,
@@ -414,6 +418,65 @@ export const editorStore = {
     const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
     newConfig.layout[currentState.activeOrientation][currentState.activePageIndex].CLASS = className;
 
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  updatePreference(key: string, value: any, saveUndo = true) {
+    if (saveUndo) pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    if (!newConfig.preferences) {
+      newConfig.preferences = {};
+    }
+    if (value === undefined) {
+      delete newConfig.preferences[key];
+    } else {
+      newConfig.preferences[key] = value;
+    }
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  updatePreferences(partial: Record<string, any>, saveUndo = true) {
+    if (saveUndo) pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    if (!newConfig.preferences) {
+      newConfig.preferences = {};
+    }
+    for (const [k, v] of Object.entries(partial)) {
+      if (v === undefined) {
+        delete newConfig.preferences[k];
+      } else {
+        newConfig.preferences[k] = v;
+      }
+    }
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  updateInfo(partial: Partial<XcfgFile['info']>, saveUndo = true) {
+    if (saveUndo) pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    Object.assign(newConfig.info, partial);
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  setExportType(exportType: 'backup' | 'pages', saveUndo = true) {
+    if (saveUndo) pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    newConfig.info.exportType = exportType;
+    if (exportType === 'backup' && !newConfig.preferences) {
+      newConfig.preferences = {};
+    }
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  updateAirspaceChannels(channels: number[], saveUndo = true) {
+    if (saveUndo) pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    newConfig.airspaceSelectedChannels = channels;
     currentState = { ...currentState, config: newConfig };
     emitChange();
   },

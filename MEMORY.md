@@ -238,3 +238,24 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
     - Free Text: Textarea, text size, color picker, bold, italic.
     - Web View: URL, auto-refresh interval, `allowGsp`.
   - **Raw & Preserved Properties**: Collapsible viewer/editor for all unmanaged keys, plus custom key-value property adder, preserving 100% round-trip fidelity.
+
+
+### 7.2 Preferences & Backup Editor (Task 4 - v0.4.0)
+- **`PreferencesEditor`**:
+  - **Export Type Selector**: Switch between `"backup"` (complete application state) and `"pages"` (layouts only).
+  - **Pilot & Glider**: Configures `Pilot.Name`, `Glider.Name`, `Glider.FAIClass` (1 to 5), `Glider.EngineType`, `Glider.TrimSpeed`, `Glider.GoalGlideRatio`, and `TakeoffSpeed`.
+  - **Display & Units**: Configures `Display.Theme` (Black, BlackHC, White, WhiteHC, WhiteEInk), `Display.Orientation`, `Display.Fullscreen`, `Display.RepaintInterval`, and `Unit.*` (`Altitude`, `Speed`, `VerticalSpeed`, `Distance`).
+  - **Acoustic Vario & Sounds**:
+    - Interactive 16-point vario curve editor (`Sound.AcousticVario.CustomProfile.confTable`) specifying `lift` (m/s), `freq` (Hz), `cycleMs` (period duration), and `duty` (% on vs off).
+    - **Live Web Audio Synthesizer**: Interactive slider (-7 to +7 m/s) with real-time tone generation reproducing continuous sink tones and chopped lift beeps using Web Audio API `OscillatorNode` and `GainNode`.
+    - Notification sound alert checkboxes for takeoff, landing, GPS fix, airspace violations, turnpoint crossings, obstacles, and Bluetooth connections.
+  - **Triggers & Events**:
+    - Visual rule manager parsing and generating XCTrack's `EventMapping` string (prefixed with `001` and pipe-delimited `EVENT:ACTION`).
+  - **Hardware Keybindings**:
+    - Android keycode configuration for `Keys.NextPage`, `Keys.PreviousPage`, `Keys.ZoomIn`, `Keys.ZoomOut`, `Keys.EnterPan`, `Keys.Menu`, `Keys.NextWaypoint`, `Keys.PrevWaypoint`.
+  - **Sensors & Airspace**:
+    - Sensor manager displaying BLE and internal sensor filters (`BARO`, `GPS`, `FLARM`), plus `airspaceSelectedChannels` list.
+  - **Diff & Validation**:
+    - Live validation report via `validateXcfg` verifying all top-level keys, page structure, coordinates (`0..10000`), and widget schemas.
+    - Change summary tracking modifications between current editing session and originally loaded file.
+    - 1-click clipboard export of formatted JSON.
