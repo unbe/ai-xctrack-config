@@ -1,24 +1,53 @@
 import rawDevices from '../../devices.json';
 import { DevicePreset, Orientation } from '../types/xcfg';
 
-export interface DeviceDatabase {
-  version: string;
-  gridFormula: {
-    cellPhysicalMm: number;
-    densityDpiStandard: number;
-    cellDpExact: number;
-    formula: string;
+interface RawDeviceItem {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  screenSizeInches?: number;
+  nativeResolution: { width: number; height: number };
+  aspectRatio: string;
+  androidDensityDpi: number;
+  recommendedGrid: {
+    portrait: { cols: number; rows: number };
+    landscape: { cols: number; rows: number };
   };
-  deviceFamilies: Array<{
-    category: string;
-    description: string;
-    devices: DevicePreset[];
-  }>;
+  systemInsetsGrid?: {
+    portrait?: { cols: number; rows: number };
+    landscape?: { cols: number; rows: number };
+  };
+  notes?: string;
+  isHUD?: boolean;
 }
 
-const data = rawDevices as unknown as DeviceDatabase;
+interface RawDevicesJson {
+  xctrackGridFormula: unknown;
+  devices: RawDeviceItem[];
+}
 
-export const ALL_DEVICES: DevicePreset[] = data.deviceFamilies.flatMap(f => f.devices);
+const data = rawDevices as unknown as RawDevicesJson;
+
+export const ALL_DEVICES: DevicePreset[] = (data.devices || []).map((d) => ({
+  id: d.id,
+  name: d.name,
+  brand: d.brand,
+  category: d.category as DevicePreset['category'],
+  screenWidthPx: d.nativeResolution.width,
+  screenHeightPx: d.nativeResolution.height,
+  densityDpi: d.androidDensityDpi,
+  viewportWidthDp: Math.round((d.nativeResolution.width * 160) / d.androidDensityDpi),
+  viewportHeightDp: Math.round((d.nativeResolution.height * 160) / d.androidDensityDpi),
+  aspectRatio: d.aspectRatio,
+  screenSizeInches: d.screenSizeInches,
+  gridPortrait: d.recommendedGrid.portrait,
+  gridLandscape: d.recommendedGrid.landscape,
+  gridPortraitInset: d.systemInsetsGrid?.portrait || d.recommendedGrid.portrait,
+  gridLandscapeInset: d.systemInsetsGrid?.landscape || d.recommendedGrid.landscape,
+  isHUD: d.isHUD || false,
+  notes: d.notes,
+}));
 
 export const DEFAULT_DEVICE_ID = 'pixel-8-pro';
 
@@ -27,18 +56,21 @@ export function getAllDevices(): DevicePreset[] {
 }
 
 export function getDeviceById(id: string): DevicePreset {
-  const found = ALL_DEVICES.find(d => d.id === id);
+  const found = ALL_DEVICES.find((d) => d.id === id);
   if (found) return found;
-  return ALL_DEVICES[0]; // fallback to first device
+  return ALL_DEVICES[0];
 }
 
 export function getDeviceCategories(): string[] {
-  return data.deviceFamilies.map(f => f.category);
+  const cats = new Set<string>();
+  for (const d of ALL_DEVICES) {
+    if (d.category) cats.add(d.category);
+  }
+  return Array.from(cats);
 }
 
 export function getDevicesByCategory(category: string): DevicePreset[] {
-  const family = data.deviceFamilies.find(f => f.category === category);
-  return family ? family.devices : [];
+  return ALL_DEVICES.filter((d) => d.category === category);
 }
 
 /**
@@ -50,20 +82,19 @@ export function findMatchingDevice(deviceString?: string): DevicePreset {
 
   const lower = deviceString.toLowerCase();
 
-  // Try exact and substring matches
   if (lower.includes('pixel 8 pro') || lower.includes('pixel 9 pro xl')) {
-    return getDeviceById('pixel-8-pro') || getDeviceById(DEFAULT_DEVICE_ID);
+    return getDeviceById('pixel-8-pro');
   }
   if (lower.includes('pixel 6 pro') || lower.includes('pixel 7 pro')) {
-    return getDeviceById('pixel-6-pro') || getDeviceById(DEFAULT_DEVICE_ID);
+    return getDeviceById('pixel-6-pro');
   }
   if (lower.includes('air3') || lower.includes('air 3') || lower.includes('air³')) {
-    if (lower.includes('7.2')) return getDeviceById('air3-7-2');
-    return getDeviceById('air3-7-35');
+    if (lower.includes('7.2')) return getDeviceById('air3-7.2');
+    return getDeviceById('air3-7.3-plus');
   }
   if (lower.includes('tab active')) {
-    if (lower.includes('4')) return getDeviceById('samsung-tab-active-4-pro');
-    return getDeviceById('samsung-tab-active-3-5');
+    if (lower.includes('4')) return getDeviceById('samsung-galaxy-tab-active-4-pro');
+    return getDeviceById('samsung-galaxy-tab-active-3');
   }
   if (lower.includes('tripltek')) {
     if (lower.includes('7')) return getDeviceById('tripltek-7-pro');
@@ -75,14 +106,9 @@ export function findMatchingDevice(deviceString?: string): DevicePreset {
     return getDeviceById('hisense-a9');
   }
   if (lower.includes('palma')) {
-    return getDeviceById('boox-palma');
-  }
-  if (lower.includes('s24') || lower.includes('s25') || lower.includes('s23') || lower.includes('s22')) {
-    if (lower.includes('ultra')) return getDeviceById('samsung-s24-ultra');
-    return getDeviceById('samsung-s24-plus');
+    return getDeviceById('onyx-boox-palma');
   }
 
-  // Generic fallback: check if any device id or name matches
   for (const device of ALL_DEVICES) {
     if (lower.includes(device.name.toLowerCase()) || lower.includes(device.id)) {
       return device;
@@ -92,9 +118,6 @@ export function findMatchingDevice(deviceString?: string): DevicePreset {
   return getDeviceById(DEFAULT_DEVICE_ID);
 }
 
-/**
- * Returns grid cols and rows for a device given orientation and inset flag.
- */
 export function getDeviceGrid(
   device: DevicePreset,
   orientation: Orientation,

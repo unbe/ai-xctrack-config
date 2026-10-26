@@ -207,3 +207,34 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
    - `EventMapping` is a pipe-delimited string prefixed with `"001"`, e.g. `"001START_THERMALING:SHOW_THERMAL_ASSISTANT|STOP_THERMALING:SHOW_LAST_PAGE"`.
    - `Sound.AcousticVario.CustomProfile` contains `{"confTable": [{"lift": float, "freq": int, "cycleMs": int, "duty": int}, ...]}`.
    - `ActiveLook.Layout` and `Maverick.Layout` store smart-glasses HUD widget layouts inside `preferences`.
+
+
+---
+
+## 7. Editor Architecture & Component Hierarchy
+
+### 7.1 Sidebar Panels (Task 3 - v0.3.0)
+- **Vertical Icon Rail**: Leftmost 48px rail switching between Pages, Widgets, and Layers with collapse capability.
+- **`PageManagerPanel`**:
+  - Displays list of pages for active orientation (`portrait` or `landscape`).
+  - Page cards show page title, class name, widget count, and auto-activation task badge (`navigations`).
+  - Actions: Add Page (modal selecting template with optional widget seeding), Duplicate Page, Delete Page (maintains at least 1 page), Reorder Pages (up/down), Copy to Opposite Orientation, and Task Navigation filter modal.
+- **`WidgetPalettePanel`**:
+  - Full catalog of all 79 registered XCTrack widget classes.
+  - Search filter (matches title, description, class, category) + Category filter chips (System, Flying, Air, XContest, Navigation, Competition, Livetracking, Action Buttons, Others, Testing, Debug).
+  - Clicking a widget adds it centered on the canvas according to its default grid dimensions (`gw` × `gh`) with default properties.
+- **`LayerOrderPanel`**:
+  - Displays all widgets on the active page in exact Z-order (array index 0 = bottom/background map, highest index = top overlay).
+  - Drag-like or arrow-button reordering (Bring Forward, Send Backward, Bring to Front, Send to Back).
+  - Eye visibility toggling, title/unit preview, and selection syncing.
+- **`WidgetPropertyInspector`**:
+  - Right sidebar (320px) displaying properties of the currently selected widget.
+  - **Geometry & Grid**: Discrete grid coordinate inputs (`gx1, gy1, gx2, gy2`), cell dimensions (`gw × gh`), quick fit buttons (Full Width, Full Height, Fill Screen, Center Horizontally, Center Vertically), snap toggle, and normalized coordinate view (`0..10000`).
+  - **Appearance & Style**: Border toggle (`_border`), Background Transparency slider (`_bg`, `0..100%`) with visual transparency preview and preset chips (0%, 50%, 80%, 100%), theme override dropdown (`_theme`).
+  - **Title & Unit Labels**: Show Title (`_title`), custom title override (`titletext`), show unit (`_unit`), hide labels (`_hide_labels`).
+  - **Specialized Type Panels**:
+    - Map Widgets: Map rotation (`NORTH_AT_TOP`, `BEARING_AT_TOP`, etc.), default zoom scale slider (`mapWidget_scale`), tracklog color picker with signed 32-bit int serialization, compass rose toggle (`showCompass`).
+    - Action Buttons: Click action dropdown, long click action dropdown.
+    - Free Text: Textarea, text size, color picker, bold, italic.
+    - Web View: URL, auto-refresh interval, `allowGsp`.
+  - **Raw & Preserved Properties**: Collapsible viewer/editor for all unmanaged keys, plus custom key-value property adder, preserving 100% round-trip fidelity.
