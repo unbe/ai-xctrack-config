@@ -15,6 +15,10 @@ export default {
           accent: '#0284c7',
           highlight: '#38bdf8',
         }
+      },
+      fontFamily: {
+        xctrack: ['XCTrackSans', 'sans-serif'],
+        condensed: ['XCTrackCondensed', 'sans-serif'],
       }
     },
   },

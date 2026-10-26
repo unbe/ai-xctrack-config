@@ -85,3 +85,20 @@ Extracted directly from decompiling the official APK (`xctrack-latest.apk` v0.9.
    - Run via: `npm test`
 2. **Headless Browser Integration Testing**:
    - Automated via Puppeteer script `scripts/test-editor-browser.mjs`, exercising full page switching, widget selection, property updates, and screenshot captures.
+
+---
+
+## 7. APK Ground-Truth Rendering Verification (v0.5.0)
+
+To guarantee that widget typography and layout matches the real Android application pixel-for-pixel:
+1. **Official Fonts Extracted**: Extracted `droidsans_bold_xctrack_custom.ttf` (numbers) and `roboto_condensed_bold.ttf` (titles & units) from the decompiled APK.
+2. **Decompiled APK Layout Math**:
+   - Title rendering: Centered horizontally at `width / 2` in uppercase `#808080`, with vertical allocation `Math.max(12, Math.min(18, Math.round(height * 0.22)))`.
+   - Dynamic font scaling: Calculated from bounding box dimensions with aspect ratios preventing text wrapping.
+   - `WAirTime` formatted as `"%d:%02d"` (`"2:15"`), without wrap.
+   - Borders and transparency: Exact 1px `#808080` border and `((100 - _bg) * 255) / 100` background opacity.
+3. **Verification Command**:
+   ```bash
+   node scripts/verify-rendering.mjs
+   ```
+   Renders the reference layout via Java AWT using the real APK fonts, captures the web canvas with Puppeteer, asserts widget values, and outputs a side-by-side comparison image `rendering_comparison.png`.

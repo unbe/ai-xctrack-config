@@ -289,6 +289,7 @@ export const ScreenCanvas: React.FC = () => {
 
         {/* Screen Canvas Area */}
         <div
+          id="phone-screen-canvas"
           ref={canvasRef}
           onClick={(e) => {
             e.stopPropagation();

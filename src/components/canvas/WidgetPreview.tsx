@@ -44,20 +44,25 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
   const isWhiteTheme = themeName.toLowerCase().includes('white');
   const isEInk = themeName.toLowerCase().includes('eink');
 
-  // Background transparency calculation
+  // Background transparency calculation matching XCTrack d0.java:
   // In XCTrack, _bg is Transparency % (100 = transparent, 0 = solid)
+  // alpha = ((100 - _bg) * 255) / 100
   const bgAlpha = bgTransparencyToAlpha(widget._bg);
   const bgColor = isWhiteTheme
     ? `rgba(255, 255, 255, ${bgAlpha})`
-    : `rgba(16, 20, 26, ${bgAlpha})`;
+    : `rgba(0, 0, 0, ${bgAlpha})`;
 
   const textColor = isWhiteTheme ? '#0f172a' : '#f8fafc';
   const mutedTextColor = isWhiteTheme ? '#64748b' : '#94a3b8';
-  const borderColor = isWhiteTheme ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.2)';
+  // XCTrack d0.java line 359: border color is Color.rgb(128, 128, 128)
+  const borderColor = isWhiteTheme ? 'rgba(128, 128, 128, 0.5)' : 'rgba(128, 128, 128, 0.7)';
 
-  // Title and custom title
+  // Title calculation matching XCTrack theme.a0 / theme.I()
+  // When _title !== false, title is drawn centered horizontally at x = width / 2
+  // If _title === false, titleHeight is 0 and value takes full vertical space
   const showTitle = widget._title !== false;
   const displayTitle = widget.titletext || def?.title || widget.CLASS.split('.').pop() || '';
+  const titleHeight = showTitle ? Math.max(12, Math.min(18, Math.round(heightPx * 0.22))) : 0;
   const showUnit = widget._unit !== false;
 
   // Tracklog color
@@ -65,32 +70,37 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
 
   return (
     <div
-      className="w-full h-full relative overflow-hidden select-none transition-shadow"
+      className="w-full h-full relative overflow-hidden select-none flex flex-col items-center justify-between"
       style={{
         backgroundColor: bgColor,
         color: textColor,
         border: widget._border ? `1px solid ${borderColor}` : undefined,
       }}
     >
-      {/* Widget Header (Title & Unit) */}
+      {/* Widget Centered Header Title (matching XCTrack theme.a0: x = width/2, uppercase, bold, centered) */}
       {showTitle && (
-        <div className="absolute top-1 left-1.5 right-1.5 flex items-center justify-between pointer-events-none z-10 leading-none">
+        <div
+          className="w-full flex items-center justify-center px-1 pointer-events-none z-10 select-none overflow-hidden shrink-0"
+          style={{ height: `${titleHeight}px` }}
+        >
           <span
-            className="text-[10px] font-semibold tracking-wider uppercase truncate"
-            style={{ color: mutedTextColor }}
+            className="font-bold tracking-wider uppercase truncate text-center font-condensed"
+            style={{
+              color: '#808080',
+              fontSize: `${Math.max(9, Math.min(13, Math.round(titleHeight * 0.72)))}px`,
+              lineHeight: 1,
+            }}
           >
             {displayTitle}
           </span>
-          {showUnit && widget._units && (
-            <span className="text-[9px] font-mono opacity-60 ml-1">
-              {widget._units === 'SYS_UNIT' ? '' : widget._units}
-            </span>
-          )}
         </div>
       )}
 
       {/* Widget Specialized Body Content */}
-      <div className="w-full h-full flex flex-col items-center justify-center p-1.5">
+      <div
+        className="w-full flex-1 flex items-center justify-center overflow-hidden"
+        style={{ height: `${heightPx - titleHeight}px` }}
+      >
         {renderWidgetContent(widget, def?.shortName, {
           isWhiteTheme,
           textColor,
@@ -98,6 +108,7 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
           tracklogColorCss: rgbaToCss(tracklogRgba),
           widthPx,
           heightPx,
+          titleHeight,
         })}
       </div>
     </div>
@@ -111,6 +122,7 @@ interface RenderContext {
   tracklogColorCss: string;
   widthPx: number;
   heightPx: number;
+  titleHeight: number;
 }
 
 function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: RenderContext) {
@@ -194,7 +206,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
           {/* Airspace block */}
           <rect x="60" y="5" width="80" height="20" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.7)" strokeWidth="1" />
         </svg>
-        <span className="absolute top-1 right-2 text-[9px] font-mono text-sky-400">Glide 1:9.2</span>
+        <span className="absolute top-1 right-2 text-[9px] font-condensed font-bold text-sky-400">Glide 1:9.2</span>
       </div>
     );
   }
@@ -202,7 +214,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
   // 4. Status Line
   if (name === 'WStatusLine') {
     return (
-      <div className="w-full h-full flex items-center justify-between px-2 text-[10px] font-mono font-medium">
+      <div className="w-full h-full flex items-center justify-between px-2 text-[10px] font-condensed font-bold">
         <div className="flex items-center gap-2">
           {widget.showGps !== false && (
             <div className="flex items-center gap-1 text-emerald-400" title="GPS 3D Fix">
@@ -227,7 +239,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
           {widget.showTime !== false && (
             <div className="flex items-center gap-1 text-gray-300">
               <Clock className="w-3 h-3 text-gray-400" />
-              <span>14:32</span>
+              <span>14:25</span>
             </div>
           )}
         </div>
@@ -240,7 +252,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     return (
       <div className="w-full h-full relative flex items-center justify-center p-1">
         <Compass className="w-10 h-10 text-sky-400/80" />
-        <div className="absolute text-[11px] font-bold font-mono text-white">315°</div>
+        <div className="absolute text-[11px] font-bold font-xctrack text-white">315°</div>
       </div>
     );
   }
@@ -360,17 +372,21 @@ function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderCon
       unit = '';
       break;
     case 'WTime':
-      val = '14:25:30';
+      val = '14:25';
+      unit = '';
       break;
     case 'WAirTime':
-      val = '2h 15m';
+      // XCTrack WAirTime.java: String.format(Locale.ENGLISH, "%d:%02d", hours, mins) -> "2:15"
+      val = '2:15';
+      unit = '';
       break;
     case 'WWindSpeed':
       val = '16';
       unit = 'km/h';
       break;
     case 'WWindDirection':
-      val = 'NW 315°';
+      val = '315°';
+      unit = 'NW';
       break;
     case 'WThermalAltGain':
       val = '+780';
@@ -389,10 +405,12 @@ function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderCon
       unit = 'km';
       break;
     case 'WNextTurnpoint':
-      val = '[TP2_ColDeForclaz]';
+      val = 'Col de Forclaz';
+      unit = '';
       break;
     case 'WNextTurnpointGlideTo':
       val = widget.headless ? '7.8' : '1:7.8';
+      unit = '';
       break;
     case 'WNextTurnpointAlt':
       val = '+420';
@@ -400,6 +418,7 @@ function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderCon
       break;
     case 'WCompTimeToStart':
       val = '04:12';
+      unit = '';
       break;
     case 'WCompDistanceToGoal':
       val = '42.8';
@@ -407,20 +426,52 @@ function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderCon
       break;
     case 'WCompGlideToGoal':
       val = widget.headless ? '8.2' : '1:8.2';
+      unit = '';
       break;
     default:
       val = '--';
+      unit = '';
       break;
   }
 
+  const hasUnit = Boolean(unit && widget._unit !== false);
+  const availW = Math.max(10, ctx.widthPx - 8);
+  const availH = Math.max(10, ctx.heightPx - ctx.titleHeight - 6);
+
+  // Dynamic font scaling matching XCTrack theme.U
+  const charRatio = 0.58;
+  const unitFactor = hasUnit ? Math.min(0.40, unit.length * 0.28 + 0.15) : 0;
+  const valAvailW = availW * (1.0 - unitFactor);
+
+  const fontByW = valAvailW / Math.max(1.0, val.length * charRatio);
+  const fontByH = availH * 0.85;
+  const fontSizePx = Math.max(10, Math.floor(Math.min(fontByH, fontByW)));
+  const unitFontSizePx = Math.max(9, Math.floor(fontSizePx * 0.38));
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="flex items-baseline gap-1">
-        <span className="font-mono font-bold tracking-tight text-xl leading-none" style={{ color: ctx.textColor }}>
+    <div className="w-full h-full flex items-center justify-center overflow-hidden px-1">
+      <div className="flex items-baseline justify-center whitespace-nowrap leading-none select-none">
+        <span
+          className="font-xctrack font-bold tracking-tight text-center leading-none"
+          style={{
+            color: ctx.textColor,
+            fontSize: `${fontSizePx}px`,
+            lineHeight: 1,
+          }}
+        >
           {val}
         </span>
-        {unit && widget._unit !== false && (
-          <span className="text-[10px] font-semibold text-gray-400 font-sans">{unit}</span>
+        {hasUnit && (
+          <span
+            className="font-condensed font-bold ml-1 tracking-tight leading-none opacity-80"
+            style={{
+              color: ctx.mutedTextColor,
+              fontSize: `${unitFontSizePx}px`,
+              lineHeight: 1,
+            }}
+          >
+            {unit}
+          </span>
         )}
       </div>
     </div>

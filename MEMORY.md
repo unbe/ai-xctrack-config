@@ -259,3 +259,34 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
     - Live validation report via `validateXcfg` verifying all top-level keys, page structure, coordinates (`0..10000`), and widget schemas.
     - Change summary tracking modifications between current editing session and originally loaded file.
     - 1-click clipboard export of formatted JSON.
+
+---
+
+## 8. Typography, Dynamic Font Scaling & Ground-Truth Verification (Task 5 - v0.5.0)
+
+### 8.1 Exact Fonts from APK
+- **Values / Telemetry Numbers**: `droidsans_bold_xctrack_custom.ttf` (`t0.f25747g0` / `R.font.droidsans_bold_xctrack_custom`). Digit aspect ratio is ~0.58.
+- **Titles & Units**: `roboto_condensed_bold.ttf` (`t0.f25753h0` / `Typeface.DEFAULT_BOLD`).
+
+### 8.2 Layout & Rendering Rules (Decompiled `theme/a.java` & `ValueWidget.java`)
+1. **Title Rendering (`theme.a0`)**:
+   - Drawn horizontally centered at `x = width / 2` (`Paint.Align.CENTER`), uppercase, bold, color `#808080` (`Color.rgb(128, 128, 128)`).
+   - Vertical allocation: `titleHeight = Math.max(12, Math.min(18, Math.round(heightPx * 0.22)))` if `_title !== false`.
+   - If `_title: false`, `titleHeight = 0` (e.g. `WVerticalSpeed` on page 0 fills the entire box).
+2. **Value Scaling & No Wrapping (`theme.U`)**:
+   - Available box: `availW = Math.max(10, widthPx - 8)`, `availH = Math.max(10, heightPx - titleHeight - 6)`.
+   - Single line guarantee (`white-space: nowrap`, `overflow: hidden`).
+   - `fontSizePx = Math.max(10, Math.floor(Math.min(availH * 0.85, valAvailW / Math.max(1.0, val.length * 0.58))))`.
+3. **Unit Placement**:
+   - If `_unit !== false` and unit exists, unit takes baseline position with `fontSize ~ 38%` of value size.
+   - If `_unit: false` (or unit empty/null like `WAirTime`), value expands across 100% of available width.
+4. **`WAirTime` Formatting (`WAirTime.java` line 61)**:
+   - Format is `String.format(Locale.ENGLISH, "%d:%02d", hours, mins)` (e.g. `"2:15"`), **NOT `"2h 15m"`**.
+5. **Border & Background Alpha (`d0.java`)**:
+   - `_border: true`: 1px outline with `#808080` (`Color.rgb(128, 128, 128)`).
+   - `_bg`: Transparency % where `alpha = ((100 - _bg) * 255) / 100`.
+
+### 8.3 Ground-Truth Verification Pipeline
+- `scripts/ReferenceRenderer.java`: Headless Java program loading `droidsans_bold_xctrack_custom.ttf` to render pixel-accurate layout ground truth directly from decompiled equations.
+- `scripts/verify-rendering.mjs`: Connects to Chromium via CDP/Puppeteer, snapshots `#phone-screen-canvas`, verifies widget text metrics and formatting, and stitches a side-by-side comparison (`rendering_comparison.png`).
+- `scripts/CompositeRenderer.java`: Builds a side-by-side visual comparison image between the APK reference and Web App canvas.
