@@ -1,0 +1,1945 @@
+{
+  "xctrackGridFormula": {
+    "sourceClass": "org.xcontest.XCTrack.ui.i0 & org.xcontest.XCTrack.widget.d0",
+    "cellSizePxFormula": "max(8.0f, 0.11952191f * densityDpi)  // where 0.11952191f = 3.0f / 25.1f (~3mm physical grid cell)",
+    "cellSizeDpEquivalent": 19.1235,
+    "gridColsFormula": "Math.round(viewportWidthPx / cellSizePx)  // equivalent to Math.round(viewportWidthDp / 19.1235)",
+    "gridRowsFormula": "Math.round(viewportHeightPx / cellSizePx) // equivalent to Math.round(viewportHeightDp / 19.1235)",
+    "gridToXcfgCoordFormula": "X = ((gridX * 10000) + (gridCols // 2)) // gridCols",
+    "xcfgCoordToGridFormula": "gridX = ((X * gridCols) + 5000) // 10000"
+  },
+  "devices": [
+    {
+      "id": "air3-7.2",
+      "name": "AIR\u00b3 7.2",
+      "brand": "AIR\u00b3",
+      "category": "Dedicated Instrument",
+      "screenSizeInches": 7.0,
+      "nativeResolution": {
+        "width": 720,
+        "height": 1280
+      },
+      "aspectRatio": "16:9",
+      "ppi": 210,
+      "androidDensityDpi": 240,
+      "panelType": "IPS LCD",
+      "brightnessNits": 1000,
+      "batteryMah": 7000,
+      "sources": [
+        "xctrack.org/Devices.html",
+        "fly-air3.com"
+      ],
+      "notes": "Dedicated 7-inch Android flight computer pre-configured with XCTrack Pro. Typically mounted in landscape on cockpit.",
+      "cellSizePx": 28.69,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 480.0,
+          "height": 853.3
+        },
+        "landscape": {
+          "width": 853.3,
+          "height": 480.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 25,
+          "rows": 45
+        },
+        "landscape": {
+          "cols": 45,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "air3-7.3-plus",
+      "name": "AIR\u00b3 7.3 / 7.3+",
+      "brand": "AIR\u00b3",
+      "category": "Dedicated Instrument",
+      "screenSizeInches": 7.0,
+      "nativeResolution": {
+        "width": 1200,
+        "height": 1920
+      },
+      "aspectRatio": "16:10",
+      "ppi": 323,
+      "androidDensityDpi": 320,
+      "panelType": "IPS LCD",
+      "brightnessNits": 1000,
+      "batteryMah": 10000,
+      "sources": [
+        "fly-air3.com",
+        "xcmag.com"
+      ],
+      "notes": "Upgraded FHD+ (1920\u00d71200, 16:10) display; 7.3+ adds internal FLARM/Fanet+ module and high-precision barometer.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 600.0,
+          "height": 960.0
+        },
+        "landscape": {
+          "width": 960.0,
+          "height": 600.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 31,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 50,
+          "rows": 31
+        }
+      }
+    },
+    {
+      "id": "air3-7.35-plus",
+      "name": "AIR\u00b3 7.35 / 7.35+",
+      "brand": "AIR\u00b3",
+      "category": "Dedicated Instrument",
+      "screenSizeInches": 7.0,
+      "nativeResolution": {
+        "width": 1200,
+        "height": 1920
+      },
+      "aspectRatio": "16:10",
+      "ppi": 323,
+      "androidDensityDpi": 320,
+      "panelType": "Ultra-Bright IPS LCD",
+      "brightnessNits": 2600,
+      "batteryMah": 10000,
+      "sources": [
+        "fly-air3.com"
+      ],
+      "notes": "Ultra-bright 2200\u20132600 nits panel for direct high-altitude sunlight visibility; pre-loaded with custom AIR\u00b3 XCTrack profiles.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 600.0,
+          "height": 960.0
+        },
+        "landscape": {
+          "width": 960.0,
+          "height": 600.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 31,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 50,
+          "rows": 31
+        }
+      }
+    },
+    {
+      "id": "naviter-oudie-n",
+      "name": "Naviter Oudie N / Fanet+",
+      "brand": "Naviter",
+      "category": "Dedicated Instrument",
+      "screenSizeInches": 5.5,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 1920
+      },
+      "aspectRatio": "16:9",
+      "ppi": 400,
+      "androidDensityDpi": 480,
+      "panelType": "Sunlight-Readable IPS LCD",
+      "brightnessNits": 1000,
+      "batteryMah": 16000,
+      "sources": [
+        "naviter.com"
+      ],
+      "notes": "Android-based dedicated flight instrument; while running SeeYou Navigator natively, pilots also install XCTrack on it.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 640.0
+        },
+        "landscape": {
+          "width": 640.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 33
+        },
+        "landscape": {
+          "cols": 33,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "samsung-tab-active3",
+      "name": "Samsung Galaxy Tab Active3",
+      "brand": "Samsung",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 8.0,
+      "nativeResolution": {
+        "width": 1200,
+        "height": 1920
+      },
+      "aspectRatio": "16:10",
+      "ppi": 283,
+      "androidDensityDpi": 320,
+      "panelType": "PLS TFT LCD",
+      "brightnessNits": 550,
+      "batteryMah": 5050,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Very popular 8-inch rugged cockpit tablet with physical navigation keys (Back/Home/Recents) usable with flight gloves and S-Pen.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 600.0,
+          "height": 960.0
+        },
+        "landscape": {
+          "width": 960.0,
+          "height": 600.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 31,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 50,
+          "rows": 31
+        }
+      }
+    },
+    {
+      "id": "samsung-tab-active4-pro",
+      "name": "Samsung Galaxy Tab Active4 Pro",
+      "brand": "Samsung",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 10.1,
+      "nativeResolution": {
+        "width": 1200,
+        "height": 1920
+      },
+      "aspectRatio": "16:10",
+      "ppi": 224,
+      "androidDensityDpi": 240,
+      "panelType": "TFT LCD (Gorilla Glass 5)",
+      "brightnessNits": 600,
+      "batteryMah": 7600,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Large 10.1-inch rugged tablet for spacious competition cockpits.",
+      "cellSizePx": 28.69,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 800.0,
+          "height": 1280.0
+        },
+        "landscape": {
+          "width": 1280.0,
+          "height": 800.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 42,
+          "rows": 67
+        },
+        "landscape": {
+          "cols": 67,
+          "rows": 42
+        }
+      }
+    },
+    {
+      "id": "samsung-tab-active5",
+      "name": "Samsung Galaxy Tab Active5",
+      "brand": "Samsung",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 8.0,
+      "nativeResolution": {
+        "width": 1200,
+        "height": 1920
+      },
+      "aspectRatio": "16:10",
+      "ppi": 283,
+      "androidDensityDpi": 320,
+      "panelType": "TFT LCD 120Hz (Gorilla Glass 5)",
+      "brightnessNits": 600,
+      "batteryMah": 5050,
+      "sources": [
+        "samsung.com",
+        "gsmarena.com"
+      ],
+      "notes": "2024 successor to Tab Active3 with 120Hz outdoor-boosted display, physical hardware buttons, and No-Battery Mode.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 600.0,
+          "height": 960.0
+        },
+        "landscape": {
+          "width": 960.0,
+          "height": 600.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 31,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 50,
+          "rows": 31
+        }
+      }
+    },
+    {
+      "id": "tripltek-7-pro",
+      "name": "Tripltek 7 Pro",
+      "brand": "Tripltek",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 7.0,
+      "nativeResolution": {
+        "width": 720,
+        "height": 1280
+      },
+      "aspectRatio": "16:9",
+      "ppi": 210,
+      "androidDensityDpi": 240,
+      "panelType": "Ultra-Bright IPS LCD",
+      "brightnessNits": 1200,
+      "batteryMah": 10000,
+      "sources": [
+        "tripltek.com"
+      ],
+      "notes": "1200-nit sustained high-brightness rugged 7-inch tablet popular with drone and paragliding pilots.",
+      "cellSizePx": 28.69,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 480.0,
+          "height": 853.3
+        },
+        "landscape": {
+          "width": 853.3,
+          "height": 480.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 25,
+          "rows": 45
+        },
+        "landscape": {
+          "cols": 45,
+          "rows": 25
+        }
+      }
+    },
+    {
+      "id": "tripltek-8-pro",
+      "name": "Tripltek 8 Pro",
+      "brand": "Tripltek",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 8.0,
+      "nativeResolution": {
+        "width": 1600,
+        "height": 2560
+      },
+      "aspectRatio": "16:10",
+      "ppi": 360,
+      "androidDensityDpi": 400,
+      "panelType": "Ultra-Bright IPS LCD",
+      "brightnessNits": 1200,
+      "batteryMah": 12200,
+      "sources": [
+        "tripltek.com"
+      ],
+      "notes": "8-inch 2560\u00d71600 (16:10) 1200-nit sustained display with 12,200 mAh battery.",
+      "cellSizePx": 47.81,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 640.0,
+          "height": 1024.0
+        },
+        "landscape": {
+          "width": 1024.0,
+          "height": 640.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 33,
+          "rows": 54
+        },
+        "landscape": {
+          "cols": 54,
+          "rows": 33
+        }
+      }
+    },
+    {
+      "id": "tripltek-9-pro",
+      "name": "Tripltek 9 Pro",
+      "brand": "Tripltek",
+      "category": "Rugged Tablet",
+      "screenSizeInches": 8.0,
+      "nativeResolution": {
+        "width": 1600,
+        "height": 2560
+      },
+      "aspectRatio": "16:10",
+      "ppi": 360,
+      "androidDensityDpi": 400,
+      "panelType": "Ultra-Bright IPS LCD",
+      "brightnessNits": 1300,
+      "batteryMah": 12200,
+      "sources": [
+        "tripltek.com"
+      ],
+      "notes": "8-inch active viewing area at 2560\u00d71600 (16:10) with 1300 nits sustained brightness.",
+      "cellSizePx": 47.81,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 640.0,
+          "height": 1024.0
+        },
+        "landscape": {
+          "width": 1024.0,
+          "height": 640.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 33,
+          "rows": 54
+        },
+        "landscape": {
+          "cols": 54,
+          "rows": 33
+        }
+      }
+    },
+    {
+      "id": "blackview-bv6900",
+      "name": "Blackview BV6900",
+      "brand": "Blackview",
+      "category": "Rugged Phone",
+      "screenSizeInches": 5.84,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2160
+      },
+      "aspectRatio": "18:9",
+      "ppi": 412,
+      "androidDensityDpi": 480,
+      "panelType": "IPS LCD (Gorilla Glass 5)",
+      "brightnessNits": 500,
+      "batteryMah": 5580,
+      "sources": [
+        "XCTrackLayoutEditor Community DB (lousdicrous_01..03, caffiap_01..02)"
+      ],
+      "notes": "Frequently seen in XCTrackLayoutEditor community configs (19\u00d736 portrait grid with nav/status bars, 19\u00d738 fullscreen).",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 720.0
+        },
+        "landscape": {
+          "width": 720.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 38
+        },
+        "landscape": {
+          "cols": 38,
+          "rows": 19
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 19,
+          "rows": 36
+        },
+        "landscape": {
+          "cols": 38,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "blackview-bv8800-bv9900",
+      "name": "Blackview BV8800 / BV9900 / BL8800",
+      "brand": "Blackview",
+      "category": "Rugged Phone",
+      "screenSizeInches": 6.58,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2408
+      },
+      "aspectRatio": "20:9",
+      "ppi": 401,
+      "androidDensityDpi": 480,
+      "panelType": "IPS LCD 90Hz",
+      "brightnessNits": 480,
+      "batteryMah": 8380,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "High-capacity battery rugged phone with barometer and customizable physical side keys for XCTrack zoom/page switching.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 802.7
+        },
+        "landscape": {
+          "width": 802.7,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 42
+        },
+        "landscape": {
+          "cols": 42,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "ulefone-armor-3t",
+      "name": "Ulefone Armor 3 / 3T / 3WT",
+      "brand": "Ulefone",
+      "category": "Rugged Phone",
+      "screenSizeInches": 5.7,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2160
+      },
+      "aspectRatio": "18:9",
+      "ppi": 424,
+      "androidDensityDpi": 480,
+      "panelType": "IPS LCD",
+      "brightnessNits": 550,
+      "batteryMah": 10300,
+      "sources": [
+        "xctrack.org/Devices.html"
+      ],
+      "notes": "Listed on xctrack.org/Devices.html (14h30m max brightness benchmark); 10,300 mAh battery + built-in walkie-talkie on 3T/3WT.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 720.0
+        },
+        "landscape": {
+          "width": 720.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 38
+        },
+        "landscape": {
+          "cols": 38,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "ulefone-armor-18-24-26",
+      "name": "Ulefone Armor 18 / 24 / 26 Ultra",
+      "brand": "Ulefone",
+      "category": "Rugged Phone",
+      "screenSizeInches": 6.58,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2408
+      },
+      "aspectRatio": "20:9",
+      "ppi": 401,
+      "androidDensityDpi": 480,
+      "panelType": "IPS LCD 120Hz",
+      "brightnessNits": 600,
+      "batteryMah": 15600,
+      "sources": [
+        "ulefone.com"
+      ],
+      "notes": "Modern big-battery rugged Ulefone Armor series (9600 mAh to 22000 mAh) with barometric sensor and hardware PTT/custom keys.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 802.7
+        },
+        "landscape": {
+          "width": 802.7,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 42
+        },
+        "landscape": {
+          "cols": 42,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "crosscall-trekker-x4-core-z5",
+      "name": "Crosscall Core-Z5 / Action-X5 / Trekker-X4",
+      "brand": "Crosscall",
+      "category": "Rugged Phone",
+      "screenSizeInches": 6.08,
+      "nativeResolution": {
+        "width": 720,
+        "height": 1520
+      },
+      "aspectRatio": "19:9",
+      "ppi": 276,
+      "androidDensityDpi": 320,
+      "panelType": "IPS LCD (Gorilla Glass 5, Wet/Glove Touch)",
+      "brightnessNits": 500,
+      "batteryMah": 4950,
+      "sources": [
+        "crosscall.com"
+      ],
+      "notes": "French rugged outdoor phone brand popular among European hike-and-fly pilots; features programmable hardware buttons.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 760.0
+        },
+        "landscape": {
+          "width": 760.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 40
+        },
+        "landscape": {
+          "cols": 40,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "umidigi-bison-x10",
+      "name": "UMIDIGI Bison X10",
+      "brand": "UMIDIGI",
+      "category": "Rugged Phone",
+      "screenSizeInches": 6.53,
+      "nativeResolution": {
+        "width": 720,
+        "height": 1600
+      },
+      "aspectRatio": "20:9",
+      "ppi": 269,
+      "androidDensityDpi": 320,
+      "panelType": "IPS LCD",
+      "brightnessNits": 450,
+      "batteryMah": 6150,
+      "sources": [
+        "xctrack.org/Devices.html"
+      ],
+      "notes": "Listed on xctrack.org/Devices.html (12h01m max brightness test): internal barometer and 2 programmable hardware buttons.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 800.0
+        },
+        "landscape": {
+          "width": 800.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 42
+        },
+        "landscape": {
+          "cols": 42,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "google-pixel-6",
+      "name": "Google Pixel 6",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.4,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 411,
+      "androidDensityDpi": 420,
+      "panelType": "AMOLED 90Hz",
+      "brightnessNits": 800,
+      "batteryMah": 4614,
+      "sources": [
+        "XCTrackLayoutEditor Community DB (andy3baum_01)",
+        "gsmarena.com"
+      ],
+      "notes": "Appears in XCTrackLayoutEditor community configs. Stock 420 dpi gives 22\u00d748 fullscreen grid; custom Display Size (+1 step, 480 dpi) gives 19 cols.",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 914.3
+        },
+        "landscape": {
+          "width": 914.3,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "google-pixel-6-pro",
+      "name": "Google Pixel 6 Pro",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.7,
+      "nativeResolution": {
+        "width": 1440,
+        "height": 3120
+      },
+      "aspectRatio": "19.5:9",
+      "ppi": 512,
+      "androidDensityDpi": 560,
+      "panelType": "LTPO AMOLED 120Hz",
+      "brightnessNits": 800,
+      "batteryMah": 5003,
+      "sources": [
+        "User .xcfg: 2023-06-28_backup-00.xcfg & 2023-08-23_backup-00.xcfg (Google Pixel 6 Pro 13)"
+      ],
+      "notes": "User's previous flight phone! Native 1440\u00d73120 @ 560 dpi (411\u00d7891 dp). Fullscreen grid is 22\u00d747; with Android 13 status/nav bar insets it exported as 22\u00d743.",
+      "cellSizePx": 66.93,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 891.4
+        },
+        "landscape": {
+          "width": 891.4,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 47
+        },
+        "landscape": {
+          "cols": 47,
+          "rows": 22
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 22,
+          "rows": 43
+        },
+        "landscape": {
+          "cols": 47,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "google-pixel-7-8",
+      "name": "Google Pixel 7 / Pixel 8",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.2,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 428,
+      "androidDensityDpi": 420,
+      "panelType": "Actua OLED 120Hz",
+      "brightnessNits": 2000,
+      "batteryMah": 4575,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Pixel 7 (6.3\", 1400 nits) and Pixel 8 (6.2\", 2000 nits peak) share 1080\u00d72400 @ 420 dpi (411\u00d7914 dp, 22\u00d748 fullscreen grid).",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 914.3
+        },
+        "landscape": {
+          "width": 914.3,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "google-pixel-8-pro",
+      "name": "Google Pixel 8 Pro",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.7,
+      "nativeResolution": {
+        "width": 1344,
+        "height": 2992
+      },
+      "aspectRatio": "20:9",
+      "ppi": 489,
+      "androidDensityDpi": 480,
+      "panelType": "Super Actua LTPO OLED 120Hz",
+      "brightnessNits": 2400,
+      "batteryMah": 5050,
+      "sources": [
+        "User .xcfg: 2024-06-12_pages-00.xcfg (Pixel 8 Pro 14) & 2026-03-12_backup-00.xcfg (Pixel 8 Pro 16)"
+      ],
+      "notes": "User's primary flight phone! Logical viewport is 448\u00d7997 dp in both Full Res (1344\u00d72992 @ 480 dpi) and High Res (1008\u00d72244 @ 360 dpi). Produces exact 23\u00d752 grid in fullscreen (Android 16 backup) and 23\u00d748 grid with system bar insets (Android 14 pages export).",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 448.0,
+          "height": 997.3
+        },
+        "landscape": {
+          "width": 997.3,
+          "height": 448.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 23,
+          "rows": 52
+        },
+        "landscape": {
+          "cols": 52,
+          "rows": 23
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 23,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 52,
+          "rows": 23
+        }
+      }
+    },
+    {
+      "id": "google-pixel-9-9-pro",
+      "name": "Google Pixel 9 / Pixel 9 Pro / 9a",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.3,
+      "nativeResolution": {
+        "width": 1280,
+        "height": 2856
+      },
+      "aspectRatio": "20:9",
+      "ppi": 495,
+      "androidDensityDpi": 480,
+      "panelType": "Super Actua LTPO OLED 120Hz",
+      "brightnessNits": 3000,
+      "batteryMah": 4700,
+      "sources": [
+        "xctrack.org/Devices.html",
+        "XCTrackLayoutEditor Community DB (remi.b_01)"
+      ],
+      "notes": "Pixel 9 Pro is benchmarked on xctrack.org/Devices.html (13h06m runtime) with 3000 nits peak brightness. Pixel 9 & 9a (1080\u00d72424 @ 420 dpi) use 22\u00d748 grid; Pixel 9 Pro (1280\u00d72856 @ 480 dpi, 427\u00d7952 dp) uses 22\u00d750 grid.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 426.7,
+          "height": 952.0
+        },
+        "landscape": {
+          "width": 952.0,
+          "height": 426.7
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 50,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "google-pixel-9-pro-xl",
+      "name": "Google Pixel 9 Pro XL / 10 Pro XL",
+      "brand": "Google",
+      "category": "Phone",
+      "screenSizeInches": 6.8,
+      "nativeResolution": {
+        "width": 1344,
+        "height": 2992
+      },
+      "aspectRatio": "20:9",
+      "ppi": 486,
+      "androidDensityDpi": 480,
+      "panelType": "Super Actua LTPO OLED 120Hz",
+      "brightnessNits": 3000,
+      "batteryMah": 5060,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Shares the exact 1344\u00d72992 @ 480 dpi (448\u00d7997 dp) resolution and 23\u00d752 XCTrack grid with the Pixel 8 Pro, with 3000 nits peak brightness.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 448.0,
+          "height": 997.3
+        },
+        "landscape": {
+          "width": 997.3,
+          "height": 448.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 23,
+          "rows": 52
+        },
+        "landscape": {
+          "cols": 52,
+          "rows": 23
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-a51",
+      "name": "Samsung Galaxy A51 / A52 / A53",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.5,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 405,
+      "androidDensityDpi": 420,
+      "panelType": "Super AMOLED",
+      "brightnessNits": 800,
+      "batteryMah": 4500,
+      "sources": [
+        "XCTrackLayoutEditor Default Preset",
+        "XCTrackLayoutEditor Community DB (thrombose_11, 2026-02-22_All-in-One)"
+      ],
+      "notes": "The default preset in XCTrackLayoutEditor ('Samsung A51 1080\u00d72400', 22\u00d744 grid with system bar insets, 22\u00d748 fullscreen).",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 914.3
+        },
+        "landscape": {
+          "width": 914.3,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 22,
+          "rows": 44
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-a35-a54-a55",
+      "name": "Samsung Galaxy A35 / A54 / A55 5G",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.6,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2340
+      },
+      "aspectRatio": "19.5:9",
+      "ppi": 390,
+      "androidDensityDpi": 450,
+      "panelType": "Super AMOLED 120Hz",
+      "brightnessNits": 1000,
+      "batteryMah": 5000,
+      "sources": [
+        "XCTrackLayoutEditor Community DB (mb25340638_01..07, parent.gael_01..03)"
+      ],
+      "notes": "The most common device family in XCTrackLayoutEditor community library (10+ configs)! Uses 450 dpi (384\u00d7832 dp), yielding a 20\u00d744 portrait / 44\u00d720 landscape grid.",
+      "cellSizePx": 53.78,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 384.0,
+          "height": 832.0
+        },
+        "landscape": {
+          "width": 832.0,
+          "height": 384.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 20,
+          "rows": 44
+        },
+        "landscape": {
+          "cols": 44,
+          "rows": 20
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-s21-5g",
+      "name": "Samsung Galaxy S21 / S21+ 5G (SM-G991B)",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.2,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 421,
+      "androidDensityDpi": 420,
+      "panelType": "Dynamic AMOLED 2X 120Hz",
+      "brightnessNits": 1300,
+      "batteryMah": 4000,
+      "sources": [
+        "XCTrackLayoutEditor Community DB (istrasoft_01, rbolsevics_01)"
+      ],
+      "notes": "Appears in XCTrackLayoutEditor community configs (22\u00d742 portrait with insets, 22\u00d748 fullscreen; or 19\u00d738 when OneUI screen zoom is increased to 480 dpi).",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 914.3
+        },
+        "landscape": {
+          "width": 914.3,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 22,
+          "rows": 42
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-s22-s23-s24-s25-base-plus",
+      "name": "Samsung Galaxy S22 / S23 / S24 / S25 (Base & Plus, FHD+)",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.2,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2340
+      },
+      "aspectRatio": "19.5:9",
+      "ppi": 416,
+      "androidDensityDpi": 450,
+      "panelType": "Dynamic LTPO AMOLED 2X 120Hz",
+      "brightnessNits": 2600,
+      "batteryMah": 4000,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "S22/S23/S24/S25 base and Plus models (in default FHD+ mode) use 1080\u00d72340 (19.5:9). At OneUI default 450 dpi (384\u00d7832 dp) they produce a 20\u00d744 grid; at 420 dpi (411\u00d7891 dp) they produce a 22\u00d747 grid.",
+      "cellSizePx": 53.78,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 384.0,
+          "height": 832.0
+        },
+        "landscape": {
+          "width": 832.0,
+          "height": 384.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 20,
+          "rows": 44
+        },
+        "landscape": {
+          "cols": 44,
+          "rows": 20
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-s22-s23-s24-s25-ultra-qhd",
+      "name": "Samsung Galaxy S22 / S23 / S24 / S25 Ultra (QHD+)",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.8,
+      "nativeResolution": {
+        "width": 1440,
+        "height": 3088
+      },
+      "aspectRatio": "19.3:9",
+      "ppi": 500,
+      "androidDensityDpi": 600,
+      "panelType": "Dynamic LTPO AMOLED 2X 120Hz (Anti-Reflective Gorilla Armor)",
+      "brightnessNits": 2600,
+      "batteryMah": 5000,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Highly prized by XC pilots for S24/S25 Ultra's Gorilla Armor anti-reflective coating and 2600-nit brightness. Note: S24/S25 Ultra is 1440\u00d73120 (19.5:9) while S22/S23 Ultra is 1440\u00d73088 (19.3:9). Default OneUI density (384\u00d7823 dp, 600 dpi in QHD+ or 450 dpi in FHD+) yields 20\u00d743/44 grid; with Minimum Width set to 411 dp (560 dpi) it yields 22\u00d746/47.",
+      "cellSizePx": 71.71,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 384.0,
+          "height": 823.5
+        },
+        "landscape": {
+          "width": 823.5,
+          "height": 384.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 20,
+          "rows": 43
+        },
+        "landscape": {
+          "cols": 43,
+          "rows": 20
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-m31s-m51",
+      "name": "Samsung Galaxy M31s / M51 (Big-Battery Series)",
+      "brand": "Samsung",
+      "category": "Phone",
+      "screenSizeInches": 6.5,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 405,
+      "androidDensityDpi": 420,
+      "panelType": "Super AMOLED Plus",
+      "brightnessNits": 700,
+      "batteryMah": 6000,
+      "sources": [
+        "xctrack.org/Devices.html"
+      ],
+      "notes": "Famous on xctrack.org/Devices.html for 22\u201326 hours of continuous XCTrack battery life (6000\u20137000 mAh battery + AMOLED black theme).",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 914.3
+        },
+        "landscape": {
+          "width": 914.3,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "samsung-galaxy-z-fold5-fold6-inner",
+      "name": "Samsung Galaxy Z Fold 5 / Z Fold 6 (Unfolded Main Screen)",
+      "brand": "Samsung",
+      "category": "Foldable",
+      "screenSizeInches": 7.6,
+      "nativeResolution": {
+        "width": 1856,
+        "height": 2160
+      },
+      "aspectRatio": "20.9:18 (~6:5)",
+      "ppi": 374,
+      "androidDensityDpi": 420,
+      "panelType": "Foldable Dynamic LTPO AMOLED 2X 120Hz",
+      "brightnessNits": 2600,
+      "batteryMah": 4400,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Near-square unfolded tablet canvas (1856\u00d72160 on Fold6, 1812\u00d72176 on Fold5), ideal for side-by-side XC Assistant + Thermal Assistant + Competition Map.",
+      "cellSizePx": 50.2,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 707.0,
+          "height": 822.9
+        },
+        "landscape": {
+          "width": 822.9,
+          "height": 707.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 37,
+          "rows": 43
+        },
+        "landscape": {
+          "cols": 43,
+          "rows": 37
+        }
+      }
+    },
+    {
+      "id": "google-pixel-9-pro-fold-inner",
+      "name": "Google Pixel 9 Pro Fold (Unfolded Main Screen)",
+      "brand": "Google",
+      "category": "Foldable",
+      "screenSizeInches": 8.0,
+      "nativeResolution": {
+        "width": 2076,
+        "height": 2152
+      },
+      "aspectRatio": "1:1.04 (~1:1)",
+      "ppi": 373,
+      "androidDensityDpi": 390,
+      "panelType": "Super Actua Flex LTPO OLED 120Hz",
+      "brightnessNits": 2700,
+      "batteryMah": 4650,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "8-inch nearly 1:1 square OLED display (2076\u00d72152) with 2700 nits peak brightness.",
+      "cellSizePx": 46.61,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 851.7,
+          "height": 882.9
+        },
+        "landscape": {
+          "width": 882.9,
+          "height": 851.7
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 45,
+          "rows": 46
+        },
+        "landscape": {
+          "cols": 46,
+          "rows": 45
+        }
+      }
+    },
+    {
+      "id": "xiaomi-redmi-note-11-12-13-pro",
+      "name": "Xiaomi Redmi Note 11 / 12 / 13 Pro & POCO X5 / X6",
+      "brand": "Xiaomi",
+      "category": "Phone",
+      "screenSizeInches": 6.67,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 395,
+      "androidDensityDpi": 440,
+      "panelType": "AMOLED 120Hz",
+      "brightnessNits": 1200,
+      "batteryMah": 5000,
+      "sources": [
+        "xctrack.org/Devices.html",
+        "gsmarena.com"
+      ],
+      "notes": "Redmi Note 11 is benchmarked on xctrack.org/Devices.html at 17h40m runtime. MIUI/HyperOS uses 440 dpi (392.7\u00d7872.7 dp) on 1080\u00d72400 screens, giving a 21\u00d746 fullscreen grid.",
+      "cellSizePx": 52.59,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 392.7,
+          "height": 872.7
+        },
+        "landscape": {
+          "width": 872.7,
+          "height": 392.7
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 21,
+          "rows": 46
+        },
+        "landscape": {
+          "cols": 46,
+          "rows": 21
+        }
+      }
+    },
+    {
+      "id": "xiaomi-13t-14t-poco-f6",
+      "name": "Xiaomi 13T / 14T / POCO X6 Pro / F6 (1.5K CrystalRes)",
+      "brand": "Xiaomi",
+      "category": "Phone",
+      "screenSizeInches": 6.67,
+      "nativeResolution": {
+        "width": 1220,
+        "height": 2712
+      },
+      "aspectRatio": "20:9",
+      "ppi": 446,
+      "androidDensityDpi": 480,
+      "panelType": "AMOLED 144Hz",
+      "brightnessNits": 2600,
+      "batteryMah": 5000,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "High-brightness (2600\u20134000 nits peak) 1.5K 1220\u00d72712 panel @ 480 dpi (407\u00d7904 dp), yielding a 21\u00d747 fullscreen grid.",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 406.7,
+          "height": 904.0
+        },
+        "landscape": {
+          "width": 904.0,
+          "height": 406.7
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 21,
+          "rows": 47
+        },
+        "landscape": {
+          "cols": 47,
+          "rows": 21
+        }
+      }
+    },
+    {
+      "id": "motorola-moto-g56-5g",
+      "name": "Motorola Moto G54 / G56 / G84 5G",
+      "brand": "Motorola",
+      "category": "Phone",
+      "screenSizeInches": 6.5,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 2400
+      },
+      "aspectRatio": "20:9",
+      "ppi": 405,
+      "androidDensityDpi": 390,
+      "panelType": "IPS LCD / pOLED 120Hz",
+      "brightnessNits": 1000,
+      "batteryMah": 5000,
+      "sources": [
+        "XCTrackLayoutEditor Community DB (Landscape and portrait)"
+      ],
+      "notes": "Appears in XCTrackLayoutEditor community configs ('motorola moto g56 5G 15') with a 23\u00d751 portrait / 51\u00d723 landscape grid (390 dpi).",
+      "cellSizePx": 46.61,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 443.1,
+          "height": 984.6
+        },
+        "landscape": {
+          "width": 984.6,
+          "height": 443.1
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 23,
+          "rows": 51
+        },
+        "landscape": {
+          "cols": 51,
+          "rows": 23
+        }
+      }
+    },
+    {
+      "id": "oneplus-11-12-13",
+      "name": "OnePlus 11 / 12 / 13 (QHD+)",
+      "brand": "OnePlus",
+      "category": "Phone",
+      "screenSizeInches": 6.82,
+      "nativeResolution": {
+        "width": 1440,
+        "height": 3168
+      },
+      "aspectRatio": "19.8:9",
+      "ppi": 510,
+      "androidDensityDpi": 560,
+      "panelType": "LTPO AMOLED 120Hz",
+      "brightnessNits": 4500,
+      "batteryMah": 5400,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Ultra-bright LTPO AMOLED with Aqua Touch (wet touch support for flying in clouds/rain).",
+      "cellSizePx": 66.93,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 411.4,
+          "height": 905.1
+        },
+        "landscape": {
+          "width": 905.1,
+          "height": 411.4
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 47
+        },
+        "landscape": {
+          "cols": 47,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "sony-xperia-1-v-5-v",
+      "name": "Sony Xperia 1 V / 5 V / 10 VI (21:9 CinemaWide)",
+      "brand": "Sony",
+      "category": "Phone",
+      "screenSizeInches": 6.5,
+      "nativeResolution": {
+        "width": 1096,
+        "height": 2560
+      },
+      "aspectRatio": "21:9",
+      "ppi": 430,
+      "androidDensityDpi": 450,
+      "panelType": "OLED 120Hz",
+      "brightnessNits": 1000,
+      "batteryMah": 5000,
+      "sources": [
+        "gsmarena.com"
+      ],
+      "notes": "Ultra-tall 21:9 aspect ratio (20\u00d748 grid), giving extra vertical/horizontal space for side-by-side map + instruments.",
+      "cellSizePx": 53.78,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 389.7,
+          "height": 910.2
+        },
+        "landscape": {
+          "width": 910.2,
+          "height": 389.7
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 20,
+          "rows": 48
+        },
+        "landscape": {
+          "cols": 48,
+          "rows": 20
+        }
+      }
+    },
+    {
+      "id": "standard-fhd-16-9",
+      "name": "Standard 16:9 Phone / XCTrack Built-in Default Template",
+      "brand": "Generic / XCTrack Default",
+      "category": "Phone",
+      "screenSizeInches": 5.5,
+      "nativeResolution": {
+        "width": 1080,
+        "height": 1920
+      },
+      "aspectRatio": "16:9",
+      "ppi": 401,
+      "androidDensityDpi": 480,
+      "panelType": "IPS / AMOLED",
+      "brightnessNits": 600,
+      "batteryMah": 4000,
+      "sources": [
+        "XCTrack APK res/raw/layout_*.json",
+        "XCTrackLayoutEditor Preset"
+      ],
+      "notes": "XCTrack's built-in raw templates (layout_xcassistant_*, layout_competition_*, layout_thermalassistant_*) use 19\u00d731 (portrait with system bars) and 33\u00d719 (landscape fullscreen), corresponding to 360\u00d7640 dp (1080\u00d71920 @ 480 dpi).",
+      "cellSizePx": 57.37,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 640.0
+        },
+        "landscape": {
+          "width": 640.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 33
+        },
+        "landscape": {
+          "cols": 33,
+          "rows": 19
+        }
+      },
+      "recommendedGridWithSystemBars": {
+        "portrait": {
+          "cols": 19,
+          "rows": 31
+        },
+        "landscape": {
+          "cols": 33,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "hisense-a5-pro",
+      "name": "Hisense A5 / A5 Pro",
+      "brand": "Hisense",
+      "category": "E-Ink",
+      "screenSizeInches": 5.84,
+      "nativeResolution": {
+        "width": 720,
+        "height": 1440
+      },
+      "aspectRatio": "18:9",
+      "ppi": 276,
+      "androidDensityDpi": 320,
+      "panelType": "E Ink Carta HD (Monochrome)",
+      "brightnessNits": 0,
+      "batteryMah": 4000,
+      "sources": [
+        "xctrack.org/Devices.html"
+      ],
+      "notes": "Benchmarked on xctrack.org/Devices.html at 16h30m runtime. Built-in GPS; use XCTrack 'White (eInk)' theme (WhiteEInkTheme) with North-up non-rotating map.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 360.0,
+          "height": 720.0
+        },
+        "landscape": {
+          "width": 720.0,
+          "height": 360.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 19,
+          "rows": 38
+        },
+        "landscape": {
+          "cols": 38,
+          "rows": 19
+        }
+      }
+    },
+    {
+      "id": "hisense-a7",
+      "name": "Hisense A7",
+      "brand": "Hisense",
+      "category": "E-Ink",
+      "screenSizeInches": 6.7,
+      "nativeResolution": {
+        "width": 900,
+        "height": 1800
+      },
+      "aspectRatio": "18:9",
+      "ppi": 300,
+      "androidDensityDpi": 360,
+      "panelType": "E Ink Carta HD (Monochrome)",
+      "brightnessNits": 0,
+      "batteryMah": 4770,
+      "sources": [
+        "goodereader.com"
+      ],
+      "notes": "Large 6.7-inch 300 PPI E-Ink smartphone with internal GPS and 5G.",
+      "cellSizePx": 43.03,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 400.0,
+          "height": 800.0
+        },
+        "landscape": {
+          "width": 800.0,
+          "height": 400.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 21,
+          "rows": 42
+        },
+        "landscape": {
+          "cols": 42,
+          "rows": 21
+        }
+      }
+    },
+    {
+      "id": "hisense-a9-boox-palma",
+      "name": "Hisense A9 / Onyx Boox Palma / Palma 2",
+      "brand": "Hisense / Onyx Boox",
+      "category": "E-Ink",
+      "screenSizeInches": 6.13,
+      "nativeResolution": {
+        "width": 824,
+        "height": 1648
+      },
+      "aspectRatio": "18:9 (2:1)",
+      "ppi": 300,
+      "androidDensityDpi": 320,
+      "panelType": "E Ink Carta 1200 (Monochrome)",
+      "brightnessNits": 0,
+      "batteryMah": 3950,
+      "sources": [
+        "goodereader.com",
+        "boox.com"
+      ],
+      "notes": "Both Hisense A9 (6.1\") and Onyx Boox Palma/Palma 2 (6.13\") share the exact same 824\u00d71648 (2:1) 300 PPI E Ink Carta 1200 panel. Note: Boox Palma has no internal GPS (requires Bluetooth vario/GPS like XC Tracer or SkyDrop).",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 412.0,
+          "height": 824.0
+        },
+        "landscape": {
+          "width": 824.0,
+          "height": 412.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 22,
+          "rows": 43
+        },
+        "landscape": {
+          "cols": 43,
+          "rows": 22
+        }
+      }
+    },
+    {
+      "id": "onyx-boox-poke-5",
+      "name": "Onyx Boox Poke 2 / 3 / 4 / 5",
+      "brand": "Onyx Boox",
+      "category": "E-Ink",
+      "screenSizeInches": 6.0,
+      "nativeResolution": {
+        "width": 1072,
+        "height": 1448
+      },
+      "aspectRatio": "4:3 (~3:4)",
+      "ppi": 300,
+      "androidDensityDpi": 320,
+      "panelType": "E Ink Carta HD (Monochrome)",
+      "brightnessNits": 0,
+      "batteryMah": 1500,
+      "sources": [
+        "xctrack.org/Devices.html",
+        "boox.com"
+      ],
+      "notes": "Listed on xctrack.org/Devices.html (16h45m runtime with external BT GPS/vario). Compact 4:3 e-reader form factor.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 536.0,
+          "height": 724.0
+        },
+        "landscape": {
+          "width": 724.0,
+          "height": 536.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 28,
+          "rows": 38
+        },
+        "landscape": {
+          "cols": 38,
+          "rows": 28
+        }
+      }
+    },
+    {
+      "id": "onyx-boox-page-leaf",
+      "name": "Onyx Boox Page / Leaf 2 / Go Color 7",
+      "brand": "Onyx Boox",
+      "category": "E-Ink",
+      "screenSizeInches": 7.0,
+      "nativeResolution": {
+        "width": 1264,
+        "height": 1680
+      },
+      "aspectRatio": "4:3",
+      "ppi": 300,
+      "androidDensityDpi": 320,
+      "panelType": "E Ink Carta 1200 / Kaleido 3",
+      "brightnessNits": 0,
+      "batteryMah": 2300,
+      "sources": [
+        "boox.com"
+      ],
+      "notes": "7-inch 4:3 E-Ink tablet with physical page-turn buttons that can be bound to XCTrack actions.",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 632.0,
+          "height": 840.0
+        },
+        "landscape": {
+          "width": 840.0,
+          "height": 632.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 33,
+          "rows": 44
+        },
+        "landscape": {
+          "cols": 44,
+          "rows": 33
+        }
+      }
+    },
+    {
+      "id": "inkbook-focus-7.8",
+      "name": "inkBOOK Focus / Focus Plus / Focus Color (7.8\")",
+      "brand": "inkBOOK",
+      "category": "E-Ink",
+      "screenSizeInches": 7.8,
+      "nativeResolution": {
+        "width": 1404,
+        "height": 1872
+      },
+      "aspectRatio": "4:3",
+      "ppi": 300,
+      "androidDensityDpi": 320,
+      "panelType": "E Ink Carta 1300 / Kaleido",
+      "brightnessNits": 0,
+      "batteryMah": 2900,
+      "sources": [
+        "inkbook.eu"
+      ],
+      "notes": "7.8-inch 4:3 E-Ink reader (also shared with Onyx Boox Nova Air / Tab Mini C at 1404\u00d71872).",
+      "cellSizePx": 38.25,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 702.0,
+          "height": 936.0
+        },
+        "landscape": {
+          "width": 936.0,
+          "height": 702.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 37,
+          "rows": 49
+        },
+        "landscape": {
+          "cols": 49,
+          "rows": 37
+        }
+      }
+    }
+  ],
+  "hudDevices": [
+    {
+      "id": "activelook-hud",
+      "name": "ActiveLook HUD Glasses (ENGO 1 / ENGO 2 / Julbo EVAD-1)",
+      "brand": "ActiveLook",
+      "category": "HUD Glasses",
+      "screenSizeInches": 0.38,
+      "nativeResolution": {
+        "width": 304,
+        "height": 256
+      },
+      "drawableResolution": {
+        "width": 252,
+        "height": 204
+      },
+      "aspectRatio": "5:4",
+      "panelType": "Monochrome 4-bit Green MicroOLED",
+      "brightnessNits": 3000,
+      "recommendedGrid": {
+        "landscape": {
+          "cols": 12,
+          "rows": 12
+        }
+      },
+      "sources": [
+        "xctrack.org/ActiveLook.html",
+        "XCTrack APK res/raw/active_look_default_layout.json"
+      ],
+      "notes": "Uses integer grid coordinates x=0..12, y=0..12 (21\u00d717 px per cell inside 252\u00d7204 active area) in active_look_default_layout.json."
+    },
+    {
+      "id": "everysight-maverick-hud",
+      "name": "Everysight Maverick HUD Glasses",
+      "brand": "Everysight",
+      "category": "HUD Glasses",
+      "screenSizeInches": 0.5,
+      "nativeResolution": {
+        "width": 720,
+        "height": 400
+      },
+      "aspectRatio": "16:9",
+      "panelType": "Monochrome Green OLED HUD",
+      "brightnessNits": 3000,
+      "recommendedGrid": {
+        "landscape": {
+          "cols": 25,
+          "rows": 12
+        }
+      },
+      "sources": [
+        "XCTrack APK res/raw/maverick_default_layout.json",
+        "MaverickDesignView.java"
+      ],
+      "notes": "Uses integer grid coordinates x=0..25, y=0..12 in maverick_default_layout.json."
+    }
+  ]
+}
