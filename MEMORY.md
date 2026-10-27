@@ -364,4 +364,15 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **Layout-Agnostic Keyboard Shortcuts (`e.code === 'KeyZ'` / `'KeyY'`)**:
   - Handlers in `App.tsx` and `ScreenCanvas.tsx` now check both `e.key` and physical `e.code` (`KeyZ`, `KeyY`, `KeyD`), ensuring that macOS Cmd-Z / Cmd-Shift-Z and Windows/Linux Ctrl-Z / Ctrl-Y work properly across all keyboard layouts (including Russian, Cyrillic, and international QWERTZ/AZERTY layouts).
 
+### 10.8 High-Fidelity Realistic Map Section Engine (`RealisticMapSection.tsx` - v0.10.0)
+- **Problem**: Earlier map representations used abstract wavy mock lines that did not represent an actual section of a map, making it difficult for pilots to evaluate how vector themes and hillshading profiles affect real-world paragliding terrain.
+- **Solution (`RealisticMapSection.tsx`)**: Built a reusable, resolution-independent SVG map engine (`viewBox="0 0 1000 1000"`) modeling an authentic alpine paragliding sector (Lake Annecy / Doussard / Col de la Forclaz / Tournette massif):
+  - **Topography & Elevation**: High massif gradient, west ridge gradient, subtle contour isolines (500m, 1000m, 1500m, 2000m), and directional 3D slope hillshading (illuminated NW slopes, deep SE shadow gullies).
+  - **Hydrology**: Mountain lake with natural bays, islands, and river network feeding into the basin.
+  - **OSM Landuse & Vegetation**: Organic alpine forest polygons (colored via `theme.preview.forestFill` in `ClearpilotForest*` themes) and urban village settlement footprints (`DOUSSARD`, `Talloires`, `Montmin`).
+  - **OSM Vector Road Network**: Cased primary highway/corridor, secondary valley routes, town grid lanes, railway with cross-ties, and the iconic alpine pass road with **6 hairpin switchbacks** climbing to takeoff.
+  - **Flight & Aeronautical Overlays**: Takeoff site (`⚑ Takeoff 1150m`), landing field (`⚑ LZ Doussard`), summit spot heights (`▲ La Tournette 2351m`), controlled airspace sector (`TMA CHAMBERY 1 / FL115`), thermal trigger circles with climb rates, competition turnpoint cylinder (`TP1 (R:1km)`), and pilot glider with tracklog snail trail.
+  - **Unified Rendering**: Shared between `WidgetPreview.tsx` (canvas widgets) and `MapStyleGalleryModal.tsx` (gallery thumbnails).
+
+
 

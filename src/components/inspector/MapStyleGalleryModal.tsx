@@ -9,6 +9,7 @@ import {
   getTerrainStyle,
   MapAppearancePreset,
 } from '../../data/map-styles';
+import { RealisticMapSection } from '../canvas/RealisticMapSection';
 
 interface MapStyleGalleryModalProps {
   isOpen: boolean;
@@ -329,66 +330,18 @@ interface MapStyleVisualPreviewProps {
 }
 
 export const MapStyleVisualPreview: React.FC<MapStyleVisualPreviewProps> = ({ theme, terrain }) => {
-  const isDark = theme.preview.isDark;
-  const hasRoads = theme.hasRoads;
-
   return (
-    <div
-      className="w-full h-full relative overflow-hidden select-none"
-      style={{
-        backgroundColor: theme.preview.bg,
-        background: terrain.hasElevationGradient ? terrain.preview.reliefGradient : theme.preview.bg,
-      }}
-    >
-      {/* 3D Hillshading shadows overlay */}
-      {terrain.hasHillshading && (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <path
-            d="M 0 45 Q 30 20 60 50 T 100 35 L 100 100 L 0 100 Z"
-            fill="black"
-            fillOpacity={terrain.preview.shadowOpacity}
-          />
-          <path
-            d="M 20 70 Q 55 40 80 75 T 100 65 L 100 100 L 20 100 Z"
-            fill="black"
-            fillOpacity={terrain.preview.shadowOpacity * 0.75}
-          />
-        </svg>
-      )}
-
-      {/* Forest Polygons (ClearpilotForest) */}
-      {theme.preview.forestFill && (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <polygon points="10,25 35,15 45,35 25,45" fill={theme.preview.forestFill} stroke="rgba(34, 197, 94, 0.5)" strokeWidth="0.5" />
-          <polygon points="60,60 90,50 85,85 55,75" fill={theme.preview.forestFill} stroke="rgba(34, 197, 94, 0.5)" strokeWidth="0.5" />
-        </svg>
-      )}
-
-      {/* Waterways */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-80" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <path d="M 0 85 Q 40 70 65 90 T 100 80" fill="none" stroke={theme.preview.waterColor} strokeWidth="3" />
-      </svg>
-
-      {/* Vector Roads (OpenStreetMap) */}
-      {hasRoads && (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-          {/* Secondary Roads */}
-          <path d="M 15 0 Q 30 50 85 100" fill="none" stroke={theme.preview.roadSecondary} strokeWidth="1.2" />
-          <path d="M 0 30 Q 50 40 100 20" fill="none" stroke={theme.preview.roadSecondary} strokeWidth="1" />
-          {/* Primary Highway / Motorway */}
-          <path d="M 0 55 Q 50 65 100 45" fill="none" stroke={theme.preview.roadPrimary} strokeWidth={theme.preview.roadWidth} />
-        </svg>
-      )}
-
-      {/* Simulated Town / Peak Label */}
-      <div className="absolute top-2 left-2 text-[8px] font-bold font-mono tracking-tight" style={{ color: theme.preview.labelColor }}>
-        Mt. Salève 1379m
-      </div>
-
-      {/* Simulated Controlled Airspace line */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <line x1="10" y1="95" x2="90" y2="15" stroke="rgba(239, 68, 68, 0.7)" strokeWidth="1.5" strokeDasharray="3,2" />
-      </svg>
-    </div>
+    <RealisticMapSection
+      theme={theme}
+      terrain={terrain}
+      hasRoads={theme.hasRoads}
+      hasTerrain={terrain.id !== 'None'}
+      hasAirspaces={true}
+      hasScale={false}
+      hasCompass={false}
+      hasWind={false}
+      showFlightData={false}
+      isThumbnail={true}
+    />
   );
 };
