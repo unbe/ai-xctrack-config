@@ -307,6 +307,52 @@ export const editorStore = {
     emitChange();
   },
 
+  deleteWidget(index: number) {
+    const page = editorStore.getCurrentPage();
+    if (!page || !page.widgets[index]) return;
+
+    pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
+    targetPage.widgets.splice(index, 1);
+
+    currentState = {
+      ...currentState,
+      config: newConfig,
+      selectedWidgetIndices: [],
+    };
+    emitChange();
+  },
+
+  duplicateWidget(index: number) {
+    const page = editorStore.getCurrentPage();
+    if (!page || !page.widgets[index]) return;
+
+    pushUndo();
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
+    const original = targetPage.widgets[index];
+
+    const grid = editorStore.getCurrentGrid();
+    const shiftX = Math.round(10000 / grid.cols);
+    const shiftY = Math.round(10000 / grid.rows);
+
+    const dup = JSON.parse(JSON.stringify(original)) as XcfgWidget;
+    dup.X1 = Math.min(10000 - (dup.X2 - dup.X1), dup.X1 + shiftX);
+    dup.Y1 = Math.min(10000 - (dup.Y2 - dup.Y1), dup.Y1 + shiftY);
+    dup.X2 = Math.min(10000, dup.X2 + shiftX);
+    dup.Y2 = Math.min(10000, dup.Y2 + shiftY);
+
+    targetPage.widgets.push(dup);
+
+    currentState = {
+      ...currentState,
+      config: newConfig,
+      selectedWidgetIndices: [targetPage.widgets.length - 1],
+    };
+    emitChange();
+  },
+
   reorderWidget(fromIndex: number, toIndex: number) {
     const page = editorStore.getCurrentPage();
     if (!page) return;

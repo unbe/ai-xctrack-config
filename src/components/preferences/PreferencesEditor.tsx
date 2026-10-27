@@ -74,6 +74,33 @@ export const PreferencesEditor: React.FC = () => {
   const prefs = store.config.preferences || {};
   const validation = validateXcfg(store.config);
 
+  const speedUnit = (prefs['Unit.Speed'] as string) || 'km/h';
+  const getSpeedFactor = (unit: string) => {
+    switch (unit) {
+      case 'mph':
+        return 2.236936;
+      case 'kt':
+      case 'knots':
+        return 1.943844;
+      case 'm/s':
+        return 1.0;
+      case 'km/h':
+      default:
+        return 3.6;
+    }
+  };
+
+  const rawTakeoffSpeed = prefs['TakeoffSpeed'] !== undefined ? prefs['TakeoffSpeed'] : 2.777778;
+  const speedFactor = getSpeedFactor(speedUnit);
+  // TakeoffSpeed is stored in m/s (2.777778 m/s = 10 km/h)
+  const takeoffSpeedDisplay = Math.round((Number(rawTakeoffSpeed) * speedFactor) * 10) / 10;
+
+  const handleTakeoffSpeedChange = (displayVal: number) => {
+    const factor = getSpeedFactor(speedUnit);
+    const siVal = Math.round((displayVal / factor) * 1000000) / 1000000;
+    editorStore.updatePreference('TakeoffSpeed', siVal);
+  };
+
   const getPref = (key: string, fallback: any = '') => {
     return prefs[key] !== undefined ? prefs[key] : fallback;
   };
@@ -433,15 +460,22 @@ export const PreferencesEditor: React.FC = () => {
                 </div>
 
                 <div className="space-y-1 bg-black/20 p-3 rounded-lg border border-white/5">
-                  <label className="text-xs text-gray-300 font-medium">Takeoff Speed (km/h)</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-gray-300 font-medium">Takeoff Speed ({speedUnit})</label>
+                    <span className="text-[10px] text-sky-400 font-mono">
+                      {Number(rawTakeoffSpeed).toFixed(2)} m/s SI
+                    </span>
+                  </div>
                   <input
                     type="number"
-                    step="1"
-                    value={getPref('TakeoffSpeed', 12)}
-                    onChange={(e) => setPref('TakeoffSpeed', parseInt(e.target.value) || 12)}
+                    step="0.5"
+                    value={takeoffSpeedDisplay}
+                    onChange={(e) => handleTakeoffSpeedChange(parseFloat(e.target.value) || 0)}
                     className="w-full bg-[#1c2230] border border-xctrack-border rounded px-2.5 py-1.5 text-white font-mono"
                   />
-                  <span className="text-[10px] text-gray-500">Threshold for automatic flight start</span>
+                  <span className="text-[10px] text-gray-500">
+                    Threshold for automatic flight start (displays as {takeoffSpeedDisplay} {speedUnit})
+                  </span>
                 </div>
               </div>
             </div>

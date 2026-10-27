@@ -4,15 +4,14 @@ import { DeviceViewportBar } from './components/toolbar/DeviceViewportBar';
 import { ScreenCanvas } from './components/canvas/ScreenCanvas';
 import { PageManagerPanel } from './components/sidebar/PageManagerPanel';
 import { WidgetPalettePanel } from './components/sidebar/WidgetPalettePanel';
-import { LayerOrderPanel } from './components/sidebar/LayerOrderPanel';
 import { WidgetPropertyInspector } from './components/inspector/WidgetPropertyInspector';
 import { PreferencesEditor } from './components/preferences/PreferencesEditor';
 import { JsonDiffViewer } from './components/json/JsonDiffViewer';
 import { useEditorStore, editorStore } from './store/useEditorStore';
 import { DEMO_MODERN_BACKUP } from './data/sample-configs';
-import { FileText, PlusCircle, Layers, Sliders } from 'lucide-react';
+import { FileText, PlusCircle } from 'lucide-react';
 
-type SidebarTab = 'pages' | 'widgets' | 'layers';
+type SidebarTab = 'pages' | 'widgets';
 
 export const App: React.FC = () => {
   const store = useEditorStore();
@@ -105,25 +104,6 @@ export const App: React.FC = () => {
                 >
                   <PlusCircle className="w-4 h-4" />
                 </button>
-
-                <button
-                  onClick={() => {
-                    if (activeSidebarTab === 'layers' && !sidebarCollapsed) {
-                      setSidebarCollapsed(true);
-                    } else {
-                      setActiveSidebarTab('layers');
-                      setSidebarCollapsed(false);
-                    }
-                  }}
-                  title="Widgets on Page & Layers"
-                  className={`p-2.5 rounded-xl transition-all relative ${
-                    activeSidebarTab === 'layers' && !sidebarCollapsed
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Layers className="w-4 h-4" />
-                </button>
               </div>
 
               {/* Panel Content (collapsible) */}
@@ -131,7 +111,6 @@ export const App: React.FC = () => {
                 <div className="flex h-full">
                   {activeSidebarTab === 'pages' && <PageManagerPanel />}
                   {activeSidebarTab === 'widgets' && <WidgetPalettePanel />}
-                  {activeSidebarTab === 'layers' && <LayerOrderPanel />}
                 </div>
               )}
             </div>

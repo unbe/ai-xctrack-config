@@ -100,4 +100,41 @@ describe('Preferences & Store Integration', () => {
     movedWidget = editorStore.getCurrentPage()!.widgets[0];
     expect(movedWidget.X1).not.toBe(originalWidget.X1);
   });
+
+  it('correctly maps TakeoffSpeed between SI m/s and in-app km/h', () => {
+    // 2.777778 m/s is 10 km/h (10 / 3.6 = 2.777778)
+    editorStore.updatePreference('TakeoffSpeed', 2.777778);
+    let state = editorStore.getState();
+    const stored = Number(state.config.preferences?.['TakeoffSpeed']);
+    expect(stored).toBe(2.777778);
+
+    const kmhValue = Math.round(stored * 3.6 * 10) / 10;
+    expect(kmhValue).toBe(10);
+
+    // When pilot inputs 12 km/h, stores 3.333333 m/s
+    const targetKmh = 12;
+    const siValue = Math.round((targetKmh / 3.6) * 1000000) / 1000000;
+    editorStore.updatePreference('TakeoffSpeed', siValue);
+
+    state = editorStore.getState();
+    expect(state.config.preferences?.['TakeoffSpeed']).toBe(3.333333);
+  });
+
+  it('supports unified widget layer reordering, duplication, and deletion', () => {
+    const initialCount = editorStore.getCurrentPage()!.widgets.length;
+
+    // Duplicate widget at index 0
+    editorStore.duplicateWidget(0);
+    expect(editorStore.getCurrentPage()!.widgets.length).toBe(initialCount + 1);
+
+    // Reorder: move newly duplicated widget from top to bottom
+    const newIdx = editorStore.getCurrentPage()!.widgets.length - 1;
+    const widgetClass = editorStore.getCurrentPage()!.widgets[newIdx].CLASS;
+    editorStore.reorderWidget(newIdx, 0);
+    expect(editorStore.getCurrentPage()!.widgets[0].CLASS).toBe(widgetClass);
+
+    // Delete widget at index 0
+    editorStore.deleteWidget(0);
+    expect(editorStore.getCurrentPage()!.widgets.length).toBe(initialCount);
+  });
 });

@@ -607,6 +607,25 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Dedicated `Resnap Grid` button in the toolbar header for manual single-click resnapping.
   - Full Undo/Redo history support.
 
+---
+
+## 16. Preference SI Units Conversion & Unified Widgets/Layers Architecture (v0.19.0)
+
+### 16.1 SI Unit Storage vs In-App Display for Preferences (`TakeoffSpeed`)
+- **Domain Nuance**: Unlike `Glider.TrimSpeed` (which XCTrack stores in km/h, e.g. `36.0`), `TakeoffSpeed` is internally stored in `.xcfg` preferences as SI meters per second: `2.777778` m/s.
+- **Conversion Formulation**:
+  - In the Android app, `TakeoffSpeed` is formatted using the user's selected `Unit.Speed` (`km/h`, `mph`, `kt`, `m/s`).
+  - $2.777778 \text{ m/s} \times 3.6 = 10.0 \text{ km/h}$.
+  - The editor now converts SI `m/s` to the user's unit for display (showing `10 km/h` alongside `2.78 m/s SI`), and on edit converts user inputs back to 6-decimal-place SI floats (`val / 3.6`) for `.xcfg` serialization.
+
+### 16.2 Unified Widgets & Layers Right Sidebar
+- **Problem**: Previously, the left sidebar rail included a "Widgets and Layers" button (`LayerOrderPanel.tsx`) which duplicated the "Page Widgets" list in `WidgetPropertyInspector.tsx` on the right.
+- **Solution**:
+  - Removed the duplicate `Layers` button from the left navigation rail. The left rail now strictly houses **Screen Pages** (`FileText`) and **Widget Palette** (`PlusCircle`).
+  - Unified all widget selection, layer Z-ordering, reordering (`Bring to Front`, `Bring Forward`, `Send Backward`, `Send to Back`), duplication, deletion, and property inspection into [`WidgetPropertyInspector.tsx`](file:///Users/artem/src/ai-xctrack-config/src/components/inspector/WidgetPropertyInspector.tsx) on the right.
+  - Added a Z-Order vs Page Index view mode toggle, a quick `← Widgets` return button when inspecting, and header layer reordering buttons for the selected widget.
+
+
 
 
 

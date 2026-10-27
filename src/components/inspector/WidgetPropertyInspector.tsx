@@ -19,6 +19,11 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
+  ChevronsUp,
+  ChevronsDown,
+  ChevronUp,
+  ArrowLeft,
+  ArrowUpDown,
   Plus,
   Search,
   Map as MapIcon,
@@ -53,22 +58,25 @@ export const WidgetPropertyInspector: React.FC = () => {
   const [newPropVal, setNewPropVal] = useState('');
   const [widgetSearchQuery, setWidgetSearchQuery] = useState('');
   const [mapGalleryOpen, setMapGalleryOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'z-order' | 'page-order'>('z-order');
 
   const page = editorStore.getCurrentPage();
   const widgets = page?.widgets || [];
   const selectedIdx = store.selectedWidgetIndices[0];
   const widget = page && selectedIdx !== undefined ? page.widgets[selectedIdx] : undefined;
 
-  // If no widget is selected: display the full Page Widgets List
-  // This fulfills: "Add a way to see the widget list and select them from the list, not by clicking on the visual"
+  // If no widget is selected: display the full Page Widgets & Layers List
   if (!widget) {
-    const filteredWidgets = widgets.filter((w, i) => {
+    const rawList = widgets.map((w, originalIndex) => ({ w, originalIndex }));
+    const orderedList = viewMode === 'z-order' ? [...rawList].reverse() : rawList;
+
+    const filteredWidgets = orderedList.filter(({ w, originalIndex }) => {
       if (!widgetSearchQuery) return true;
       const def = getWidgetDefinition(w.CLASS);
       const query = widgetSearchQuery.toLowerCase();
       const title = (w.titletext || def?.title || w.CLASS).toLowerCase();
       const shortName = (def?.shortName || '').toLowerCase();
-      return title.includes(query) || shortName.includes(query) || `#${i + 1}`.includes(query);
+      return title.includes(query) || shortName.includes(query) || `#${originalIndex + 1}`.includes(query);
     });
 
     const currentGrid = editorStore.getCurrentGrid();
@@ -80,11 +88,21 @@ export const WidgetPropertyInspector: React.FC = () => {
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-1.5 font-semibold text-white tracking-wide text-xs">
               <Layers className="w-3.5 h-3.5 text-sky-400" />
-              <span>Page Widgets</span>
+              <span>Widgets & Layers</span>
             </div>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/60">
-              {widgets.length} items
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setViewMode(viewMode === 'z-order' ? 'page-order' : 'z-order')}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-gray-300 hover:text-white border border-slate-700 transition-colors"
+                title={viewMode === 'z-order' ? 'Switch to Page Order (#1..N)' : 'Switch to Layer Z-Order (Top to Bottom)'}
+              >
+                <ArrowUpDown className="w-2.5 h-2.5 text-sky-400" />
+                <span>{viewMode === 'z-order' ? 'Z-Order' : 'Page #'}</span>
+              </button>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/60">
+                {widgets.length} items
+              </span>
+            </div>
           </div>
 
           {/* Search Box */}
@@ -92,7 +110,7 @@ export const WidgetPropertyInspector: React.FC = () => {
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Search & select widget..."
+              placeholder="Search widgets & layers..."
               value={widgetSearchQuery}
               onChange={(e) => setWidgetSearchQuery(e.target.value)}
               className="w-full bg-xctrack-dark border border-xctrack-border rounded-lg pl-8 pr-2.5 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-500"
@@ -100,7 +118,7 @@ export const WidgetPropertyInspector: React.FC = () => {
           </div>
         </div>
 
-        {/* Scrollable Widget Selection List */}
+        {/* Scrollable Widget & Layer List */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
           {widgets.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -111,24 +129,27 @@ export const WidgetPropertyInspector: React.FC = () => {
               No widgets match "{widgetSearchQuery}".
             </div>
           ) : (
-            filteredWidgets.map((w) => {
-              const originalIndex = widgets.indexOf(w);
+            filteredWidgets.map(({ w, originalIndex }) => {
               const def = getWidgetDefinition(w.CLASS);
               const title = w.titletext || def?.title || w.CLASS.split('.').pop() || '';
               const gx1 = normToGrid(w.X1, currentGrid.cols);
               const gy1 = normToGrid(w.Y1, currentGrid.rows);
               const gx2 = normToGrid(w.X2, currentGrid.cols);
               const gy2 = normToGrid(w.Y2, currentGrid.rows);
+              const isTop = originalIndex === widgets.length - 1;
+              const isBottom = originalIndex === 0;
 
               return (
-                <button
-                  type="button"
+                <div
                   key={originalIndex}
                   onClick={() => editorStore.selectWidget(originalIndex, false)}
-                  className="w-full text-left p-2.5 rounded-lg border border-xctrack-border bg-slate-900/60 hover:bg-slate-800/90 hover:border-sky-500/60 cursor-pointer transition-all flex items-center justify-between group shadow-sm"
+                  className="w-full text-left p-2 rounded-lg border border-xctrack-border bg-slate-900/60 hover:bg-slate-800/90 hover:border-sky-500/60 cursor-pointer transition-all flex items-center justify-between group shadow-sm"
                 >
-                  <div className="min-w-0 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-sky-950 text-sky-400 font-mono text-[10px] font-bold flex items-center justify-center border border-sky-800/60 flex-shrink-0">
+                  <div className="min-w-0 flex items-center gap-2 flex-1 mr-1">
+                    <span
+                      className="w-5 h-5 rounded bg-sky-950 text-sky-400 font-mono text-[10px] font-bold flex items-center justify-center border border-sky-800/60 flex-shrink-0"
+                      title={`Page Index #${originalIndex + 1} • Layer ${originalIndex + 1} of ${widgets.length} (${isTop ? 'Top Layer' : isBottom ? 'Bottom Layer' : 'Mid Layer'})`}
+                    >
                       #{originalIndex + 1}
                     </span>
                     <div className="truncate">
@@ -136,23 +157,93 @@ export const WidgetPropertyInspector: React.FC = () => {
                         {title}
                       </div>
                       <div className="text-[10px] text-gray-500 font-mono truncate">
-                        {def?.shortName || w.CLASS.split('.').pop()} • {gx2 - gx1}×{gy2 - gy1} cells at ({gx1},{gy1})
+                        {def?.shortName || w.CLASS.split('.').pop()} • {gx2 - gx1}×{gy2 - gy1} at ({gx1},{gy1})
                       </div>
                     </div>
                   </div>
 
-                  <span className="text-[9px] font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-sky-900/40 text-sky-300 px-1.5 py-0.5 rounded border border-sky-700/50 flex-shrink-0">
-                    Select ➔
-                  </span>
-                </button>
+                  {/* Unified Layer Reordering & Quick Actions */}
+                  <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.reorderWidget(originalIndex, widgets.length - 1);
+                      }}
+                      disabled={isTop}
+                      className="p-1 hover:text-white text-gray-400 disabled:opacity-20 hover:bg-white/10 rounded transition-colors"
+                      title="Bring to Front (Top Layer)"
+                    >
+                      <ChevronsUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.reorderWidget(originalIndex, originalIndex + 1);
+                      }}
+                      disabled={isTop}
+                      className="p-1 hover:text-white text-gray-400 disabled:opacity-20 hover:bg-white/10 rounded transition-colors"
+                      title="Bring Forward (Up 1 Layer)"
+                    >
+                      <ChevronUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.reorderWidget(originalIndex, originalIndex - 1);
+                      }}
+                      disabled={isBottom}
+                      className="p-1 hover:text-white text-gray-400 disabled:opacity-20 hover:bg-white/10 rounded transition-colors"
+                      title="Send Backward (Down 1 Layer)"
+                    >
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.reorderWidget(originalIndex, 0);
+                      }}
+                      disabled={isBottom}
+                      className="p-1 hover:text-white text-gray-400 disabled:opacity-20 hover:bg-white/10 rounded transition-colors"
+                      title="Send to Back (Bottom / Map Layer)"
+                    >
+                      <ChevronsDown className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.duplicateWidget(originalIndex);
+                      }}
+                      className="p-1 hover:text-white text-gray-400 hover:bg-white/10 rounded transition-colors"
+                      title="Duplicate Widget"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editorStore.deleteWidget(originalIndex);
+                      }}
+                      className="p-1 hover:text-red-400 text-gray-400 hover:bg-red-500/20 rounded transition-colors"
+                      title="Delete Widget"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
               );
             })
           )}
         </div>
 
         {/* Footer info */}
-        <div className="p-2.5 border-t border-xctrack-border bg-slate-950/40 text-center text-[11px] text-gray-500">
-          Click any widget above to inspect and edit its properties.
+        <div className="p-2.5 border-t border-xctrack-border bg-slate-950/40 text-center text-[10px] text-gray-500">
+          Z-order: higher layer widgets render over lower ones (e.g. gauges over maps).
         </div>
       </div>
     );
@@ -279,8 +370,17 @@ export const WidgetPropertyInspector: React.FC = () => {
 
   return (
     <div className="w-80 bg-xctrack-card border-l border-xctrack-border flex flex-col h-full overflow-hidden select-none text-xs">
-      {/* Top Quick Widget Switcher Dropdown */}
+      {/* Top Quick Widget Switcher & Back to Layers Dropdown */}
       <div className="flex items-center gap-1.5 p-2 bg-slate-950/80 border-b border-xctrack-border text-xs">
+        <button
+          onClick={() => editorStore.clearSelection()}
+          className="flex items-center gap-1 px-1.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 font-medium border border-slate-700 transition-colors text-[11px]"
+          title="Back to all Widgets & Layers list"
+        >
+          <ArrowLeft className="w-3 h-3" />
+          <span>Widgets</span>
+        </button>
+
         <span className="text-[10px] font-mono text-sky-400 font-semibold px-1 py-0.5 rounded bg-sky-950 border border-sky-800">
           #{selectedIdx + 1}
         </span>
@@ -334,8 +434,8 @@ export const WidgetPropertyInspector: React.FC = () => {
         </button>
       </div>
 
-      {/* Widget Header Actions */}
-      <div className="p-3 border-b border-xctrack-border bg-black/20 flex items-center justify-between">
+      {/* Widget Header Actions with Layer Controls */}
+      <div className="p-2.5 border-b border-xctrack-border bg-black/20 flex items-center justify-between">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="font-semibold text-white truncate text-xs">
             {def ? def.title : widget.CLASS.split('.').pop()}
@@ -345,8 +445,46 @@ export const WidgetPropertyInspector: React.FC = () => {
               PRO
             </span>
           )}
+          <span className="text-[10px] text-gray-500 font-mono">
+            (Layer {selectedIdx + 1}/{widgets.length})
+          </span>
         </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
+
+        {/* Unified Layer Reordering & Actions for Selected Widget */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          <button
+            onClick={() => editorStore.reorderWidget(selectedIdx, widgets.length - 1)}
+            disabled={selectedIdx === widgets.length - 1}
+            title="Bring to Front (Top Layer)"
+            className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-colors"
+          >
+            <ChevronsUp className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => editorStore.reorderWidget(selectedIdx, selectedIdx + 1)}
+            disabled={selectedIdx === widgets.length - 1}
+            title="Bring Forward (Up 1 Layer)"
+            className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-colors"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => editorStore.reorderWidget(selectedIdx, selectedIdx - 1)}
+            disabled={selectedIdx === 0}
+            title="Send Backward (Down 1 Layer)"
+            className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-colors"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => editorStore.reorderWidget(selectedIdx, 0)}
+            disabled={selectedIdx === 0}
+            title="Send to Back (Bottom / Map Layer)"
+            className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-colors"
+          >
+            <ChevronsDown className="w-3.5 h-3.5" />
+          </button>
+          <div className="w-[1px] h-3.5 bg-gray-700 mx-0.5" />
           <button
             onClick={() => editorStore.duplicateSelectedWidgets()}
             title="Duplicate Widget"
