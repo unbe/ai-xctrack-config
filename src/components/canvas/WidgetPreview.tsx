@@ -146,6 +146,8 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     const hasRainRadar = Boolean(widget.mapWidget_showRainRadar);
     const hasKK7 = Boolean(widget.mapWidget_showKK7);
     const kk7Opacity = (typeof widget.mapWidget_KK7opacity === 'number' ? widget.mapWidget_KK7opacity : 40) / 100;
+    const hasKK7Timed = Boolean(widget.mapWidget_KK7timed);
+    const kk7TimedOpacity = (typeof widget.mapWidget_KK7timedOpacity === 'number' ? widget.mapWidget_KK7timedOpacity : 80) / 100;
     const hasAirspaces = widget.mapWidget_showAirspaces !== false;
     const hasScale = widget.mapWidget_drawScale !== false;
     const hasCompass = widget.showCompass !== false;
@@ -174,6 +176,8 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
         hasRainRadar={hasRainRadar}
         hasKK7={hasKK7}
         kk7Opacity={kk7Opacity}
+        hasKK7Timed={hasKK7Timed}
+        kk7TimedOpacity={kk7TimedOpacity}
         hasAirspaces={hasAirspaces}
         hasScale={hasScale}
         hasCompass={hasCompass}

@@ -424,8 +424,9 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Layers: Cased motorways, primary highways, secondary roads, minor streets, footpaths/tracks, forests, residential areas, water bodies, and waterways.
   - Typography & Glyphs: Free glyph PBFs loaded from `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` for cities, towns, and mountain peaks.
 - **Overlays & Flight HUD**:
-  - Live KK7 Thermal Hotspots raster layer (`https://thermal.kk7.ch/tiles/thermals_all_all/{z}/{x}/{y}.png?src=xctrack.org`) with configurable opacity.
-  - True flight coordinate centering (defaults to Interlaken / Jungfrau Alps `46.6862°N, 7.8591°E` from user `.xcfg`), paraglider delta icon with heading line, vario/altitude-colored snail tracklog, scale bar, wind arrow, and compass rose.
+  - Live KK7 Thermal Hotspots raster layer (`https://thermal.kk7.ch/tiles/thermals_all_all/{z}/{x}/{y}.png?src=xctrack.org`) with configurable opacity (`mapWidget_showKK7`, `mapWidget_KK7opacity`).
+  - Time-Adjusted KK7 Thermals layer (`https://thermal.kk7.ch/tiles/thermals_all_07/{z}/{x}/{y}.png?src=xctrack.org`) with configurable opacity (`mapWidget_KK7timed`, `mapWidget_KK7timedOpacity`). Note: kk7 time slots are defined by hours elapsed since sunrise: `all_04` (morning, 0-6h), `all_07` (midday, 6-10h), and `all_10` (evening, 10h+).
+  - True flight coordinate centering (defaults to Interlaken / Jungfrau Alps `46.6862°N, 7.8591°E` from user `.xcfg`), paraglider delta icon with heading line, vario/altitude-colored snail tracklog, wind arrow, and compass rose. Cleaned up artificial scale bars and raw coordinate overlays to strictly match the authentic Android app.
 
 ### 10.11 Rain Radar Simulation & Warm Alpine XContest Shading (v0.12.0)
 - **Problem 1 ("Zoom Level Not Supported")**:

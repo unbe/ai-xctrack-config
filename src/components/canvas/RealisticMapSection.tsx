@@ -12,6 +12,8 @@ export interface RealisticMapSectionProps {
   hasRainRadar?: boolean;
   hasKK7?: boolean;
   kk7Opacity?: number;
+  hasKK7Timed?: boolean;
+  kk7TimedOpacity?: number;
   hasAirspaces?: boolean;
   hasScale?: boolean;
   hasCompass?: boolean;
@@ -30,6 +32,8 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
   hasRainRadar = false,
   hasKK7 = false,
   kk7Opacity = 0.4,
+  hasKK7Timed = false,
+  kk7TimedOpacity = 0.8,
   hasAirspaces = true,
   hasScale = true,
   hasCompass = true,
@@ -605,8 +609,8 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
         {/* ========================================================
             LAYER 9: THERMAL HOTSPOTS & KK7 (When Active)
             ======================================================== */}
-        {hasKK7 && (
-          <g className="thermal-kk7" opacity={kk7Opacity * 1.5}>
+        {(hasKK7 || hasKK7Timed) && (
+          <g className="thermal-kk7" opacity={Math.max(hasKK7 ? kk7Opacity : 0, hasKK7Timed ? kk7TimedOpacity : 0) * 1.5}>
             {/* Strong thermal trigger over rocky spur */}
             <circle cx="560" cy="460" r="45" fill="none" stroke="rgba(239, 68, 68, 0.8)" strokeWidth="3.5" />
             <circle cx="560" cy="460" r="28" fill="rgba(239, 68, 68, 0.4)" />

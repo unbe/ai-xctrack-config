@@ -21,6 +21,8 @@ export interface RealXCTrackMapProps {
   hasRainRadar?: boolean;
   hasKK7?: boolean;
   kk7Opacity?: number;
+  hasKK7Timed?: boolean;
+  kk7TimedOpacity?: number;
   hasAirspaces?: boolean;
   hasScale?: boolean;
   hasCompass?: boolean;
@@ -39,6 +41,8 @@ function generateXCTrackMapStyle(
   hasTerrain: boolean,
   hasKK7?: boolean,
   kk7Opacity: number = 0.4,
+  hasKK7Timed?: boolean,
+  kk7TimedOpacity: number = 0.8,
   hasRainRadar?: boolean,
   center: [number, number] = [7.859122, 46.68618]
 ): StyleSpecification {
@@ -73,6 +77,23 @@ function generateXCTrackMapStyle(
       source: 'kk7-thermals',
       paint: {
         'raster-opacity': Math.max(0.1, Math.min(1.0, kk7Opacity)),
+      },
+    });
+  }
+
+  if (hasKK7Timed) {
+    sources['kk7-timed-thermals'] = {
+      type: 'raster',
+      tiles: ['https://thermal.kk7.ch/tiles/thermals_all_07/{z}/{x}/{y}.png?src=xctrack.org'],
+      tileSize: 256,
+      maxzoom: 13,
+    };
+    layers.push({
+      id: 'kk7-timed-thermals-layer',
+      type: 'raster',
+      source: 'kk7-timed-thermals',
+      paint: {
+        'raster-opacity': Math.max(0.1, Math.min(1.0, kk7TimedOpacity)),
       },
     });
   }
@@ -124,6 +145,8 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
   hasRainRadar = false,
   hasKK7 = false,
   kk7Opacity = 0.4,
+  hasKK7Timed = false,
+  kk7TimedOpacity = 0.8,
   hasAirspaces = true,
   hasScale = true,
   hasCompass = true,
@@ -149,6 +172,8 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
       hasTerrain,
       hasKK7,
       kk7Opacity,
+      hasKK7Timed,
+      kk7TimedOpacity,
       hasRainRadar,
       center
     );
@@ -205,7 +230,7 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
     }
   }, [isSelected, isThumbnail, mapLoaded]);
 
-  // Update style dynamically when theme, terrain, roads, kk7, or rainradar change
+  // Update style dynamically when theme, terrain, roads, kk7, kk7timed, or rainradar change
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const newStyle = generateXCTrackMapStyle(
@@ -215,11 +240,13 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
       hasTerrain,
       hasKK7,
       kk7Opacity,
+      hasKK7Timed,
+      kk7TimedOpacity,
       hasRainRadar,
       center
     );
     mapRef.current.setStyle(newStyle);
-  }, [theme.id, terrain.id, hasRoads, hasTerrain, hasKK7, kk7Opacity, hasRainRadar, center[0], center[1], mapLoaded]);
+  }, [theme.id, terrain.id, hasRoads, hasTerrain, hasKK7, kk7Opacity, hasKK7Timed, kk7TimedOpacity, hasRainRadar, center[0], center[1], mapLoaded]);
 
   // Update camera view when center, zoom, or bearing change
   useEffect(() => {

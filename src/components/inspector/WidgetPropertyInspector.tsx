@@ -729,6 +729,37 @@ export const WidgetPropertyInspector: React.FC = () => {
               )}
 
               <label className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-gray-300">Time-Adjusted KK7 Thermals</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1 py-0.2 rounded font-mono uppercase">Pro</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={Boolean(w.mapWidget_KK7timed ?? false)}
+                  onChange={(e) => updateProp('mapWidget_KK7timed', e.target.checked)}
+                  className="w-4 h-4 rounded bg-slate-800 border-gray-600 text-sky-500 focus:ring-0"
+                />
+              </label>
+
+              {w.mapWidget_KK7timed && (
+                <div className="space-y-1 pl-3 border-l-2 border-amber-500/40">
+                  <div className="flex justify-between text-[10px] text-gray-400">
+                    <span>Time-Adjusted Opacity</span>
+                    <span className="font-mono text-white">{w.mapWidget_KK7timedOpacity ?? 80}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="5"
+                    value={w.mapWidget_KK7timedOpacity ?? 80}
+                    onChange={(e) => updateProp('mapWidget_KK7timedOpacity', parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-700 rounded appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+              )}
+
+              <label className="flex items-center justify-between cursor-pointer">
                 <span className="text-gray-300">Active Airspaces</span>
                 <input
                   type="checkbox"

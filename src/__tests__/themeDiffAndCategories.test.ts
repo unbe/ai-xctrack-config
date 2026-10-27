@@ -174,3 +174,53 @@ line 5`;
     expect(hunks.length).toBe(2);
   });
 });
+
+describe('KK7 Timed Thermals Properties', () => {
+  it('updates mapWidget_KK7timed and mapWidget_KK7timedOpacity in widget state', () => {
+    const configWithMap = {
+      info: {
+        device: 'Google Pixel 8 Pro',
+        exportType: 'backup',
+        versionCode: 100072,
+        versionName: '1.0.7',
+        timeCreated: '2026-10-27',
+      },
+      layout: {
+        portrait: [
+          {
+            title: 'XC Map',
+            widgets: [
+              {
+                CLASS: 'org.xcontest.XCTrack.widget.WXCAssistant',
+                X1: 0,
+                Y1: 0,
+                X2: 20,
+                Y2: 20,
+                mapWidget_showKK7: false,
+                mapWidget_KK7opacity: 40,
+                mapWidget_KK7timed: false,
+                mapWidget_KK7timedOpacity: 80,
+              },
+            ],
+          },
+        ],
+        landscape: [],
+      },
+    } as unknown as XcfgFile;
+
+    editorStore.loadConfig(configWithMap, 'test_kk7.xcfg');
+    const initialWidget = editorStore.getState().config?.layout.portrait[0].widgets[0];
+    expect(initialWidget?.mapWidget_KK7timed).toBe(false);
+    expect(initialWidget?.mapWidget_KK7timedOpacity).toBe(80);
+
+    // Update to enabled and 30% opacity
+    editorStore.updateWidget(0, {
+      mapWidget_KK7timed: true,
+      mapWidget_KK7timedOpacity: 30,
+    });
+
+    const updatedWidget = editorStore.getState().config?.layout.portrait[0].widgets[0];
+    expect(updatedWidget?.mapWidget_KK7timed).toBe(true);
+    expect(updatedWidget?.mapWidget_KK7timedOpacity).toBe(30);
+  });
+});
