@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   GitCommit,
   Split,
@@ -15,18 +15,29 @@ import {
   Info,
   ShieldCheck,
   AlertCircle,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { serializeXcfg, generateExportFilename } from '../../utils/xcfgSerializer';
-import { computeLineDiff, computeSemanticDiff, DiffLine, SideBySideLine } from '../../utils/diffEngine';
+import { computeLineDiff, computeSemanticDiff, DiffLine, SideBySideLine, SemanticChangeItem } from '../../utils/diffEngine';
 
 type DiffViewMode = 'split' | 'unified' | 'summary' | 'raw';
+
+export interface DiffHunkBlock {
+  id: string;
+  index: number;
+  startIndex: number;
+  endIndex: number;
+  label?: string;
+}
 
 export const JsonDiffViewer: React.FC = () => {
   const store = useEditorStore();
   const [viewMode, setViewMode] = useState<DiffViewMode>('split');
   const [searchFilter, setSearchFilter] = useState('');
   const [copied, setCopied] = useState(false);
+  const [activeDiffIndex, setActiveDiffIndex] = useState<number>(0);
 
   // Serialized texts
   const originalJson = useMemo(() => serializeXcfg(store.originalConfig), [store.originalConfig]);
@@ -40,6 +51,144 @@ export const JsonDiffViewer: React.FC = () => {
   );
 
   const { stats, unified, sideBySide } = lineDiff;
+
+  // Compute diff blocks for Side-by-Side view (contiguous changed rows)
+  const sideBySideDiffBlocks = useMemo<DiffHunkBlock[]>(() => {
+    const blocks: DiffHunkBlock[] = [];
+    let inBlock = false;
+    let start = 0;
+
+    sideBySide.forEach((pair, idx) => {
+      const isDiff = pair.left?.type === 'removed' || pair.right?.type === 'added';
+      if (isDiff) {
+        if (!inBlock) {
+          inBlock = true;
+          start = idx;
+        }
+      } else {
+        if (inBlock) {
+          blocks.push({
+            id: `sbs-hunk-${blocks.length}`,
+            index: blocks.length,
+            startIndex: start,
+            endIndex: idx - 1,
+          });
+          inBlock = false;
+        }
+      }
+    });
+    if (inBlock) {
+      blocks.push({
+        id: `sbs-hunk-${blocks.length}`,
+        index: blocks.length,
+        startIndex: start,
+        endIndex: sideBySide.length - 1,
+      });
+    }
+    return blocks;
+  }, [sideBySide]);
+
+  // Compute diff blocks for Unified view (contiguous changed lines)
+  const unifiedDiffBlocks = useMemo<DiffHunkBlock[]>(() => {
+    const blocks: DiffHunkBlock[] = [];
+    let inBlock = false;
+    let start = 0;
+
+    unified.forEach((line, idx) => {
+      const isDiff = line.type === 'added' || line.type === 'removed';
+      if (isDiff) {
+        if (!inBlock) {
+          inBlock = true;
+          start = idx;
+        }
+      } else {
+        if (inBlock) {
+          blocks.push({
+            id: `unified-hunk-${blocks.length}`,
+            index: blocks.length,
+            startIndex: start,
+            endIndex: idx - 1,
+          });
+          inBlock = false;
+        }
+      }
+    });
+    if (inBlock) {
+      blocks.push({
+        id: `unified-hunk-${blocks.length}`,
+        index: blocks.length,
+        startIndex: start,
+        endIndex: unified.length - 1,
+      });
+    }
+    return blocks;
+  }, [unified]);
+
+  // Compute diff blocks for Summary view
+  const summaryDiffBlocks = useMemo<DiffHunkBlock[]>(() => {
+    return semanticDiff.map((item, idx) => ({
+      id: `summary-card-${idx}`,
+      index: idx,
+      startIndex: idx,
+      endIndex: idx,
+      label: item.description,
+    }));
+  }, [semanticDiff]);
+
+  // Active diff blocks depending on the active viewMode
+  const activeDiffBlocks = useMemo(() => {
+    if (viewMode === 'split') return sideBySideDiffBlocks;
+    if (viewMode === 'unified') return unifiedDiffBlocks;
+    if (viewMode === 'summary') return summaryDiffBlocks;
+    return [];
+  }, [viewMode, sideBySideDiffBlocks, unifiedDiffBlocks, summaryDiffBlocks]);
+
+  // Keep active index within valid bounds when view mode or diff blocks change
+  useEffect(() => {
+    if (activeDiffIndex >= activeDiffBlocks.length) {
+      setActiveDiffIndex(0);
+    }
+  }, [activeDiffBlocks.length, activeDiffIndex]);
+
+  const scrollToDiff = (index: number) => {
+    if (activeDiffBlocks.length === 0) return;
+    const target = activeDiffBlocks[index];
+    if (!target) return;
+    const el = document.getElementById(target.id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleNextDiff = () => {
+    if (activeDiffBlocks.length === 0) return;
+    const nextIdx = (activeDiffIndex + 1) % activeDiffBlocks.length;
+    setActiveDiffIndex(nextIdx);
+    scrollToDiff(nextIdx);
+  };
+
+  const handlePrevDiff = () => {
+    if (activeDiffBlocks.length === 0) return;
+    const prevIdx = (activeDiffIndex - 1 + activeDiffBlocks.length) % activeDiffBlocks.length;
+    setActiveDiffIndex(prevIdx);
+    scrollToDiff(prevIdx);
+  };
+
+  // Global keyboard shortcuts (Alt+Up / Alt+Down)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+      if (e.altKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        handleNextDiff();
+      } else if (e.altKey && e.key === 'ArrowUp') {
+        e.preventDefault();
+        handlePrevDiff();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeDiffIndex, activeDiffBlocks]);
 
   // Filtered diff lines for search
   const filteredUnified = useMemo(() => {
@@ -77,8 +226,8 @@ export const JsonDiffViewer: React.FC = () => {
     <div className="flex-1 flex flex-col h-full bg-[#0b0e14] text-gray-200 overflow-hidden font-sans select-text">
       {/* Diff Toolbar */}
       <div className="h-12 bg-xctrack-card border-b border-xctrack-border px-4 flex items-center justify-between gap-3 flex-shrink-0">
-        {/* Left: View Mode Switcher */}
-        <div className="flex items-center gap-2">
+        {/* Left: View Mode Switcher + Stats Badge + Prev/Next Diff Controls */}
+        <div className="flex items-center gap-2.5">
           <div className="flex items-center bg-xctrack-dark rounded-lg p-0.5 border border-xctrack-border text-xs">
             <button
               onClick={() => setViewMode('split')}
@@ -126,7 +275,7 @@ export const JsonDiffViewer: React.FC = () => {
           {stats.isIdentical ? (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 text-[11px] font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Identical to loaded config</span>
+              <span>Identical</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-xctrack-dark border border-xctrack-border text-[11px] font-mono">
@@ -137,11 +286,36 @@ export const JsonDiffViewer: React.FC = () => {
               </span>
             </div>
           )}
+
+          {/* Prev / Next Difference Buttons */}
+          {activeDiffBlocks.length > 0 && (
+            <div className="flex items-center gap-1 bg-xctrack-dark rounded-lg p-0.5 border border-xctrack-border text-xs">
+              <button
+                onClick={handlePrevDiff}
+                className="flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                title="Jump to previous difference (Alt+Up)"
+              >
+                <ChevronUp className="w-3.5 h-3.5 text-sky-400" />
+                <span className="hidden sm:inline">Prev</span>
+              </button>
+              <span className="text-[11px] font-mono px-2 text-sky-300 font-semibold select-none border-x border-xctrack-border/60">
+                {activeDiffIndex + 1} / {activeDiffBlocks.length}
+              </span>
+              <button
+                onClick={handleNextDiff}
+                className="flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                title="Jump to next difference (Alt+Down)"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronDown className="w-3.5 h-3.5 text-sky-400" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Center: Search Filter */}
         {(viewMode === 'split' || viewMode === 'unified' || viewMode === 'raw') && (
-          <div className="relative w-64 max-w-xs">
+          <div className="relative w-60 max-w-xs">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -167,7 +341,7 @@ export const JsonDiffViewer: React.FC = () => {
             <button
               onClick={handleResetToOriginal}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 text-xs transition-colors"
-              title="Discard all changes and revert to loaded file"
+              title="Discard all changes and revert to loaded baseline"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset Changes
@@ -197,16 +371,28 @@ export const JsonDiffViewer: React.FC = () => {
       {/* Main Diff Content Container */}
       <div className="flex-1 overflow-auto p-4">
         {viewMode === 'split' && (
-          <SideBySideDiffView sideBySide={sideBySide} searchFilter={searchFilter} filename={store.filename} />
+          <SideBySideDiffView
+            sideBySide={sideBySide}
+            diffBlocks={sideBySideDiffBlocks}
+            activeDiffIndex={activeDiffIndex}
+            searchFilter={searchFilter}
+            filename={store.filename}
+          />
         )}
 
         {viewMode === 'unified' && (
-          <UnifiedDiffView lines={filteredUnified} searchFilter={searchFilter} />
+          <UnifiedDiffView
+            lines={filteredUnified}
+            diffBlocks={unifiedDiffBlocks}
+            activeDiffIndex={activeDiffIndex}
+            searchFilter={searchFilter}
+          />
         )}
 
         {viewMode === 'summary' && (
           <SemanticSummaryView
             semanticDiff={semanticDiff}
+            activeDiffIndex={activeDiffIndex}
             stats={stats}
             onSwitchToSplit={() => setViewMode('split')}
           />
@@ -225,15 +411,26 @@ export const JsonDiffViewer: React.FC = () => {
 // ============================================================================
 const SideBySideDiffView: React.FC<{
   sideBySide: SideBySideLine[];
+  diffBlocks: DiffHunkBlock[];
+  activeDiffIndex: number;
   searchFilter: string;
   filename: string;
-}> = ({ sideBySide, searchFilter, filename }) => {
+}> = ({ sideBySide, diffBlocks, activeDiffIndex, searchFilter, filename }) => {
+  const activeBlock = diffBlocks[activeDiffIndex];
+
+  // Map each line index to its hunk ID if it is the start of a hunk
+  const hunkStartMap = useMemo(() => {
+    const map = new Map<number, string>();
+    diffBlocks.forEach((b) => map.set(b.startIndex, b.id));
+    return map;
+  }, [diffBlocks]);
+
   return (
     <div className="rounded-lg border border-xctrack-border bg-xctrack-dark font-mono text-[11px] overflow-x-auto shadow-xl">
       {/* Header labels */}
       <div className="grid grid-cols-2 bg-[#12161f] border-b border-xctrack-border text-xs font-sans text-gray-400 select-none">
         <div className="px-4 py-2 border-r border-xctrack-border flex items-center justify-between">
-          <span className="font-semibold text-rose-400/90">Original ({filename})</span>
+          <span className="font-semibold text-rose-400/90">Original Baseline ({filename})</span>
           <span className="text-[10px] text-gray-500">Loaded baseline</span>
         </div>
         <div className="px-4 py-2 flex items-center justify-between">
@@ -258,9 +455,19 @@ const SideBySideDiffView: React.FC<{
 
           const isLeftRemoved = left?.type === 'removed';
           const isRightAdded = right?.type === 'added';
+          const hunkId = hunkStartMap.get(idx);
+          const isActiveHunk = activeBlock && idx >= activeBlock.startIndex && idx <= activeBlock.endIndex;
 
           return (
-            <div key={idx} className="grid grid-cols-2 hover:bg-white/[0.02] transition-colors leading-relaxed">
+            <div
+              key={idx}
+              id={hunkId}
+              className={`grid grid-cols-2 transition-all leading-relaxed ${
+                isActiveHunk
+                  ? 'ring-2 ring-sky-500 bg-sky-950/25 relative z-10 shadow-sm'
+                  : 'hover:bg-white/[0.02]'
+              }`}
+            >
               {/* Left Pane (Original) */}
               <div
                 className={`flex border-r border-xctrack-border/60 ${
@@ -303,8 +510,18 @@ const SideBySideDiffView: React.FC<{
 // ============================================================================
 const UnifiedDiffView: React.FC<{
   lines: DiffLine[];
+  diffBlocks: DiffHunkBlock[];
+  activeDiffIndex: number;
   searchFilter: string;
-}> = ({ lines }) => {
+}> = ({ lines, diffBlocks, activeDiffIndex }) => {
+  const activeBlock = diffBlocks[activeDiffIndex];
+
+  const hunkStartMap = useMemo(() => {
+    const map = new Map<number, string>();
+    diffBlocks.forEach((b) => map.set(b.startIndex, b.id));
+    return map;
+  }, [diffBlocks]);
+
   return (
     <div className="rounded-lg border border-xctrack-border bg-xctrack-dark font-mono text-[11px] overflow-x-auto shadow-xl">
       <div className="divide-y divide-white/5">
@@ -320,8 +537,19 @@ const UnifiedDiffView: React.FC<{
             marker = '-';
           }
 
+          const hunkId = hunkStartMap.get(idx);
+          const isActiveHunk = activeBlock && idx >= activeBlock.startIndex && idx <= activeBlock.endIndex;
+
           return (
-            <div key={idx} className={`flex items-center hover:bg-white/[0.02] ${lineBg} leading-relaxed`}>
+            <div
+              key={idx}
+              id={hunkId}
+              className={`flex items-center leading-relaxed transition-all ${lineBg} ${
+                isActiveHunk
+                  ? 'ring-2 ring-sky-500 bg-sky-950/30 relative z-10 shadow-sm'
+                  : 'hover:bg-white/[0.02]'
+              }`}
+            >
               <span className="w-12 px-2 py-0.5 text-right text-gray-600 select-none font-mono text-[10px] border-r border-xctrack-border/40">
                 {line.oldLineNumber || ''}
               </span>
@@ -342,10 +570,11 @@ const UnifiedDiffView: React.FC<{
 // Semantic Summary Component
 // ============================================================================
 const SemanticSummaryView: React.FC<{
-  semanticDiff: ReturnType<typeof computeSemanticDiff>;
+  semanticDiff: SemanticChangeItem[];
+  activeDiffIndex: number;
   stats: { additions: number; deletions: number; isIdentical: boolean };
   onSwitchToSplit: () => void;
-}> = ({ semanticDiff, stats, onSwitchToSplit }) => {
+}> = ({ semanticDiff, activeDiffIndex, stats, onSwitchToSplit }) => {
   if (stats.isIdentical) {
     return (
       <div className="py-16 text-center max-w-md mx-auto">
@@ -359,13 +588,6 @@ const SemanticSummaryView: React.FC<{
       </div>
     );
   }
-
-  const byCat = {
-    info: semanticDiff.filter((c) => c.category === 'info'),
-    layout: semanticDiff.filter((c) => c.category === 'layout'),
-    preferences: semanticDiff.filter((c) => c.category === 'preferences'),
-    airspace: semanticDiff.filter((c) => c.category === 'airspace'),
-  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -386,96 +608,50 @@ const SemanticSummaryView: React.FC<{
         </button>
       </div>
 
-      {/* Layout Changes */}
-      {byCat.layout.length > 0 && (
-        <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-sky-400 uppercase tracking-wide">
-            <Layout className="w-4 h-4" />
-            <span>Screen Layout Changes ({byCat.layout.length})</span>
-          </div>
-          <div className="space-y-2">
-            {byCat.layout.map((item, idx) => (
-              <div key={idx} className="flex items-start justify-between bg-xctrack-dark p-2.5 rounded-lg text-xs">
-                <div>
-                  <div className="text-white font-medium">{item.description}</div>
-                  <div className="text-[11px] text-gray-500 font-mono mt-0.5">{item.path}</div>
+      {/* Change Items List */}
+      <div className="space-y-2">
+        {semanticDiff.map((item, idx) => {
+          const isActive = idx === activeDiffIndex;
+
+          return (
+            <div
+              key={idx}
+              id={`summary-card-${idx}`}
+              className={`p-3 rounded-xl border transition-all ${
+                isActive
+                  ? 'bg-sky-950/40 border-sky-500 ring-2 ring-sky-500 shadow-lg shadow-sky-500/20'
+                  : 'bg-xctrack-card border-xctrack-border hover:border-gray-600'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold bg-sky-950 text-sky-300 border border-sky-800/60">
+                      {item.category}
+                    </span>
+                    <span className="text-white font-medium text-xs">{item.description}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-500 font-mono">{item.path}</div>
                 </div>
-                {item.oldValue && item.newValue && (
-                  <div className="text-[11px] font-mono flex items-center gap-2">
+
+                {item.oldValue !== undefined && item.newValue !== undefined && (
+                  <div className="text-xs font-mono flex items-center gap-2 flex-shrink-0 bg-black/40 px-2.5 py-1 rounded-md border border-white/5">
                     <span className="text-rose-400 line-through">{item.oldValue}</span>
                     <span className="text-gray-500">→</span>
                     <span className="text-emerald-400 font-semibold">{item.newValue}</span>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Preferences Changes */}
-      {byCat.preferences.length > 0 && (
-        <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-amber-400 uppercase tracking-wide">
-            <Sliders className="w-4 h-4" />
-            <span>Preferences & Pilot Settings ({byCat.preferences.length})</span>
-          </div>
-          <div className="space-y-2">
-            {byCat.preferences.map((item, idx) => (
-              <div key={idx} className="flex items-start justify-between bg-xctrack-dark p-2.5 rounded-lg text-xs">
-                <div>
-                  <div className="text-white font-medium">{item.description}</div>
-                  <div className="text-[11px] text-gray-500 font-mono mt-0.5">{item.path}</div>
-                </div>
-                {item.oldValue && item.newValue ? (
-                  <div className="text-[11px] font-mono flex items-center gap-2">
-                    <span className="text-rose-400 line-through">{item.oldValue}</span>
-                    <span className="text-gray-500">→</span>
-                    <span className="text-emerald-400 font-semibold">{item.newValue}</span>
-                  </div>
-                ) : item.newValue ? (
-                  <span className="text-[11px] font-mono text-emerald-400 font-semibold">
-                    {item.newValue}
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Info Changes */}
-      {byCat.info.length > 0 && (
-        <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-purple-400 uppercase tracking-wide">
-            <Info className="w-4 h-4" />
-            <span>File & Device Info ({byCat.info.length})</span>
-          </div>
-          <div className="space-y-2">
-            {byCat.info.map((item, idx) => (
-              <div key={idx} className="flex items-start justify-between bg-xctrack-dark p-2.5 rounded-lg text-xs">
-                <div>
-                  <div className="text-white font-medium">{item.description}</div>
-                  <div className="text-[11px] text-gray-500 font-mono mt-0.5">{item.path}</div>
-                </div>
-                {item.oldValue && item.newValue && (
-                  <div className="text-[11px] font-mono flex items-center gap-2">
-                    <span className="text-rose-400 line-through">{item.oldValue}</span>
-                    <span className="text-gray-500">→</span>
-                    <span className="text-emerald-400 font-semibold">{item.newValue}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
 
 // ============================================================================
-// Raw JSON Component
+// Raw JSON View Component
 // ============================================================================
 const RawJsonView: React.FC<{
   jsonText: string;
@@ -487,9 +663,8 @@ const RawJsonView: React.FC<{
     <div className="rounded-lg border border-xctrack-border bg-xctrack-dark font-mono text-[11px] overflow-x-auto shadow-xl">
       <div className="divide-y divide-white/5">
         {lines.map((line, idx) => {
-          if (searchFilter && !line.toLowerCase().includes(searchFilter.toLowerCase())) {
-            return null;
-          }
+          const matches = !searchFilter || line.toLowerCase().includes(searchFilter.toLowerCase());
+          if (!matches) return null;
 
           return (
             <div key={idx} className="flex items-center hover:bg-white/[0.02] text-gray-300 leading-relaxed">

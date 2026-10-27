@@ -41,6 +41,7 @@ export interface AutosaveData {
   activeDeviceId: string;
   activeTab: 'layout' | 'preferences' | 'json';
   zoom: number;
+  globalTheme?: string;
   updatedAt: number;
 }
 
@@ -63,6 +64,7 @@ export function saveAutosaveNow(): void {
       activeDeviceId: currentState.activeDevice.id,
       activeTab: currentState.activeTab,
       zoom: currentState.zoom,
+      globalTheme: currentState.globalTheme,
       updatedAt: Date.now(),
     };
     localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(data));
@@ -222,11 +224,16 @@ export const editorStore = {
     const saved = getStoredAutosave();
     if (!saved) return false;
     const device = getDeviceById(saved.activeDeviceId || DEFAULT_DEVICE_ID);
+    const themeFromConfig = typeof saved.config?.preferences?.['Display.Theme'] === 'string'
+      ? saved.config.preferences['Display.Theme']
+      : undefined;
+    const activeTheme: string = saved.globalTheme || themeFromConfig || 'BlackTheme';
     currentState = {
       ...currentState,
       config: saved.config,
       originalConfig: saved.originalConfig || saved.config,
       filename: saved.filename || 'autosaved.xcfg',
+      globalTheme: activeTheme,
       activeOrientation: saved.activeOrientation || 'portrait',
       activePageIndex: typeof saved.activePageIndex === 'number' ? saved.activePageIndex : 0,
       activeDevice: device,
@@ -261,11 +268,13 @@ export const editorStore = {
       persistDeviceId(matchedDevice.id);
     }
     const cloned = JSON.parse(JSON.stringify(config));
+    const themeFromConfig = cloned.preferences?.['Display.Theme'] || 'BlackTheme';
     currentState = {
       ...currentState,
       config: cloned,
       originalConfig: JSON.parse(JSON.stringify(config)),
       filename,
+      globalTheme: themeFromConfig,
       activeDevice: matchedDevice,
       activePageIndex: 0,
       selectedWidgetIndices: [],
@@ -698,7 +707,17 @@ export const editorStore = {
   },
 
   setGlobalTheme(globalTheme: string) {
-    currentState = { ...currentState, globalTheme };
+    let newConfig = currentState.config;
+    if (newConfig.preferences) {
+      newConfig = {
+        ...newConfig,
+        preferences: {
+          ...newConfig.preferences,
+          'Display.Theme': globalTheme,
+        },
+      };
+    }
+    currentState = { ...currentState, globalTheme, config: newConfig };
     emitChange();
   },
 

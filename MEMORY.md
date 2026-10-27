@@ -674,6 +674,39 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
     - 65 dBZ (Severe hail core shaft, `#d946ef`)
   - Integrated into both `RealXCTrackMap.tsx` (MapLibre GL WebGL GeoJSON layers) and `RealisticMapSection.tsx` (static SVG paths with max dBZ alert badge).
 
+---
+
+## 18. Config Theme Synchronization, Collapsible Categories & Diff Navigation (v0.21.0)
+
+### 18.1 Display.Theme Automatic Extraction & Bidirectional Sync
+- **Domain Observation**: In modern XCTrack backups (e.g. `2026-10-27_backup-00.xcfg`), users often fly with high-contrast themes such as `WhiteHCTheme` or `WhiteTheme` instead of default OLED `BlackTheme`.
+- **Implementation**:
+  - `editorStore.loadConfig(config, ...)` extracts `config.preferences?.['Display.Theme']` (falling back to `'BlackTheme'`) and updates `currentState.globalTheme`.
+  - `editorStore.setGlobalTheme(theme)` updates both preview canvas state and `config.preferences['Display.Theme']` when preferences are present in backup files.
+  - `AutosaveData` persists `globalTheme` so theme selection survives page reload.
+
+### 18.2 Collapsible Property Inspector Categories (Replacing Filter Tabs)
+- **Problem**: Previous tabs (`All`, `Size & Pos`, `Border & BG`) operated merely as filters that hid other properties, creating unnecessary switching steps.
+- **Solution**:
+  - Removed top filter tabs entirely.
+  - Replaced with vertical collapsible accordion sections:
+    1. **Map Appearance & Style** (for map widgets) with quick gallery trigger.
+    2. **Size & Position (Grid)** with dimensions indicator (`gw × gh cells`) and Quick Fit buttons.
+    3. **Border & Background** with transparency chip (`% Transp`) and title configuration.
+  - State `collapsedSections: Record<string, boolean>` defaults all categories to **OPEN**. Users can scroll naturally or collapse sections to minimize scrolling.
+
+### 18.3 Unified "Download" & Renamed "Diff & Export" Tab
+- **Unification**: Renamed `JSON & Diff` tab to `Diff & Export` in `TopToolbar.tsx`.
+- Standardized terminology across the toolbar and diff viewer to use **Download** (`Download .xcfg`).
+
+### 18.4 Prev / Next Difference Navigation
+- **Architecture**:
+  - `JsonDiffViewer.tsx` calculates contiguous diff hunks across `sideBySide`, `unified`, and `semanticDiff` views.
+  - Toolbar controls: `[↑ Prev]` and `[↓ Next]` with live counter indicator `(idx + 1) / total`.
+  - Keyboard navigation: `Alt+Up` and `Alt+Down`.
+  - Smoothly scrolls the active difference into view and highlights it with an active ring border (`ring-2 ring-sky-500 bg-sky-950/30`).
+
+
 
 
 

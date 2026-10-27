@@ -259,7 +259,7 @@ export const TopToolbar: React.FC = () => {
           }`}
         >
           <FileCode className="w-3.5 h-3.5" />
-          JSON & Diff
+          Diff & Export
         </button>
       </div>
 
@@ -496,10 +496,10 @@ export const TopToolbar: React.FC = () => {
         <button
           onClick={handleExport}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium shadow-sm transition-colors"
-          title="Export XCTrack .xcfg configuration"
+          title="Download XCTrack .xcfg configuration"
         >
           <Download className="w-3.5 h-3.5" />
-          Export .xcfg
+          Download .xcfg
         </button>
       </div>
     </header>

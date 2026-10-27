@@ -52,7 +52,16 @@ import { MapStyleGalleryModal } from './MapStyleGalleryModal';
 
 export const WidgetPropertyInspector: React.FC = () => {
   const store = useEditorStore();
-  const [activeSection, setActiveSection] = useState<'all' | 'geometry' | 'appearance' | 'specific' | 'raw'>('all');
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const isSectionOpen = (id: string) => !collapsedSections[id]; // Default to open!
   const [showRawJson, setShowRawJson] = useState(false);
   const [newPropKey, setNewPropKey] = useState('');
   const [newPropVal, setNewPropVal] = useState('');
@@ -502,69 +511,38 @@ export const WidgetPropertyInspector: React.FC = () => {
         </div>
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex border-b border-xctrack-border bg-black/10 text-[10px] font-medium text-gray-400">
-        <button
-          onClick={() => setActiveSection('all')}
-          className={`flex-1 py-1.5 text-center transition-colors border-b-2 ${
-            activeSection === 'all'
-              ? 'border-sky-500 text-sky-400 font-semibold'
-              : 'border-transparent hover:text-white'
-          }`}
-        >
-          All
-        </button>
-        {isMapWidget && (
-          <button
-            onClick={() => setActiveSection('specific')}
-            className={`flex-1 py-1.5 text-center transition-colors border-b-2 ${
-              activeSection === 'specific'
-                ? 'border-sky-500 text-sky-400 font-semibold'
-                : 'border-transparent hover:text-white'
-            }`}
-          >
-            Map Styles
-          </button>
-        )}
-        <button
-          onClick={() => setActiveSection('geometry')}
-          className={`flex-1 py-1.5 text-center transition-colors border-b-2 ${
-            activeSection === 'geometry'
-              ? 'border-sky-500 text-sky-400 font-semibold'
-              : 'border-transparent hover:text-white'
-          }`}
-        >
-          Size & Pos
-        </button>
-        <button
-          onClick={() => setActiveSection('appearance')}
-          className={`flex-1 py-1.5 text-center transition-colors border-b-2 ${
-            activeSection === 'appearance'
-              ? 'border-sky-500 text-sky-400 font-semibold'
-              : 'border-transparent hover:text-white'
-          }`}
-        >
-          Border & BG
-        </button>
-      </div>
-
-      {/* Scrollable Properties Form */}
+      {/* Scrollable Properties Form with Collapsible Categories (Default Open) */}
       <div className="flex-1 overflow-y-auto divide-y divide-xctrack-border/60">
-        {/* MAP SETTINGS & MAP APPEARANCE */}
-        {isMapWidget && (activeSection === 'all' || activeSection === 'specific') && (
-          <div className="p-3 space-y-3.5 bg-slate-950/20">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <MapIcon className="w-3.5 h-3.5 text-sky-400" /> Map Appearance & Style
-              </span>
+        {/* 1. MAP APPEARANCE & LAYERS (When Map Widget) */}
+        {isMapWidget && (
+          <div>
+            <div className="flex items-center justify-between p-3 bg-xctrack-card/60 hover:bg-white/[0.04] transition-colors border-b border-xctrack-border/40 select-none">
+              <button
+                type="button"
+                onClick={() => toggleSection('map')}
+                className="flex items-center gap-2 flex-1 text-left"
+              >
+                <MapIcon className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
+                  Map Appearance & Style
+                </span>
+                {isSectionOpen('map') ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                )}
+              </button>
               <button
                 onClick={() => setMapGalleryOpen(true)}
-                className="flex items-center gap-1 text-[10px] font-semibold text-sky-400 hover:text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-700/60 transition-colors shadow-sm"
+                className="flex items-center gap-1 text-[10px] font-semibold text-sky-400 hover:text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-700/60 transition-colors shadow-sm ml-2"
               >
                 <Sparkles className="w-3 h-3 text-amber-400" />
                 <span>Browse Gallery</span>
               </button>
             </div>
+
+            {isSectionOpen('map') && (
+              <div className="p-3 space-y-3.5 bg-slate-950/20">
 
             {/* Road Map (OSM Vector) Primary Toggle */}
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-xctrack-dark border border-xctrack-border">
@@ -792,165 +770,205 @@ export const WidgetPropertyInspector: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+    )}
 
-        {/* GEOMETRY & QUICK FIT */}
-        {(activeSection === 'all' || activeSection === 'geometry') && (
-          <div className="p-3 space-y-3">
-            <span className="text-[11px] font-semibold text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Move className="w-3 h-3 text-sky-400" /> Size & Position (Grid)
+        {/* 2. SIZE & POSITION (GRID) */}
+        <div className="border-b border-xctrack-border/60">
+          <button
+            type="button"
+            onClick={() => toggleSection('geometry')}
+            className="w-full flex items-center justify-between p-3 bg-xctrack-card/60 hover:bg-white/[0.04] transition-colors border-b border-xctrack-border/40 select-none text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Move className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-[11px] font-semibold text-gray-200 uppercase tracking-wider">
+                Size & Position (Grid)
+              </span>
+              {isSectionOpen('geometry') ? (
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              )}
+            </div>
+            <span className="text-[10px] font-mono text-sky-400/90 font-medium">
+              {gw} × {gh} cells
             </span>
+          </button>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-400">Column (X1)</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={currentGrid.cols - 1}
-                  value={gx1}
-                  onChange={(e) => handleGridChange(parseInt(e.target.value) || 0, gy1, gx2, gy2)}
-                  className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
-                />
+          {isSectionOpen('geometry') && (
+            <div className="p-3 space-y-3 bg-slate-950/20">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-400">Column (X1)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={currentGrid.cols - 1}
+                    value={gx1}
+                    onChange={(e) => handleGridChange(parseInt(e.target.value) || 0, gy1, gx2, gy2)}
+                    className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-400">Row (Y1)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={currentGrid.rows - 1}
+                    value={gy1}
+                    onChange={(e) => handleGridChange(gx1, parseInt(e.target.value) || 0, gx2, gy2)}
+                    className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-400">Width (Cols)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={currentGrid.cols - gx1}
+                    value={gw}
+                    onChange={(e) => handleGridChange(gx1, gy1, gx1 + (parseInt(e.target.value) || 1), gy2)}
+                    className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-400">Height (Rows)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={currentGrid.rows - gy1}
+                    value={gh}
+                    onChange={(e) => handleGridChange(gx1, gy1, gx2, gy1 + (parseInt(e.target.value) || 1))}
+                    className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
+                  />
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-400">Row (Y1)</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={currentGrid.rows - 1}
-                  value={gy1}
-                  onChange={(e) => handleGridChange(gx1, parseInt(e.target.value) || 0, gx2, gy2)}
-                  className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-400">Width (Cols)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={currentGrid.cols - gx1}
-                  value={gw}
-                  onChange={(e) => handleGridChange(gx1, gy1, gx1 + (parseInt(e.target.value) || 1), gy2)}
-                  className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-400">Height (Rows)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={currentGrid.rows - gy1}
-                  value={gh}
-                  onChange={(e) => handleGridChange(gx1, gy1, gx2, gy1 + (parseInt(e.target.value) || 1))}
-                  className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-white font-mono"
-                />
+
+              {/* Quick Fit Controls */}
+              <div className="pt-2 border-t border-xctrack-border space-y-1.5">
+                <span className="text-[10px] text-gray-400 block font-medium">Quick Fit</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={fitFullWidth}
+                    className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
+                  >
+                    <Maximize2 className="w-3 h-3 rotate-45" /> Full Width
+                  </button>
+                  <button
+                    onClick={fitFullHeight}
+                    className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
+                  >
+                    <Maximize2 className="w-3 h-3" /> Full Height
+                  </button>
+                  <button
+                    onClick={centerHorizontally}
+                    className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
+                  >
+                    <AlignCenter className="w-3 h-3" /> Center Horiz
+                  </button>
+                  <button
+                    onClick={fillScreen}
+                    className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
+                  >
+                    <Maximize2 className="w-3 h-3" /> Fill Screen
+                  </button>
+                </div>
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Quick Fit Controls */}
-            <div className="pt-2 border-t border-xctrack-border space-y-1.5">
-              <span className="text-[10px] text-gray-400 block font-medium">Quick Fit</span>
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  onClick={fitFullWidth}
-                  className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
-                >
-                  <Maximize2 className="w-3 h-3 rotate-45" /> Full Width
-                </button>
-                <button
-                  onClick={fitFullHeight}
-                  className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
-                >
-                  <Maximize2 className="w-3 h-3" /> Full Height
-                </button>
-                <button
-                  onClick={centerHorizontally}
-                  className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
-                >
-                  <AlignCenter className="w-3 h-3" /> Center Horiz
-                </button>
-                <button
-                  onClick={fillScreen}
-                  className="px-2 py-1 rounded bg-[#181d28] hover:bg-white/10 text-gray-300 hover:text-white border border-xctrack-border text-[11px] flex items-center justify-center gap-1"
-                >
-                  <Maximize2 className="w-3 h-3" /> Fill Screen
-                </button>
-              </div>
+        {/* 3. BORDER & BACKGROUND */}
+        <div className="border-b border-xctrack-border/60">
+          <button
+            type="button"
+            onClick={() => toggleSection('appearance')}
+            className="w-full flex items-center justify-between p-3 bg-xctrack-card/60 hover:bg-white/[0.04] transition-colors border-b border-xctrack-border/40 select-none text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Palette className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-[11px] font-semibold text-gray-200 uppercase tracking-wider">
+                Border & Background
+              </span>
+              {isSectionOpen('appearance') ? (
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              )}
             </div>
-          </div>
-        )}
-
-        {/* APPEARANCE: TITLE, BORDER, BACKGROUND */}
-        {(activeSection === 'all' || activeSection === 'appearance') && (
-          <div className="p-3 space-y-3">
-            <span className="text-[11px] font-semibold text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Palette className="w-3 h-3 text-purple-400" /> Border & Background
+            <span className="text-[10px] font-mono text-purple-400/90 font-medium">
+              {widget._bg ?? 100}% Transp
             </span>
+          </button>
 
-            {/* Title Settings */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+          {isSectionOpen('appearance') && (
+            <div className="p-3 space-y-3 bg-slate-950/20">
+              {/* Title Settings */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-gray-200 block font-medium">Show Title</span>
+                    <span className="text-[10px] text-gray-500">Header title bar</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={widget._title !== false}
+                    onChange={(e) => updateProp('_title', e.target.checked)}
+                    className="w-4 h-4 rounded bg-[#181d28] border-gray-600 text-blue-500 focus:ring-0 cursor-pointer"
+                  />
+                </div>
+
+                {widget._title !== false && (
+                  <div className="space-y-1 pl-2 border-l border-gray-700">
+                    <label className="text-[10px] text-gray-400 block">Custom Title</label>
+                    <input
+                      type="text"
+                      placeholder={def?.title || 'Default'}
+                      value={widget.titletext ?? ''}
+                      onChange={(e) => updateProp('titletext', e.target.value)}
+                      className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-xs text-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Border */}
+              <div className="flex items-center justify-between py-1">
                 <div>
-                  <span className="text-xs text-gray-200 block font-medium">Show Title</span>
-                  <span className="text-[10px] text-gray-500">Header title bar</span>
+                  <span className="text-xs text-gray-200 block font-medium">Draw Border</span>
+                  <span className="text-[10px] text-gray-500">1px outline</span>
                 </div>
                 <input
                   type="checkbox"
-                  checked={widget._title !== false}
-                  onChange={(e) => updateProp('_title', e.target.checked)}
+                  checked={Boolean(widget._border)}
+                  onChange={(e) => updateProp('_border', e.target.checked)}
                   className="w-4 h-4 rounded bg-[#181d28] border-gray-600 text-blue-500 focus:ring-0 cursor-pointer"
                 />
               </div>
 
-              {widget._title !== false && (
-                <div className="space-y-1 pl-2 border-l border-gray-700">
-                  <label className="text-[10px] text-gray-400 block">Custom Title</label>
-                  <input
-                    type="text"
-                    placeholder={def?.title || 'Default'}
-                    value={widget.titletext ?? ''}
-                    onChange={(e) => updateProp('titletext', e.target.value)}
-                    className="w-full bg-[#181d28] border border-xctrack-border rounded px-2 py-1 text-xs text-white"
-                  />
+              {/* Background Transparency */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] text-gray-400">
+                  <span>Background Transparency</span>
+                  <span className="font-mono text-white">{widget._bg ?? 100}%</span>
                 </div>
-              )}
-            </div>
-
-            {/* Border */}
-            <div className="flex items-center justify-between py-1">
-              <div>
-                <span className="text-xs text-gray-200 block font-medium">Draw Border</span>
-                <span className="text-[10px] text-gray-500">1px outline</span>
-              </div>
-              <input
-                type="checkbox"
-                checked={Boolean(widget._border)}
-                onChange={(e) => updateProp('_border', e.target.checked)}
-                className="w-4 h-4 rounded bg-[#181d28] border-gray-600 text-blue-500 focus:ring-0 cursor-pointer"
-              />
-            </div>
-
-            {/* Background Transparency */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[10px] text-gray-400">
-                <span>Background Transparency</span>
-                <span className="font-mono text-white">{widget._bg ?? 100}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={widget._bg ?? 100}
-                onChange={(e) => updateProp('_bg', parseInt(e.target.value))}
-                className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-              <div className="flex justify-between text-[9px] text-gray-500">
-                <span>Solid (0%)</span>
-                <span>Transparent (100%)</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={widget._bg ?? 100}
+                  onChange={(e) => updateProp('_bg', parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                />
+                <div className="flex justify-between text-[9px] text-gray-500">
+                  <span>Solid (0%)</span>
+                  <span>Transparent (100%)</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Interactive Map Style Gallery Modal */}
