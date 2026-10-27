@@ -37,14 +37,17 @@ export const App: React.FC = () => {
         return;
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      const isZ = e.key.toLowerCase() === 'z' || e.code === 'KeyZ';
+      const isY = e.key.toLowerCase() === 'y' || e.code === 'KeyY';
+
+      if ((e.ctrlKey || e.metaKey) && isZ) {
         e.preventDefault();
         if (e.shiftKey) {
           editorStore.redo();
         } else {
           editorStore.undo();
         }
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      } else if ((e.ctrlKey || e.metaKey) && isY) {
         e.preventDefault();
         editorStore.redo();
       }

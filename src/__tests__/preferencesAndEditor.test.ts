@@ -75,4 +75,31 @@ describe('Preferences & Store Integration', () => {
     const profile = state.config.preferences?.['Sound.AcousticVario.CustomProfile'] as any;
     expect(profile.confTable).toEqual(customCurve);
   });
+
+  it('handles custom undo snapshots for canvas drag and resize actions', () => {
+    const page = editorStore.getCurrentPage();
+    expect(page).toBeDefined();
+    const originalWidget = { ...page!.widgets[0] };
+    const snapshotBeforeMove = JSON.parse(JSON.stringify(editorStore.getState().config));
+
+    // Simulate moving widget without per-pixel undo spam (grid snapping applies)
+    editorStore.updateWidgetCoords(0, 500, 500, 1500, 1500, false);
+    let movedWidget = editorStore.getCurrentPage()!.widgets[0];
+    expect(movedWidget.X1).toBe(400);
+
+    // Commit snapshot at end of drag (as handleMouseUp does)
+    editorStore.recordCustomUndo(snapshotBeforeMove);
+    expect(editorStore.getState().undoStack.length).toBeGreaterThan(0);
+
+    // Undo reverts back to original
+    editorStore.undo();
+    let revertedWidget = editorStore.getCurrentPage()!.widgets[0];
+    expect(revertedWidget.X1).toBe(originalWidget.X1);
+    expect(revertedWidget.Y1).toBe(originalWidget.Y1);
+
+    // Redo reapplies the move
+    editorStore.redo();
+    movedWidget = editorStore.getCurrentPage()!.widgets[0];
+    expect(movedWidget.X1).toBe(400);
+  });
 });

@@ -355,3 +355,13 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **Widget Switcher Header**: When a widget is inspected, a `<select>` dropdown and Previous (`<`) / Next (`>`) buttons remain permanently visible at the top of the inspector for zero-click switching.
 - **Top Toolbar Undo / Redo**: Added prominent, labeled Undo (`Ctrl+Z`) and Redo (`Ctrl+Y`) buttons to the top toolbar with disabled state management.
 
+### 10.7 Canvas Drag & Resize Undo Snapshot Semantics (v0.8.0)
+- **Problem**: During canvas mouse dragging/resizing, coordinates were updated with `saveUndo = false` to avoid pushing 60 undo snapshots per second. However, `handleMouseUp` previously did not commit an undo entry, leaving `undoStack` untouched and the Undo button disabled after canvas operations.
+- **Solution**:
+  - `dragState` now captures `initialConfig` before the drag begins.
+  - On `handleMouseUp`, if the widget's final coordinates differ from `initialCoords`, `editorStore.recordCustomUndo(dragState.initialConfig)` pushes the pre-drag configuration snapshot onto the undo stack and clears redo stack.
+  - Undo restores the pre-drag position, and Redo restores the moved/resized position.
+- **Layout-Agnostic Keyboard Shortcuts (`e.code === 'KeyZ'` / `'KeyY'`)**:
+  - Handlers in `App.tsx` and `ScreenCanvas.tsx` now check both `e.key` and physical `e.code` (`KeyZ`, `KeyY`, `KeyD`), ensuring that macOS Cmd-Z / Cmd-Shift-Z and Windows/Linux Ctrl-Z / Ctrl-Y work properly across all keyboard layouts (including Russian, Cyrillic, and international QWERTZ/AZERTY layouts).
+
+

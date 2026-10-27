@@ -22,6 +22,7 @@ export const ScreenCanvas: React.FC = () => {
     startX: number;
     startY: number;
     initialCoords: { X1: number; Y1: number; X2: number; Y2: number };
+    initialConfig: any;
     handle?: string;
   } | null>(null);
 
@@ -65,6 +66,7 @@ export const ScreenCanvas: React.FC = () => {
         startX: e.clientX,
         startY: e.clientY,
         initialCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
+        initialConfig: JSON.parse(JSON.stringify(store.config)),
       });
     }
   };
@@ -80,6 +82,7 @@ export const ScreenCanvas: React.FC = () => {
       startX: e.clientX,
       startY: e.clientY,
       initialCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
+      initialConfig: JSON.parse(JSON.stringify(store.config)),
     });
   };
 
@@ -142,6 +145,20 @@ export const ScreenCanvas: React.FC = () => {
 
   const handleMouseUp = useCallback(() => {
     if (dragState) {
+      const page = editorStore.getCurrentPage();
+      const currentWidget = page?.widgets[dragState.widgetIndex];
+      if (currentWidget) {
+        const { X1, Y1, X2, Y2 } = dragState.initialCoords;
+        const hasChanged =
+          currentWidget.X1 !== X1 ||
+          currentWidget.Y1 !== Y1 ||
+          currentWidget.X2 !== X2 ||
+          currentWidget.Y2 !== Y2;
+
+        if (hasChanged && dragState.initialConfig) {
+          editorStore.recordCustomUndo(dragState.initialConfig);
+        }
+      }
       setDragState(null);
     }
   }, [dragState]);
@@ -163,14 +180,18 @@ export const ScreenCanvas: React.FC = () => {
         return;
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      const isZ = e.key.toLowerCase() === 'z' || e.code === 'KeyZ';
+      const isY = e.key.toLowerCase() === 'y' || e.code === 'KeyY';
+      const isD = e.key.toLowerCase() === 'd' || e.code === 'KeyD';
+
+      if ((e.ctrlKey || e.metaKey) && isZ) {
         e.preventDefault();
         if (e.shiftKey) {
           editorStore.redo();
         } else {
           editorStore.undo();
         }
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      } else if ((e.ctrlKey || e.metaKey) && isY) {
         e.preventDefault();
         editorStore.redo();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -178,7 +199,7 @@ export const ScreenCanvas: React.FC = () => {
         editorStore.deleteSelectedWidgets();
       } else if (e.key === 'Escape') {
         editorStore.clearSelection();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+      } else if ((e.ctrlKey || e.metaKey) && isD) {
         e.preventDefault();
         editorStore.duplicateSelectedWidgets();
       } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {

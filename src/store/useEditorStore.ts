@@ -481,6 +481,15 @@ export const editorStore = {
     emitChange();
   },
 
+  recordCustomUndo(configSnapshot: XcfgFile) {
+    currentState = {
+      ...currentState,
+      undoStack: [...currentState.undoStack.slice(-49), configSnapshot],
+      redoStack: [],
+    };
+    emitChange();
+  },
+
   undo() {
     if (currentState.undoStack.length === 0) return;
     const previous = currentState.undoStack[currentState.undoStack.length - 1];
