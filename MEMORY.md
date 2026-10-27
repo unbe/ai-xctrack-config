@@ -442,6 +442,14 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
     - Reduced exaggeration to `0.35` and increased `"color-relief-opacity"` to `1.0`.
     - Result: Lush green valleys, amber foothills, and crisp alpine rock ridges with authentic, natural slope lighting — never black!
 
+### 10.12 Map Panning vs Widget Dragging Interaction Separation (v0.13.0)
+- **Problem**: When a user attempted to navigate/pan the map on the canvas, MapLibre's canvas events bubbled up to `handleWidgetMouseDown` on the widget wrapper in `ScreenCanvas.tsx`, causing the map widget itself to be dragged/moved across the grid layout while navigating.
+- **Solution**:
+  - **Unselected State**: When the map widget is not selected (`isSelected === false`), the MapLibre canvas container has `pointer-events-none` and all map gestures (`dragPan`, `scrollZoom`, `doubleClickZoom`, `touchZoomRotate`) are disabled. Clicking anywhere selects the widget, or dragging immediately moves the widget box across the grid just like any standard data widget.
+  - **Selected State**: Once selected (`isSelected === true`), `RealXCTrackMap.tsx` enables `pointer-events-auto`, re-enables map navigation (`map.dragPan.enable()`, `map.scrollZoom.enable()`), and attaches `onMouseDown={(e) => e.stopPropagation()}` on the map container. Clicking and dragging inside the map pans the map across the real terrain smoothly and never moves the widget container.
+  - **Repositioning Selected Maps**: Added a dedicated "Move" grip pill (`<Move className="w-2.5 h-2.5" /> Move`) to the selection overlay header in `ScreenCanvas.tsx`. The user can drag this grip to move the widget across the canvas even while the map is active and selected.
+
+
 
 
 

@@ -9,6 +9,7 @@ import {
   AlignRight,
   Copy,
   Trash2,
+  Move,
 } from 'lucide-react';
 
 export const ScreenCanvas: React.FC = () => {
@@ -405,6 +406,16 @@ export const ScreenCanvas: React.FC = () => {
                     {/* Live Grid Coordinates Tooltip */}
                     <div className="absolute -top-6 left-0 bg-sky-950/90 text-sky-200 border border-sky-600/60 rounded px-1.5 py-0.5 text-[9px] font-mono pointer-events-none whitespace-nowrap z-40 shadow">
                       {gx2 - gx1}×{gy2 - gy1} cells ({widget.X2 - widget.X1 / 100}%w)
+                    </div>
+
+                    {/* Drag Handle (for repositioning widgets that contain internal interactive canvas like Map) */}
+                    <div
+                      onMouseDown={(e) => handleWidgetMouseDown(e, index)}
+                      className="absolute -top-6 right-0 bg-slate-900/95 hover:bg-sky-900 text-gray-300 hover:text-white border border-sky-600/60 rounded px-1.5 py-0.5 text-[9px] font-mono cursor-move flex items-center gap-1 z-40 shadow transition-colors"
+                      title="Drag here to move widget"
+                    >
+                      <Move className="w-2.5 h-2.5" />
+                      <span>Move</span>
                     </div>
 
                     {/* Resize Handles */}

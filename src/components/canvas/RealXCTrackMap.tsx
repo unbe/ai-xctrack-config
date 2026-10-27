@@ -27,6 +27,7 @@ export interface RealXCTrackMapProps {
   tracklogColor?: string;
   className?: string;
   isThumbnail?: boolean;
+  isSelected?: boolean;
 }
 
 // Generate authentic paragliding Doppler precipitation cell overlay
@@ -175,10 +176,12 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
   tracklogColor = '#ff962d',
   className = '',
   isThumbnail = false,
+  isSelected = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [liveCenter, setLiveCenter] = useState<[number, number]>(center);
 
   // Initialize MapLibre instance
   useEffect(() => {
@@ -195,6 +198,8 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
       center
     );
 
+    const isInteractive = Boolean(isSelected && !isThumbnail);
+
     const map = new Map({
       container: containerRef.current,
       style: styleSpec,
@@ -205,11 +210,16 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
       bearing,
       pitch: 0,
       attributionControl: false,
-      interactive: !isThumbnail, // Interactive canvas map, static thumbnail
+      interactive: isInteractive, // Interactive only when selected
     });
 
     map.on('load', () => {
       setMapLoaded(true);
+    });
+
+    map.on('move', () => {
+      const c = map.getCenter();
+      setLiveCenter([c.lng, c.lat]);
     });
 
     mapRef.current = map;
@@ -219,6 +229,23 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
       mapRef.current = null;
     };
   }, []);
+
+  // Dynamically enable/disable map navigation based on widget selection state
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const isInteractive = Boolean(isSelected && !isThumbnail);
+    if (isInteractive) {
+      mapRef.current.dragPan.enable();
+      mapRef.current.scrollZoom.enable();
+      mapRef.current.doubleClickZoom.enable();
+      mapRef.current.touchZoomRotate.enable();
+    } else {
+      mapRef.current.dragPan.disable();
+      mapRef.current.scrollZoom.disable();
+      mapRef.current.doubleClickZoom.disable();
+      mapRef.current.touchZoomRotate.disable();
+    }
+  }, [isSelected, isThumbnail, mapLoaded]);
 
   // Update style dynamically when theme, terrain, roads, kk7, or rainradar change
   useEffect(() => {
@@ -249,8 +276,17 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
 
   return (
     <div className={`w-full h-full relative overflow-hidden select-none ${className}`}>
-      {/* MapLibre WebGL Canvas Container */}
-      <div ref={containerRef} className="w-full h-full absolute inset-0" />
+      {/* MapLibre WebGL Canvas Container:
+          When NOT selected: pointer-events-none ensures clicking anywhere selects or drags the widget.
+          When selected: pointer-events-auto enables panning the map, and stopPropagation prevents moving the widget container!
+      */}
+      <div
+        ref={containerRef}
+        onMouseDown={isSelected && !isThumbnail ? (e) => e.stopPropagation() : undefined}
+        className={`w-full h-full absolute inset-0 ${
+          isSelected && !isThumbnail ? 'pointer-events-auto cursor-grab active:cursor-grabbing' : 'pointer-events-none'
+        }`}
+      />
 
       {/* Paragliding Aeronautical Flight HUD Overlays (Rendered on top of real map) */}
       {!isThumbnail && (
@@ -309,7 +345,7 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
 
             {/* Real coordinates indicator */}
             <div className="bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded border border-white/10 text-[9px] font-mono text-emerald-400">
-              GPS: {center[1].toFixed(4)}°N, {center[0].toFixed(4)}°E
+              GPS: {liveCenter[1].toFixed(4)}°N, {liveCenter[0].toFixed(4)}°E
             </div>
           </div>
         </div>

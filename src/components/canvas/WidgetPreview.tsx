@@ -104,6 +104,7 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
         style={{ height: `${heightPx - titleHeight}px` }}
       >
         {renderWidgetContent(widget, def?.shortName, {
+          isSelected,
           isWhiteTheme,
           textColor,
           mutedTextColor,
@@ -118,6 +119,7 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
 };
 
 interface RenderContext {
+  isSelected: boolean;
   isWhiteTheme: boolean;
   textColor: string;
   mutedTextColor: string;
@@ -176,6 +178,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
         hasCompass={hasCompass}
         hasWind={hasWind}
         tracklogColor={ctx.tracklogColorCss}
+        isSelected={ctx.isSelected}
       />
     );
   }
