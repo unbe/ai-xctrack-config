@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import {
   FolderOpen,
   Download,
-  RotateCcw,
-  RotateCw,
+  Undo2,
+  Redo2,
   Plus,
   Layout,
   Sliders,
@@ -155,23 +155,25 @@ export const TopToolbar: React.FC = () => {
 
       {/* Action Controls */}
       <div className="flex items-center gap-2">
-        {/* Undo / Redo */}
-        <div className="flex items-center bg-xctrack-dark rounded-lg p-0.5 border border-xctrack-border">
+        {/* Undo / Redo Buttons */}
+        <div className="flex items-center gap-1">
           <button
             onClick={() => editorStore.undo()}
             disabled={store.undoStack.length === 0}
-            className="p-1.5 rounded text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
-            title="Undo (Ctrl+Z)"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-xctrack-dark text-gray-300 hover:text-white disabled:opacity-35 disabled:hover:text-gray-400 border border-xctrack-border text-xs font-medium hover:border-gray-600 transition-colors shadow-sm"
+            title="Undo last action (Ctrl+Z)"
           >
-            <RotateCcw className="w-4 h-4" />
+            <Undo2 className="w-3.5 h-3.5 text-sky-400" />
+            <span>Undo</span>
           </button>
           <button
             onClick={() => editorStore.redo()}
             disabled={store.redoStack.length === 0}
-            className="p-1.5 rounded text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
-            title="Redo (Ctrl+Y)"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-xctrack-dark text-gray-300 hover:text-white disabled:opacity-35 disabled:hover:text-gray-400 border border-xctrack-border text-xs font-medium hover:border-gray-600 transition-colors shadow-sm"
+            title="Redo next action (Ctrl+Y)"
           >
-            <RotateCw className="w-4 h-4" />
+            <Redo2 className="w-3.5 h-3.5 text-sky-400" />
+            <span>Redo</span>
           </button>
         </div>
 

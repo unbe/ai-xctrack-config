@@ -88,8 +88,8 @@ export const App: React.FC = () => {
                       setSidebarCollapsed(false);
                     }
                   }}
-                  title="Layers & Z-Order"
-                  className={`p-2.5 rounded-xl transition-all ${
+                  title="Widgets on Page & Layers"
+                  className={`p-2.5 rounded-xl transition-all relative ${
                     activeSidebarTab === 'layers' && !sidebarCollapsed
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'

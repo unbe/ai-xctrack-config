@@ -71,10 +71,30 @@ Extracted directly from decompiling the official APK (`xctrack-latest.apk` v0.9.
 
 ---
 
-## 4. Testing & Verification
+## 5. Map Appearance, Vector Themes, Hillshading & Gallery (v0.7.0)
+
+### Map Style System
+- **17 OpenStreetMap Vector Themes (`MAP_THEMES`)**: Full support for all themes including `ClearpilotForest` [Pro], `ClearpilotForestBig` [Pro], `ClearpilotForestDark` [Pro], `Clearpilot`, `Hyperpilot`, `HyperpilotBlack`, `Lightpilot`, `Frenchkiss`, `VtmDefault`, `Newtron`, `Osmagray` (E-Ink), `Osmarender`, `Tronrender`, and `Custom` [Pro].
+- **7 Terrain Elevation & Hillshading Profiles (`TERRAIN_STYLES`)**:
+  - **Hillshading only** (`LightShading`, `DarkShading`): Directional 3D hillshading shadows without color tinting.
+  - **Full Elevation Relief** (`Light`, `Dark`, `XContest`, `LightLegacy`): 3D hillshading blended with elevation altitude gradients.
+- **25 Appearance Presets (`MAP_APPEARANCE_PRESETS`)**: Curated styles grouped into *Featured Relief*, *Extra Relief*, *Classic Hillshading*, *Relief Only*, and *Empty*.
+- **Interactive Style Gallery Modal (`MapStyleGalleryModal`)**:
+  - Live preview thumbnails simulating realistic roads, elevation gradients, 3D hillshading shadows, forest polygons, waterways, and airspaces.
+  - 1-click preset application directly updating both config and canvas.
+- **Top Toolbar Undo / Redo**:
+  - Labeled `Undo` (`Ctrl+Z`) and `Redo` (`Ctrl+Y`) buttons with active/disabled state handling.
+- **Page Widgets List & Switcher**:
+  - When no widget is selected, the inspector presents a full searchable list of all page widgets with position badges and "Select ➔" actions.
+  - A persistent top `<select>` dropdown with `<` and `>` buttons enables switching widgets with zero canvas clicks.
+
+---
+
+## 6. Testing & Verification
 
 1. **Automated Unit & Round-Trip Tests (Vitest)**:
-   - 39 comprehensive unit tests across 7 test suites:
+   - 44 comprehensive unit tests across 8 test suites:
+     - `mapStyles.test.ts`: Themes, terrain hillshading profiles, presets, and fallbacks.
      - `gridMath.test.ts`: Coordinate conversion and grid clamping.
      - `colorMath.test.ts`: Signed 32-bit ARGB, hex, and transparency conversion.
      - `xcfgRoundTrip.test.ts`: Lossless parsing and re-serialization of all repository sample configs.
@@ -84,7 +104,8 @@ Extracted directly from decompiling the official APK (`xctrack-latest.apk` v0.9.
      - `preferencesAndEditor.test.ts`: Store actions, undo/redo, vario curve, and diffing.
    - Run via: `npm test`
 2. **Headless Browser Integration Testing**:
-   - Automated via Puppeteer script `scripts/test-editor-browser.mjs`, exercising full page switching, widget selection, property updates, and screenshot captures.
+   - `scripts/test-map-and-widgets.mjs`: Tests undo/redo toolbar buttons, widget list selection, widget switcher dropdown, map style gallery modal, preset selection, and canvas updates.
+   - `scripts/test-editor-browser.mjs`: Tests page navigation, acoustic vario synthesizer, and preferences editing.
 
 ---
 

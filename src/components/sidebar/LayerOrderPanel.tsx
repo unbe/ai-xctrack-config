@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ChevronsUp,
   ChevronUp,
@@ -7,6 +7,7 @@ import {
   Trash2,
   Layers,
   Eye,
+  Search,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { getWidgetDefinition } from '../../data/widgets-catalog';
@@ -14,6 +15,7 @@ import { normToGrid } from '../../utils/gridMath';
 
 export const LayerOrderPanel: React.FC = () => {
   const store = useEditorStore();
+  const [searchQuery, setSearchQuery] = useState('');
   const currentPage = editorStore.getCurrentPage();
   const widgets = currentPage?.widgets || [];
   const currentGrid = editorStore.getCurrentGrid();
@@ -28,20 +30,42 @@ export const LayerOrderPanel: React.FC = () => {
     originalIndex: originalIdx,
   })).reverse();
 
+  const filteredLayers = reversedLayers.filter(({ widget, originalIndex }) => {
+    if (!searchQuery) return true;
+    const def = getWidgetDefinition(widget.CLASS);
+    const query = searchQuery.toLowerCase();
+    const title = (widget.titletext || def?.title || widget.CLASS).toLowerCase();
+    const shortName = (def?.shortName || '').toLowerCase();
+    return title.includes(query) || shortName.includes(query) || `#${originalIndex + 1}`.includes(query);
+  });
+
   return (
     <div className="w-64 bg-xctrack-card border-r border-xctrack-border flex flex-col h-full select-none text-xs">
-      <div className="p-3 border-b border-xctrack-border flex items-center justify-between">
-        <div className="flex items-center gap-1.5 font-semibold text-white tracking-wide text-xs">
-          <Layers className="w-3.5 h-3.5 text-sky-400" />
-          <span>Layers (Z-Order)</span>
+      <div className="p-3 border-b border-xctrack-border bg-slate-950/40">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5 font-semibold text-white tracking-wide text-xs">
+            <Layers className="w-3.5 h-3.5 text-sky-400" />
+            <span>Widgets & Layers</span>
+          </div>
+          <span className="text-[10px] font-mono text-gray-400">
+            {widgets.length} items
+          </span>
         </div>
-        <span className="text-[10px] font-mono text-gray-400">
-          {widgets.length} items
-        </span>
+
+        <div className="relative">
+          <Search className="w-3 h-3 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Filter widgets..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-xctrack-dark border border-xctrack-border rounded-md pl-7 pr-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-500"
+          />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {reversedLayers.map(({ widget, originalIndex }) => {
+        {filteredLayers.map(({ widget, originalIndex }) => {
           const isSelected = selectedIndices.includes(originalIndex);
           const def = getWidgetDefinition(widget.CLASS);
           const title = widget.titletext || def?.title || widget.CLASS.split('.').pop() || '';

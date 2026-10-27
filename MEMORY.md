@@ -302,3 +302,56 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **Root-Level Portals for Overlays & Dialogs**:
   - All modals (`PageTaskActivationRules`, `AddPageModal`, `CustomResolutionModal`) are rendered via React `createPortal(..., document.body)` with `z-[100]`, backdrop blur, and opaque slate styling.
   - This eliminates stacking context trapping where modals nested inside the sidebar (`z-10`) were pierced by canvas elements and widget titles.
+
+---
+
+## 10. Map Appearance, Vector Themes, Hillshading & Relief (Task 7 - v0.7.0)
+
+### 10.1 XCTrack Map Settings & Serialization
+- **Legacy vs Modern Serialization**:
+  - Legacy (`v0.9.10 - v0.9.11`): `mapWidget_showOpenStreet: boolean` (Road Map toggle), `mapWidget_showTerrain: boolean` (Terrain toggle).
+  - Modern (`v0.9.12+`): `mapWidget_mapAppearance: { theme: string, terrain: string }` (`org.xcontest.XCTrack.widget.helper.r`).
+  - Road Map Disabled: Either `theme === 'None'` or `mapWidget_showOpenStreet === false`.
+  - Terrain Relief Disabled: Either `terrain === 'None'` or `mapWidget_showTerrain === false`.
+
+### 10.2 OSM Vector Map Themes (`e0.java` - 17 Themes)
+1. `None` — Vector roads disabled (only terrain relief, airspaces, and task).
+2. `ClearpilotForest` [Pro] — Semi-transparent roads with lush green forest polygons.
+3. `ClearpilotForestBig` [Pro] — Clearpilot with forest polygons and enlarged high-vibration cockpit typography.
+4. `ClearpilotForestDark` [Pro] — High contrast dark/night theme with forest polygons.
+5. `ClearpilotForestDarkBig` [Pro] — Dark theme with forests and enlarged cockpit typography.
+6. `Clearpilot` — Clean semi-transparent roads designed for paragliding cockpit readability.
+7. `ClearpilotDark` — Dark paragliding cockpit map with semi-transparent roads.
+8. `Hyperpilot` — High-contrast neon vectors on dark background.
+9. `HyperpilotBlack` — OLED pure black background with neon road vectors.
+10. `Lightpilot` — Clean white background with crisp gray/black road lines.
+11. `Frenchkiss` — French aeronautical chart styling with soft pastels.
+12. `VtmDefault` — Standard OpenStreetMap VTM vector theme.
+13. `Newtron` — Cyberpunk high-tech neon cyan/magenta styling.
+14. `Osmagray` — Grayscale monochrome map optimized for E-Ink and direct sun glare.
+15. `Osmarender` — Classic OpenStreetMap vector map style.
+16. `Tronrender` — Electric cyan wireframe grid on black.
+17. `Custom` [Pro] — User-provided custom VTM XML style sheet file.
+
+### 10.3 Terrain & Hillshading Profiles (`c0.java` - 7 Profiles)
+- **Hillshading-Only vs Full Relief Gradients**:
+  - `LightShading` & `DarkShading`: **Hillshading only** (`hasHillshading: true`, `hasElevationGradient: false`). Applies directional 3D slope shadows with transparent elevation tint so underlying vector maps remain clear.
+  - `Light`, `Dark`, `XContest`, `LightLegacy`: **Full Elevation Relief** (`hasHillshading: true`, `hasElevationGradient: true`). Applies elevation color gradients (green valleys -> beige plateaus -> brown peaks -> white snow) combined with directional 3D hillshading.
+  - `None`: Completely flat background (`hasHillshading: false`, `hasElevationGradient: false`).
+
+### 10.4 Curated Appearance Presets (`r.java` - 25 Presets across 5 Categories)
+- **Featured Relief**: Clearpilot [forests] • Light Relief, Clearpilot • Light Relief, Clearpilot [dark] • Dark Relief, Hyperpilot-black • Dark Relief, XContest Topo.
+- **Extra Relief**: Clearpilot [forests] • Extra Light Relief, Clearpilot [forests, big fonts] • Extra Light Relief, Clearpilot [forests, dark] • Extra Dark Relief, Lightpilot • Extra Light Relief.
+- **Classic Hillshading**: Clearpilot [forests] • Hillshading, Clearpilot • Hillshading, Hyperpilot-black • Dark Hillshading, Hyperpilot-black (Flat Roads), Frenchkiss • Hillshading, VTM Default • Hillshading, NEWTRON • Dark Hillshading, OSMAGRAY • Hillshading, OSMARENDER (Classic), TRONRENDER.
+- **Relief Only**: Light Relief Only, Dark Relief Only, Light Legacy Relief Only.
+- **Empty**: Empty Map (No Roads, No Terrain).
+
+### 10.5 Interactive Gallery Modal & Canvas Visualization
+- **`MapStyleGalleryModal.tsx`**: Full-screen modal via portal displaying interactive mini-map preview cards with realistic roads, terrain gradients, hillshading shadows, forest polygons, and 1-click preset application.
+- **Canvas Map Visualization (`WidgetPreview.tsx`)**: Dynamically renders the selected road theme, forest polygons, terrain elevation relief, hillshading shadows, KK7 thermals, rain radar clouds, and airspaces on `WXCAssistant` and `WCompMap`.
+
+### 10.6 Widget Selection List & Navigation Controls
+- **Page Widgets List in Inspector**: When no widget is selected on the canvas, the right inspector panel displays a searchable list of all page widgets with position/size badges and "Select ➔" buttons, eliminating the need to click canvas visuals.
+- **Widget Switcher Header**: When a widget is inspected, a `<select>` dropdown and Previous (`<`) / Next (`>`) buttons remain permanently visible at the top of the inspector for zero-click switching.
+- **Top Toolbar Undo / Redo**: Added prominent, labeled Undo (`Ctrl+Z`) and Redo (`Ctrl+Y`) buttons to the top toolbar with disabled state management.
+

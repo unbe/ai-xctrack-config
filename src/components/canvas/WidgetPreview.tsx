@@ -23,6 +23,7 @@ import {
 import { XcfgWidget } from '../../types/xcfg';
 import { getWidgetDefinition } from '../../data/widgets-catalog';
 import { parseXctrackColor, bgTransparencyToAlpha, rgbaToCss } from '../../utils/colorMath';
+import { getMapTheme, getTerrainStyle } from '../../data/map-styles';
 
 interface WidgetPreviewProps {
   widget: XcfgWidget;
@@ -130,40 +131,137 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
 
   // 1. Map Widgets (WXCAssistant, WCompMap)
   if (name === 'WXCAssistant' || name === 'WCompMap') {
+    const appearance = (widget.mapWidget_mapAppearance || {}) as Record<string, any>;
+    const themeId = appearance.theme || (widget.mapWidget_showOpenStreet === false ? 'None' : 'ClearpilotForest');
+    const terrainId = appearance.terrain || (widget.mapWidget_showTerrain === false ? 'None' : 'Light');
+    const themeDef = getMapTheme(themeId);
+    const terrainDef = getTerrainStyle(terrainId);
+
+    const hasRoads = themeDef.hasRoads && widget.mapWidget_showOpenStreet !== false;
+    const hasTerrain = terrainDef.id !== 'None' && widget.mapWidget_showTerrain !== false;
+    const hasRainRadar = Boolean(widget.mapWidget_showRainRadar);
+    const hasKK7 = Boolean(widget.mapWidget_showKK7);
+    const kk7Opacity = (typeof widget.mapWidget_KK7opacity === 'number' ? widget.mapWidget_KK7opacity : 40) / 100;
+    const hasAirspaces = widget.mapWidget_showAirspaces !== false;
+    const hasScale = widget.mapWidget_drawScale !== false;
+    const hasCompass = widget.showCompass !== false;
+    const hasWind = widget.nav_showWind !== false;
+
     return (
-      <div className="w-full h-full relative bg-emerald-950/20 overflow-hidden flex items-center justify-center">
-        {/* Simulated map terrain contours */}
-        <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <path d="M0 60 Q 25 30 50 65 T 100 45 L 100 100 L 0 100 Z" fill={ctx.isWhiteTheme ? '#cbd5e1' : '#1e293b'} />
-          <path d="M0 75 Q 35 50 70 80 T 100 70 L 100 100 L 0 100 Z" fill={ctx.isWhiteTheme ? '#94a3b8' : '#0f172a'} />
-          {/* FAI Triangle Areas */}
-          <polygon points="20,30 80,25 60,85" fill="rgba(56, 189, 248, 0.15)" stroke="rgba(56, 189, 248, 0.6)" strokeWidth="1" strokeDasharray="2,2" />
-          {/* Flight Tracklog Trail */}
+      <div
+        className="w-full h-full relative overflow-hidden flex items-center justify-center select-none"
+        style={{
+          backgroundColor: themeDef.preview.bg,
+          background: hasTerrain && terrainDef.hasElevationGradient ? terrainDef.preview.reliefGradient : themeDef.preview.bg,
+        }}
+      >
+        {/* 3D Hillshading & Relief Contours */}
+        {hasTerrain && terrainDef.hasHillshading && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <path
+              d="M0 45 Q 25 20 50 50 T 100 35 L 100 100 L 0 100 Z"
+              fill="black"
+              fillOpacity={terrainDef.preview.shadowOpacity}
+            />
+            <path
+              d="M0 65 Q 35 40 70 70 T 100 55 L 100 100 L 0 100 Z"
+              fill="black"
+              fillOpacity={terrainDef.preview.shadowOpacity * 0.7}
+            />
+          </svg>
+        )}
+
+        {/* Forest Polygons (ClearpilotForest themes) */}
+        {themeDef.preview.forestFill && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <polygon points="12,28 38,18 48,38 28,48" fill={themeDef.preview.forestFill} stroke="rgba(34, 197, 94, 0.45)" strokeWidth="0.5" />
+            <polygon points="58,62 88,52 82,88 52,78" fill={themeDef.preview.forestFill} stroke="rgba(34, 197, 94, 0.45)" strokeWidth="0.5" />
+          </svg>
+        )}
+
+        {/* Waterways / Lake */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-80" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <path d="M 0 85 Q 40 70 65 90 T 100 80" fill="none" stroke={themeDef.preview.waterColor} strokeWidth="3" />
+        </svg>
+
+        {/* Vector Roads (OpenStreetMap) */}
+        {hasRoads && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+            {/* Secondary roads */}
+            <path d="M 15 0 Q 30 50 85 100" fill="none" stroke={themeDef.preview.roadSecondary} strokeWidth="1.2" />
+            <path d="M 0 30 Q 50 40 100 20" fill="none" stroke={themeDef.preview.roadSecondary} strokeWidth="1" />
+            {/* Primary highway */}
+            <path d="M 0 55 Q 50 65 100 45" fill="none" stroke={themeDef.preview.roadPrimary} strokeWidth={themeDef.preview.roadWidth} />
+          </svg>
+        )}
+
+        {/* Rain Radar Doppler Clouds */}
+        {hasRainRadar && (
+          <div className="absolute top-8 right-6 pointer-events-none opacity-75">
+            <svg className="w-16 h-16" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="30" fill="rgba(34, 197, 94, 0.35)" />
+              <circle cx="45" cy="48" r="18" fill="rgba(234, 179, 8, 0.5)" />
+              <circle cx="42" cy="46" r="8" fill="rgba(239, 68, 68, 0.65)" />
+            </svg>
+          </div>
+        )}
+
+        {/* Thermal Hotspots Layer (KK7) */}
+        {hasKK7 && (
+          <div className="absolute inset-0 pointer-events-none" style={{ opacity: kk7Opacity }}>
+            <svg className="w-full h-full" viewBox="0 0 100 100">
+              <circle cx="35" cy="35" r="7" fill="rgba(239, 68, 68, 0.7)" />
+              <circle cx="35" cy="35" r="12" fill="none" stroke="rgba(249, 115, 22, 0.6)" strokeWidth="1.5" />
+              <circle cx="68" cy="72" r="5" fill="rgba(239, 68, 68, 0.7)" />
+              <circle cx="68" cy="72" r="9" fill="none" stroke="rgba(249, 115, 22, 0.6)" strokeWidth="1.5" />
+            </svg>
+          </div>
+        )}
+
+        {/* Active Airspaces Overlay */}
+        {hasAirspaces && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <rect x="55" y="10" width="40" height="30" fill="rgba(239, 68, 68, 0.08)" stroke="rgba(239, 68, 68, 0.7)" strokeWidth="1.2" strokeDasharray="3,2" />
+            <text x="58" y="20" fill="rgba(239, 68, 68, 0.9)" fontSize="4" fontFamily="sans-serif" fontWeight="bold">
+              TMA FL115
+            </text>
+          </svg>
+        )}
+
+        {/* FAI Triangle Areas & Flight Tracklog Trail */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <polygon points="20,30 80,25 60,85" fill="rgba(56, 189, 248, 0.12)" stroke="rgba(56, 189, 248, 0.6)" strokeWidth="1" strokeDasharray="2,2" />
           <path d="M 25 80 Q 40 60 55 65 T 70 40" fill="none" stroke={ctx.tracklogColorCss} strokeWidth="2.5" />
         </svg>
 
         {/* Center Pilot Arrow */}
-        <div className="relative flex flex-col items-center">
+        <div className="relative flex flex-col items-center pointer-events-none z-10">
           <Navigation className="w-5 h-5 text-red-500 fill-red-500 transform -rotate-45 drop-shadow" />
         </div>
 
         {/* Compass Rose in top-right */}
-        <div className="absolute top-2 right-2 flex flex-col items-center opacity-70">
-          <Compass className="w-4 h-4 text-sky-400" />
-          <span className="text-[8px] font-bold text-sky-400">N</span>
-        </div>
+        {hasCompass && (
+          <div className="absolute top-2 right-2 flex flex-col items-center opacity-70 pointer-events-none">
+            <Compass className="w-4 h-4 text-sky-400" />
+            <span className="text-[8px] font-bold text-sky-400">N</span>
+          </div>
+        )}
 
         {/* Wind arrow in top-left */}
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/40 px-1 py-0.5 rounded text-[9px] text-emerald-400 font-mono">
-          <Wind className="w-3 h-3" />
-          <span>14 km/h</span>
-        </div>
+        {hasWind && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 px-1 py-0.5 rounded text-[9px] text-emerald-400 font-mono pointer-events-none z-10">
+            <Wind className="w-3 h-3" />
+            <span>14 km/h</span>
+          </div>
+        )}
 
         {/* Map Scale Bar in bottom-left */}
-        <div className="absolute bottom-1.5 left-2 flex items-center gap-1 text-[8px] font-mono text-gray-400">
-          <div className="w-8 h-1 bg-gray-400/80 border-t border-b border-black"></div>
-          <span>2 km</span>
-        </div>
+        {hasScale && (
+          <div className="absolute bottom-1.5 left-2 flex items-center gap-1 text-[8px] font-mono text-gray-300 pointer-events-none bg-black/40 px-1 py-0.5 rounded">
+            <div className="w-8 h-1 bg-gray-300 border-t border-b border-black"></div>
+            <span>2 km</span>
+          </div>
+        )}
       </div>
     );
   }
