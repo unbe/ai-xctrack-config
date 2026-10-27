@@ -290,3 +290,15 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - `scripts/ReferenceRenderer.java`: Headless Java program loading `droidsans_bold_xctrack_custom.ttf` to render pixel-accurate layout ground truth directly from decompiled equations.
 - `scripts/verify-rendering.mjs`: Connects to Chromium via CDP/Puppeteer, snapshots `#phone-screen-canvas`, verifies widget text metrics and formatting, and stitches a side-by-side comparison (`rendering_comparison.png`).
 - `scripts/CompositeRenderer.java`: Builds a side-by-side visual comparison image between the APK reference and Web App canvas.
+
+---
+
+## 9. Stacking Contexts, Z-Index Management & Portals (Task 6 - v0.6.0)
+
+### 9.1 CSS Stacking Context Isolation
+- **Widget Layer Order**:
+  - Each widget in `ScreenCanvas` now explicitly defines `zIndex: isSelected ? 40 : index + 1`. This isolates widget interiors into their own stacking contexts according to their array index (Z-order).
+  - Unnecessary `z-index` classes (`z-10`) were removed from internal elements inside `WidgetPreview` (titles, compass arrows, and vario markers) so child elements cannot escape to higher stacking contexts or bleed across overlapping widgets.
+- **Root-Level Portals for Overlays & Dialogs**:
+  - All modals (`PageTaskActivationRules`, `AddPageModal`, `CustomResolutionModal`) are rendered via React `createPortal(..., document.body)` with `z-[100]`, backdrop blur, and opaque slate styling.
+  - This eliminates stacking context trapping where modals nested inside the sidebar (`z-10`) were pierced by canvas elements and widget titles.

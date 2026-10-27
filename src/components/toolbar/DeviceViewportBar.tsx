@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Smartphone,
   Tablet,
@@ -231,51 +232,53 @@ export const DeviceViewportBar: React.FC = () => {
       </div>
 
       {/* Custom Grid Modal */}
-      {customModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-in fade-in">
-          <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-5 w-80 shadow-2xl">
-            <h3 className="font-semibold text-white text-sm mb-3">Custom Grid Dimensions</h3>
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-[11px] text-gray-400 block mb-1">Columns</label>
-                <input
-                  type="number"
-                  min={5}
-                  max={100}
-                  value={customCols}
-                  onChange={(e) => setCustomCols(parseInt(e.target.value) || 20)}
-                  className="w-full bg-xctrack-dark border border-xctrack-border rounded px-2.5 py-1.5 text-white font-mono text-xs"
-                />
+      {customModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 w-80 shadow-2xl relative z-10">
+              <h3 className="font-semibold text-white text-sm mb-3">Custom Grid Dimensions</h3>
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">Columns</label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={100}
+                    value={customCols}
+                    onChange={(e) => setCustomCols(parseInt(e.target.value) || 20)}
+                    className="w-full bg-xctrack-dark border border-xctrack-border rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">Rows</label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={100}
+                    value={customRows}
+                    onChange={(e) => setCustomRows(parseInt(e.target.value) || 40)}
+                    className="w-full bg-xctrack-dark border border-xctrack-border rounded px-2.5 py-1.5 text-white font-mono text-xs"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-[11px] text-gray-400 block mb-1">Rows</label>
-                <input
-                  type="number"
-                  min={5}
-                  max={100}
-                  value={customRows}
-                  onChange={(e) => setCustomRows(parseInt(e.target.value) || 40)}
-                  className="w-full bg-xctrack-dark border border-xctrack-border rounded px-2.5 py-1.5 text-white font-mono text-xs"
-                />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setCustomModalOpen(false)}
+                  className="px-3 py-1.5 rounded text-xs text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplyCustomGrid}
+                  className="px-3.5 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
+                >
+                  Apply Grid
+                </button>
               </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setCustomModalOpen(false)}
-                className="px-3 py-1.5 rounded text-xs text-gray-400 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApplyCustomGrid}
-                className="px-3.5 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
-              >
-                Apply Grid
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

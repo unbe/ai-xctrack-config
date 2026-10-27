@@ -349,13 +349,14 @@ export const ScreenCanvas: React.FC = () => {
                 onMouseDown={(e) => handleWidgetMouseDown(e, index)}
                 onClick={(e) => e.stopPropagation()}
                 className={`absolute transition-shadow ${
-                  isSelected ? 'z-30 cursor-move ring-2 ring-sky-400 ring-offset-1 ring-offset-black/50 shadow-lg' : 'cursor-pointer hover:ring-1 hover:ring-sky-400/50'
+                  isSelected ? 'cursor-move ring-2 ring-sky-400 ring-offset-1 ring-offset-black/50 shadow-lg' : 'cursor-pointer hover:ring-1 hover:ring-sky-400/50'
                 }`}
                 style={{
                   left: `${leftPct}%`,
                   top: `${topPct}%`,
                   width: `${widthPct}%`,
                   height: `${heightPct}%`,
+                  zIndex: isSelected ? 40 : index + 1,
                 }}
               >
                 {/* Widget High-Fidelity Preview Content */}

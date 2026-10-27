@@ -80,7 +80,7 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
       {/* Widget Centered Header Title (matching XCTrack theme.a0: x = width/2, uppercase, bold, centered) */}
       {showTitle && (
         <div
-          className="w-full flex items-center justify-center px-1 pointer-events-none z-10 select-none overflow-hidden shrink-0"
+          className="w-full flex items-center justify-center px-1 pointer-events-none select-none overflow-hidden shrink-0"
           style={{ height: `${titleHeight}px` }}
         >
           <span
@@ -143,7 +143,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
         </svg>
 
         {/* Center Pilot Arrow */}
-        <div className="relative z-10 flex flex-col items-center">
+        <div className="relative flex flex-col items-center">
           <Navigation className="w-5 h-5 text-red-500 fill-red-500 transform -rotate-45 drop-shadow" />
         </div>
 
@@ -262,7 +262,7 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     return (
       <div className="w-full h-full flex flex-col justify-center items-center py-1">
         <div className="w-3 h-full max-h-48 rounded bg-gray-800/80 relative flex flex-col justify-end overflow-hidden border border-gray-700">
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/70 z-10"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/70"></div>
           {/* Lift bar */}
           <div className="w-full bg-emerald-500 rounded-t" style={{ height: '65%' }}></div>
         </div>

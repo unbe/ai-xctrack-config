@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Plus,
   Copy,
@@ -181,154 +182,159 @@ export const PageManagerPanel: React.FC = () => {
       </div>
 
       {/* Add Page Modal */}
-      {addModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-in fade-in">
-          <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-5 w-96 shadow-2xl">
-            <h3 className="font-semibold text-white text-sm mb-3">Add Screen Page</h3>
+      {addModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 w-96 shadow-2xl relative z-10">
+              <h3 className="font-semibold text-white text-sm mb-3">Add Screen Page</h3>
 
-            <div className="space-y-2 mb-4">
-              {PAGE_TEMPLATES.map((tmpl) => (
-                <div
-                  key={tmpl.shortName}
-                  onClick={() => setSelectedTemplate(tmpl.shortName)}
-                  className={`p-2.5 rounded-lg border cursor-pointer transition-colors flex items-center justify-between ${
-                    selectedTemplate === tmpl.shortName
-                      ? 'bg-sky-600/20 border-sky-500 text-white font-medium'
-                      : 'bg-xctrack-dark border-xctrack-border text-gray-300 hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {getPageIcon(tmpl.className)}
-                    <div>
-                      <div className="text-xs">{tmpl.title}</div>
-                      <div className="text-[10px] text-gray-400">{tmpl.description}</div>
+              <div className="space-y-2 mb-4">
+                {PAGE_TEMPLATES.map((tmpl) => (
+                  <div
+                    key={tmpl.shortName}
+                    onClick={() => setSelectedTemplate(tmpl.shortName)}
+                    className={`p-2.5 rounded-lg border cursor-pointer transition-colors flex items-center justify-between ${
+                      selectedTemplate === tmpl.shortName
+                        ? 'bg-sky-600/20 border-sky-500 text-white font-medium'
+                        : 'bg-xctrack-dark border-xctrack-border text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {getPageIcon(tmpl.className)}
+                      <div>
+                        <div className="text-xs">{tmpl.title}</div>
+                        <div className="text-[10px] text-gray-400">{tmpl.description}</div>
+                      </div>
                     </div>
+                    {selectedTemplate === tmpl.shortName && <Check className="w-4 h-4 text-sky-400" />}
                   </div>
-                  {selectedTemplate === tmpl.shortName && <Check className="w-4 h-4 text-sky-400" />}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <label className="flex items-center gap-2 text-xs text-gray-300 mb-5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={seedWidgets}
-                onChange={(e) => setSeedWidgets(e.target.checked)}
-                className="rounded border-gray-700 bg-xctrack-dark text-sky-600 focus:ring-0"
-              />
-              <span>Seed with official XCTrack default layout</span>
-            </label>
+              <label className="flex items-center gap-2 text-xs text-gray-300 mb-5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={seedWidgets}
+                  onChange={(e) => setSeedWidgets(e.target.checked)}
+                  className="rounded border-gray-700 bg-xctrack-dark text-sky-600 focus:ring-0"
+                />
+                <span>Seed with official XCTrack default layout</span>
+              </label>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setAddModalOpen(false)}
-                className="px-3 py-1.5 rounded text-xs text-gray-400 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddPage}
-                className="px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium shadow"
-              >
-                Create Page
-              </button>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setAddModalOpen(false)}
+                  className="px-3 py-1.5 rounded text-xs text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddPage}
+                  className="px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium shadow"
+                >
+                  Create Page
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Page Navigation Task Rules Modal */}
-      {navModalOpen && currentPage && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-in fade-in">
-          <div className="bg-xctrack-card border border-xctrack-border rounded-xl p-5 w-96 shadow-2xl">
-            <h3 className="font-semibold text-white text-sm mb-1">Page Task Activation Rules</h3>
-            <p className="text-[11px] text-gray-400 mb-4">
-              Configure which flight navigation modes automatically switch to this page during flight.
-            </p>
+      {navModalOpen &&
+        currentPage &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 w-96 shadow-2xl relative z-10">
+              <h3 className="font-semibold text-white text-sm mb-1">Page Task Activation Rules</h3>
+              <p className="text-[11px] text-gray-400 mb-4">
+                Configure which flight navigation modes automatically switch to this page during flight.
+              </p>
 
-            <div className="flex items-center gap-2 mb-3">
-              <button
-                onClick={() => editorStore.updatePageNavigations('all')}
-                className={`flex-1 py-1 rounded text-xs border transition-colors ${
-                  currentPage.navigations === 'all'
-                    ? 'bg-sky-600 text-white border-sky-500 font-medium'
-                    : 'bg-xctrack-dark text-gray-400 border-xctrack-border hover:text-white'
-                }`}
-              >
-                All Navigation Modes
-              </button>
-              <button
-                onClick={() => editorStore.updatePageNavigations('none')}
-                className={`flex-1 py-1 rounded text-xs border transition-colors ${
-                  currentPage.navigations === 'none'
-                    ? 'bg-sky-600 text-white border-sky-500 font-medium'
-                    : 'bg-xctrack-dark text-gray-400 border-xctrack-border hover:text-white'
-                }`}
-              >
-                Manual Only (None)
-              </button>
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => editorStore.updatePageNavigations('all')}
+                  className={`flex-1 py-1 rounded text-xs border transition-colors ${
+                    currentPage.navigations === 'all'
+                      ? 'bg-sky-600 text-white border-sky-500 font-medium'
+                      : 'bg-xctrack-dark text-gray-400 border-xctrack-border hover:text-white'
+                  }`}
+                >
+                  All Navigation Modes
+                </button>
+                <button
+                  onClick={() => editorStore.updatePageNavigations('none')}
+                  className={`flex-1 py-1 rounded text-xs border transition-colors ${
+                    currentPage.navigations === 'none'
+                      ? 'bg-sky-600 text-white border-sky-500 font-medium'
+                      : 'bg-xctrack-dark text-gray-400 border-xctrack-border hover:text-white'
+                  }`}
+                >
+                  Manual Only (None)
+                </button>
+              </div>
+
+              <div className="space-y-1.5 border-t border-xctrack-border pt-3 mb-5">
+                {NAVIGATION_TYPES.map((nav) => {
+                  const isSelected =
+                    currentPage.navigations === 'all' ||
+                    (Array.isArray(currentPage.navigations) && currentPage.navigations.includes(nav.className));
+
+                  const toggleNav = () => {
+                    let currentList: string[] = [];
+                    if (currentPage.navigations === 'all') {
+                      currentList = NAVIGATION_TYPES.map((n) => n.className);
+                    } else if (Array.isArray(currentPage.navigations)) {
+                      currentList = [...currentPage.navigations];
+                    }
+
+                    if (isSelected) {
+                      currentList = currentList.filter((c) => c !== nav.className);
+                    } else {
+                      currentList.push(nav.className);
+                    }
+
+                    if (currentList.length === NAVIGATION_TYPES.length) {
+                      editorStore.updatePageNavigations('all');
+                    } else if (currentList.length === 0) {
+                      editorStore.updatePageNavigations('none');
+                    } else {
+                      editorStore.updatePageNavigations(currentList);
+                    }
+                  };
+
+                  return (
+                    <label
+                      key={nav.className}
+                      className="flex items-start gap-2.5 p-2 rounded bg-xctrack-dark border border-xctrack-border/60 hover:border-gray-600 cursor-pointer text-xs"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={toggleNav}
+                        className="mt-0.5 rounded border-gray-700 bg-gray-900 text-sky-600 focus:ring-0"
+                      />
+                      <div>
+                        <div className="text-gray-200 font-medium">{nav.name}</div>
+                        <div className="text-[10px] text-gray-500">{nav.description}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setNavModalOpen(false)}
+                  className="px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
+                >
+                  Done
+                </button>
+              </div>
             </div>
-
-            <div className="space-y-1.5 border-t border-xctrack-border pt-3 mb-5">
-              {NAVIGATION_TYPES.map((nav) => {
-                const isSelected =
-                  currentPage.navigations === 'all' ||
-                  (Array.isArray(currentPage.navigations) && currentPage.navigations.includes(nav.className));
-
-                const toggleNav = () => {
-                  let currentList: string[] = [];
-                  if (currentPage.navigations === 'all') {
-                    currentList = NAVIGATION_TYPES.map((n) => n.className);
-                  } else if (Array.isArray(currentPage.navigations)) {
-                    currentList = [...currentPage.navigations];
-                  }
-
-                  if (isSelected) {
-                    currentList = currentList.filter((c) => c !== nav.className);
-                  } else {
-                    currentList.push(nav.className);
-                  }
-
-                  if (currentList.length === NAVIGATION_TYPES.length) {
-                    editorStore.updatePageNavigations('all');
-                  } else if (currentList.length === 0) {
-                    editorStore.updatePageNavigations('none');
-                  } else {
-                    editorStore.updatePageNavigations(currentList);
-                  }
-                };
-
-                return (
-                  <label
-                    key={nav.className}
-                    className="flex items-start gap-2.5 p-2 rounded bg-xctrack-dark border border-xctrack-border/60 hover:border-gray-600 cursor-pointer text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={toggleNav}
-                      className="mt-0.5 rounded border-gray-700 bg-gray-900 text-sky-600 focus:ring-0"
-                    />
-                    <div>
-                      <div className="text-gray-200 font-medium">{nav.name}</div>
-                      <div className="text-[10px] text-gray-500">{nav.description}</div>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setNavModalOpen(false)}
-                className="px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
