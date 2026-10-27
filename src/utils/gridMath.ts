@@ -119,9 +119,5 @@ export function snapRectToGrid(
     Y1: gridToNorm(clamped.gy1, gridRows),
     X2: gridToNorm(clamped.gx2, gridCols),
     Y2: gridToNorm(clamped.gy2, gridRows),
-    gridX1: clamped.gx1,
-    gridY1: clamped.gy1,
-    gridX2: clamped.gx2,
-    gridY2: clamped.gy2,
   };
 }

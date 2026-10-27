@@ -224,3 +224,58 @@ describe('KK7 Timed Thermals Properties', () => {
     expect(updatedWidget?.mapWidget_KK7timedOpacity).toBe(30);
   });
 });
+
+describe('No Rogue Grid Properties on Widget Move', () => {
+  it('does not add gridX1/gridY1/gridX2/gridY2 to widget state or serialized JSON when moving widgets', () => {
+    const config = {
+      info: {
+        device: 'Google Pixel 8 Pro',
+        exportType: 'backup',
+        versionCode: 100072,
+        versionName: '1.0.7',
+        timeCreated: '2026-10-27',
+      },
+      layout: {
+        portrait: [
+          {
+            title: 'XC Map',
+            widgets: [
+              {
+                CLASS: 'org.xcontest.XCTrack.widget.w.WSpeed',
+                X1: 0,
+                Y1: 0,
+                X2: 2000,
+                Y2: 2000,
+              },
+            ],
+          },
+        ],
+        landscape: [],
+      },
+    } as unknown as XcfgFile;
+
+    editorStore.loadConfig(config, 'test_coords.xcfg');
+    editorStore.setSnapToGrid(true);
+
+    // Move widget
+    editorStore.updateWidgetCoords(0, 1000, 1500, 3000, 3500);
+
+    const movedWidget = editorStore.getState().config?.layout.portrait[0].widgets[0] as any;
+    expect(movedWidget.X1).toBeDefined();
+    expect(movedWidget.Y1).toBeDefined();
+    expect(movedWidget.X2).toBeDefined();
+    expect(movedWidget.Y2).toBeDefined();
+    expect(movedWidget.gridX1).toBeUndefined();
+    expect(movedWidget.gridY1).toBeUndefined();
+    expect(movedWidget.gridX2).toBeUndefined();
+    expect(movedWidget.gridY2).toBeUndefined();
+
+    // Verify serialization
+    const serialized = JSON.parse(JSON.stringify(editorStore.getState().config));
+    const serializedWidget = serialized.layout.portrait[0].widgets[0];
+    expect(serializedWidget.gridX1).toBeUndefined();
+    expect(serializedWidget.gridY1).toBeUndefined();
+    expect(serializedWidget.gridX2).toBeUndefined();
+    expect(serializedWidget.gridY2).toBeUndefined();
+  });
+});

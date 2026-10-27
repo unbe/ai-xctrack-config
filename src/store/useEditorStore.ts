@@ -343,9 +343,21 @@ export const editorStore = {
     if (saveUndo) pushUndo();
 
     const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetWidget = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex].widgets[index];
+    const targetWidget = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex].widgets[index] as any;
 
-    Object.assign(targetWidget, partialProps);
+    // Purge any rogue non-XCTrack grid properties
+    delete targetWidget.gridX1;
+    delete targetWidget.gridY1;
+    delete targetWidget.gridX2;
+    delete targetWidget.gridY2;
+
+    const cleanProps = { ...partialProps } as any;
+    delete cleanProps.gridX1;
+    delete cleanProps.gridY1;
+    delete cleanProps.gridX2;
+    delete cleanProps.gridY2;
+
+    Object.assign(targetWidget, cleanProps);
 
     currentState = { ...currentState, config: newConfig };
     emitChange();
@@ -355,10 +367,11 @@ export const editorStore = {
     const page = editorStore.getCurrentPage();
     if (!page || !page.widgets[index]) return;
 
-    let finalCoords = { X1, Y1, X2, Y2 };
+    let finalCoords: { X1: number; Y1: number; X2: number; Y2: number } = { X1, Y1, X2, Y2 };
     if (currentState.snapToGrid) {
       const grid = editorStore.getCurrentGrid();
-      finalCoords = snapRectToGrid(X1, Y1, X2, Y2, grid.cols, grid.rows);
+      const snapped = snapRectToGrid(X1, Y1, X2, Y2, grid.cols, grid.rows);
+      finalCoords = { X1: snapped.X1, Y1: snapped.Y1, X2: snapped.X2, Y2: snapped.Y2 };
     }
 
     editorStore.updateWidget(index, finalCoords, saveUndo);

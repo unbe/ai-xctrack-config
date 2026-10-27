@@ -719,6 +719,17 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **Problem**: The presence of `divide-y divide-white/5` rendered horizontal divider borders between every single line of code in the diff viewer, creating excessive visual clutter reminiscent of a striped spreadsheet.
 - **Solution**: Removed the `.divide-y` classes from `SideBySideDiffView`, `UnifiedDiffView`, and `RawJsonView` in `JsonDiffViewer.tsx`. Code flows seamlessly as natural text lines with vertical line-number gutters, matching standard developer diff tooling (GitHub, VS Code).
 
+### 19.3 Removal of Horizontal Outlines on Current Diff (v0.24.0)
+- **Problem**: When jumping between differences via `Prev Diff` / `Next Diff`, the active difference line had `ring-2 ring-sky-500` applied. This Tailwind ring property drew a 2px box-shadow outline around every line of the active hunk, producing prominent horizontal top and bottom border lines across the diff.
+- **Solution**: Removed all `ring-2` outline classes from `SideBySideDiffView`, `UnifiedDiffView`, and `SemanticSummaryView`. Replaced with a subtle background highlight (`bg-sky-500/20`) and a vertical-only left border accent (`border-l-4 border-l-sky-400`), completely eliminating horizontal border lines around the current diff.
+
+### 19.4 Strict Coordinate Hygiene (Removal of Rogue gridX/gridY Properties) (v0.24.0)
+- **Problem**: In XCTrack `.xcfg` specifications, widgets only have normalized coordinates `X1`, `Y1`, `X2`, `Y2` (0..10000). The helper `snapRectToGrid` was returning `{ X1, Y1, X2, Y2, gridX1, gridY1, gridX2, gridY2 }`. When moving widgets, `updateWidgetCoords` spread this return object into `updateWidget`, contaminating the widget JSON with non-standard `gridX1`, `gridY1`, `gridX2`, `gridY2` fields that showed up in the diff and export.
+- **Solution**:
+  1. Updated `snapRectToGrid` in `gridMath.ts` to strictly return only `{ X1, Y1, X2, Y2 }`.
+  2. In `updateWidget` and `updateWidgetCoords` (`useEditorStore.ts`), explicitly purged any `gridX1`, `gridY1`, `gridX2`, `gridY2` fields.
+  3. Added `cleanWidgetForExport` in `xcfgSerializer.ts` to sanitize all widgets during JSON serialization, ensuring rogue grid properties are never written to exported `.xcfg` or diff output.
+
 
 
 

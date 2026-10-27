@@ -54,9 +54,13 @@ describe('gridMath', () => {
     expect(clamped.gy2).toBeLessThanOrEqual(19);
   });
 
-  it('snaps rectangles to grid and preserves minimum size', () => {
+  it('snaps rectangles to grid and preserves minimum size without leaking gridX/Y properties', () => {
     const snapped = snapRectToGrid(100, 200, 200, 300, 20, 40);
-    expect(snapped.gridX2).toBeGreaterThan(snapped.gridX1);
-    expect(snapped.gridY2).toBeGreaterThan(snapped.gridY1);
+    expect(snapped.X2).toBeGreaterThan(snapped.X1);
+    expect(snapped.Y2).toBeGreaterThan(snapped.Y1);
+    expect((snapped as any).gridX1).toBeUndefined();
+    expect((snapped as any).gridY1).toBeUndefined();
+    expect((snapped as any).gridX2).toBeUndefined();
+    expect((snapped as any).gridY2).toBeUndefined();
   });
 });

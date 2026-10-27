@@ -30,6 +30,16 @@ export function parseXcfg(jsonString: string): XcfgFile {
   return parsed as XcfgFile;
 }
 
+function cleanWidgetForExport(widget: any): any {
+  if (!widget || typeof widget !== 'object') return widget;
+  const cleaned = { ...widget };
+  delete cleaned.gridX1;
+  delete cleaned.gridY1;
+  delete cleaned.gridX2;
+  delete cleaned.gridY2;
+  return cleaned;
+}
+
 /**
  * Serializes an XcfgFile object to standard XCTrack .xcfg JSON string with 2-space indentation.
  * Preserves key ordering and formatting conventions.
@@ -44,7 +54,25 @@ export function serializeXcfg(xcfg: XcfgFile): string {
   }
 
   copy.info = xcfg.info;
-  copy.layout = xcfg.layout;
+
+  if (xcfg.layout) {
+    const cleanLayout: any = {};
+    for (const [ori, pages] of Object.entries(xcfg.layout)) {
+      if (Array.isArray(pages)) {
+        cleanLayout[ori] = pages.map((page: any) => ({
+          ...page,
+          widgets: Array.isArray(page.widgets)
+            ? page.widgets.map((w: any) => cleanWidgetForExport(w))
+            : page.widgets,
+        }));
+      } else {
+        cleanLayout[ori] = pages;
+      }
+    }
+    copy.layout = cleanLayout;
+  } else {
+    copy.layout = xcfg.layout;
+  }
 
   if (xcfg.preferences !== undefined) {
     copy.preferences = xcfg.preferences;

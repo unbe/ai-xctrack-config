@@ -464,8 +464,8 @@ const SideBySideDiffView: React.FC<{
               id={hunkId}
               className={`grid grid-cols-2 transition-all leading-relaxed ${
                 isActiveHunk
-                  ? 'ring-2 ring-sky-500 bg-sky-950/25 relative z-10 shadow-sm'
-                  : 'hover:bg-white/[0.02]'
+                  ? 'bg-sky-500/20 border-l-4 border-l-sky-400 relative z-10'
+                  : 'hover:bg-white/[0.02] border-l-4 border-l-transparent'
               }`}
             >
               {/* Left Pane (Original) */}
@@ -546,8 +546,8 @@ const UnifiedDiffView: React.FC<{
               id={hunkId}
               className={`flex items-center leading-relaxed transition-all ${lineBg} ${
                 isActiveHunk
-                  ? 'ring-2 ring-sky-500 bg-sky-950/30 relative z-10 shadow-sm'
-                  : 'hover:bg-white/[0.02]'
+                  ? 'bg-sky-500/20 border-l-4 border-l-sky-400 relative z-10'
+                  : 'hover:bg-white/[0.02] border-l-4 border-l-transparent'
               }`}
             >
               <span className="w-12 px-2 py-0.5 text-right text-gray-600 select-none font-mono text-[10px] border-r border-xctrack-border/40">
@@ -617,10 +617,10 @@ const SemanticSummaryView: React.FC<{
             <div
               key={idx}
               id={`summary-card-${idx}`}
-              className={`p-3 rounded-xl border transition-all ${
+              className={`p-3 rounded-xl transition-all ${
                 isActive
-                  ? 'bg-sky-950/40 border-sky-500 ring-2 ring-sky-500 shadow-lg shadow-sky-500/20'
-                  : 'bg-xctrack-card border-xctrack-border hover:border-gray-600'
+                  ? 'bg-sky-950/50 border-l-4 border-l-sky-400 border-y-transparent border-r-transparent'
+                  : 'bg-xctrack-card border-l-4 border-l-transparent border-y-transparent border-r-transparent hover:bg-white/[0.02]'
               }`}
             >
               <div className="flex items-start justify-between gap-3">
