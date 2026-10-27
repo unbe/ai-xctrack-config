@@ -529,6 +529,47 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   4. **Raw JSON View**: Formatted, readable current `.xcfg` document.
   5. **Actions**: Instant "Copy JSON" to clipboard with checkmark confirmation, direct ".xcfg Download", and "Reset Changes" to restore the baseline configuration.
 
+---
+
+## 14. Page Orientation Conversion Architecture (v0.17.0)
+
+### 14.1 The Orientation Mismatch Problem in Paragliding Layouts
+- Paragliding cockpit displays drastically differ between **Portrait** (tall, narrow aspect ratios e.g. 9:16 or 9:20; 23 cols × 52 rows) and **Landscape** (wide, short aspect ratios e.g. 16:9 or 20:9; 52 cols × 23 rows).
+- Direct proportional scaling or coordinate copying between orientations distorts map viewports, compresses side views into unusable slivers, and truncates telemetry gauge numbers.
+- Converting pages between orientations requires intelligent reflow that adheres to paragliding flight ergonomics.
+
+### 14.2 Conversion Strategies (`src/utils/orientationConverter.ts`)
+1. **Smart Cockpit Reflow (`adaptive` - Recommended)**:
+   - **Portrait $\to$ Landscape**:
+     - Map widgets (`WXCAssistant`, `WCompMap`, `WVTM`) are positioned on the right panel taking ~72% of the width (`[2800, 0, 10000, 10000]` or above sideview).
+     - Cross-section altitude view (`WSideView`) docks at the bottom right under the map (`[2800, 7800, 10000, 10000]`).
+     - Status line (`WStatusLine`) takes the top of the left deck (`[0, 0, 2800, 350]`).
+     - Data telemetry gauges are cleanly packed into 1 or 2 vertical columns in the left instrument deck (`[0, 350, 2800, 10000]`).
+     - If no map is present, data widgets are arranged in a multi-column/row grid across the entire canvas.
+   - **Landscape $\to$ Portrait**:
+     - Status line takes the top header `[0, 0, 10000, 200]`.
+     - Data telemetry gauges are arranged across the upper deck in 2–3 columns per row.
+     - Flight map takes the lower section (~52% to 68% height).
+     - Side view cross-section docks along the very bottom `[0, 8400, 10000, 10000]`.
+   - **Grid Snapping**: Every widget boundary is snapped to the active target device grid via `snapRectToGrid(..., targetGrid.cols, targetGrid.rows)`.
+2. **Official Factory Template (`template`)**:
+   - Matches known page classes (`WPXCAssistant`, `WPCompetition`, `WPThermalAssistant`) to official XCTrack factory default layouts (`PAGE_TEMPLATES.defaultLayout[toOrientation]`).
+3. **Proportional Grid Scaling (`proportional`)**:
+   - Maintains normalized relative coordinate proportions while snapping directly to target device grid cells.
+4. **Rotate 90° (`rotate90`)**:
+   - Rotates widget geometry 90 degrees with bounds clamping and grid snapping.
+
+### 14.3 User Interaction & Store Integration
+- **Store Actions** (`editorStore.convertPageOrientation`):
+  - Supports `action: 'duplicate'` (keeps original page in source orientation, appends converted page to target orientation) and `action: 'move'` (transfers page and removes original).
+  - Automatically switches `activeOrientation` and sets `activePageIndex` to the new page for immediate visual review.
+  - Fully integrated into undo/redo history.
+- **UI**:
+  - Screen Pages sidebar header features a quick `Convert` button for the active page.
+  - Each page card item features a `RotateCw` button on hover.
+  - Interactive conversion modal allows pilots to select their preferred strategy and action mode with live target orientation indicators.
+
+
 
 
 

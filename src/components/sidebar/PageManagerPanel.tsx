@@ -11,12 +11,18 @@ import {
   Flame,
   Trophy,
   FileText,
-  Share2,
   Settings,
   Check,
+  RotateCw,
+  ArrowRightLeft,
+  Sparkles,
+  Layers,
+  Smartphone,
+  Monitor,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { PAGE_TEMPLATES, NAVIGATION_TYPES } from '../../data/page-templates';
+import { ConversionStrategy } from '../../utils/orientationConverter';
 
 export const PageManagerPanel: React.FC = () => {
   const store = useEditorStore();
@@ -25,12 +31,32 @@ export const PageManagerPanel: React.FC = () => {
   const [seedWidgets, setSeedWidgets] = useState(true);
   const [navModalOpen, setNavModalOpen] = useState(false);
 
+  // Orientation conversion state
+  const [convertModalOpen, setConvertModalOpen] = useState(false);
+  const [convertTargetPageIndex, setConvertTargetPageIndex] = useState<number | null>(null);
+  const [convertStrategy, setConvertStrategy] = useState<ConversionStrategy>('adaptive');
+  const [convertAction, setConvertAction] = useState<'move' | 'duplicate'>('duplicate');
+
   const pages = store.config.layout[store.activeOrientation] || [];
   const currentPage = pages[store.activePageIndex];
+  const targetOrientation = store.activeOrientation === 'portrait' ? 'landscape' : 'portrait';
+  const convertTargetPage =
+    convertTargetPageIndex !== null && pages[convertTargetPageIndex]
+      ? pages[convertTargetPageIndex]
+      : currentPage;
 
   const handleAddPage = () => {
     editorStore.addPage(selectedTemplate, seedWidgets);
     setAddModalOpen(false);
+  };
+
+  const handleConvertPage = () => {
+    const pageIdx = convertTargetPageIndex !== null ? convertTargetPageIndex : store.activePageIndex;
+    editorStore.convertPageOrientation(pageIdx, {
+      strategy: convertStrategy,
+      action: convertAction,
+    });
+    setConvertModalOpen(false);
   };
 
   const getPageIcon = (className: string) => {
@@ -61,14 +87,28 @@ export const PageManagerPanel: React.FC = () => {
             {store.activeOrientation} ({pages.length})
           </span>
         </div>
-        <button
-          onClick={() => setAddModalOpen(true)}
-          className="flex items-center gap-1 px-2 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-medium shadow-sm transition-colors"
-          title="Add New Screen Page"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              setConvertTargetPageIndex(store.activePageIndex);
+              setConvertModalOpen(true);
+            }}
+            disabled={pages.length === 0}
+            className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 font-medium border border-slate-700 shadow-sm transition-colors disabled:opacity-40"
+            title={`Convert active page to ${targetOrientation}`}
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+            Convert
+          </button>
+          <button
+            onClick={() => setAddModalOpen(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-medium shadow-sm transition-colors"
+            title="Add New Screen Page"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add
+          </button>
+        </div>
       </div>
 
       {/* Pages List */}
@@ -151,12 +191,13 @@ export const PageManagerPanel: React.FC = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    editorStore.copyPageToOppositeOrientation(index);
+                    setConvertTargetPageIndex(index);
+                    setConvertModalOpen(true);
                   }}
                   className="p-1 hover:text-sky-400 text-gray-400"
-                  title="Copy to other orientation"
+                  title={`Convert to ${targetOrientation}`}
                 >
-                  <Share2 className="w-3 h-3" />
+                  <RotateCw className="w-3 h-3" />
                 </button>
                 <button
                   onClick={(e) => {
@@ -329,6 +370,185 @@ export const PageManagerPanel: React.FC = () => {
                   className="px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
                 >
                   Done
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Page Orientation Conversion Modal */}
+      {convertModalOpen &&
+        convertTargetPage &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 w-[440px] shadow-2xl relative z-10 text-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-sky-500/20 text-sky-400">
+                    <RotateCw className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white text-sm">
+                      Convert to {targetOrientation === 'portrait' ? 'Portrait' : 'Landscape'}
+                    </h3>
+                    <p className="text-[11px] text-gray-400">
+                      {getPageTitle(convertTargetPage.CLASS)} • {convertTargetPage.widgets?.length || 0} widgets
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-[11px] font-mono capitalize text-sky-300">
+                  {store.activeOrientation} <ArrowRightLeft className="w-3 h-3 text-gray-400" /> {targetOrientation}
+                </div>
+              </div>
+
+              {/* Conversion Strategy */}
+              <div className="my-4">
+                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  Conversion Strategy
+                </label>
+                <div className="space-y-2">
+                  <div
+                    onClick={() => setConvertStrategy('adaptive')}
+                    className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                      convertStrategy === 'adaptive'
+                        ? 'bg-sky-600/20 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-300 hover:border-slate-700'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-white">Smart Cockpit Reflow</span>
+                        <span className="text-[10px] bg-sky-500/20 text-sky-300 px-1.5 py-0.5 rounded font-medium">Recommended</span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Adapts map to {targetOrientation === 'landscape' ? 'wide side split' : 'bottom view'}, aligns gauges into neat grid rows/columns, and snaps to {store.activeDevice.name} grid.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setConvertStrategy('template')}
+                    className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                      convertStrategy === 'template'
+                        ? 'bg-sky-600/20 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-300 hover:border-slate-700'
+                    }`}
+                  >
+                    <Compass className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="font-medium text-white">Official Factory Template</span>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Uses the standard XCTrack official factory layout designed for this page type in {targetOrientation}.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setConvertStrategy('proportional')}
+                    className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                      convertStrategy === 'proportional'
+                        ? 'bg-sky-600/20 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-300 hover:border-slate-700'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="font-medium text-white">Proportional Grid Scaling</span>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Maintains relative normalized proportions of your widgets and snaps them to the target orientation grid.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setConvertStrategy('rotate90')}
+                    className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                      convertStrategy === 'rotate90'
+                        ? 'bg-sky-600/20 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-300 hover:border-slate-700'
+                    }`}
+                  >
+                    <RotateCw className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="font-medium text-white">Rotate 90°</span>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Rotates widget coordinates 90 degrees and clamps bounds to the target display.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action: Duplicate vs Move */}
+              <div className="border-t border-slate-800 pt-3 mb-5">
+                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  Action Mode
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label
+                    onClick={() => setConvertAction('duplicate')}
+                    className={`p-2.5 rounded-lg border cursor-pointer flex flex-col justify-between transition-colors ${
+                      convertAction === 'duplicate'
+                        ? 'bg-sky-600/15 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-medium text-xs mb-1">
+                      <input
+                        type="radio"
+                        name="convertAction"
+                        checked={convertAction === 'duplicate'}
+                        onChange={() => setConvertAction('duplicate')}
+                        className="text-sky-600 focus:ring-0"
+                      />
+                      <span>Duplicate & Convert</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 leading-tight">
+                      Keep original page in {store.activeOrientation}.
+                    </span>
+                  </label>
+
+                  <label
+                    onClick={() => setConvertAction('move')}
+                    className={`p-2.5 rounded-lg border cursor-pointer flex flex-col justify-between transition-colors ${
+                      convertAction === 'move'
+                        ? 'bg-sky-600/15 border-sky-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800 text-gray-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-medium text-xs mb-1">
+                      <input
+                        type="radio"
+                        name="convertAction"
+                        checked={convertAction === 'move'}
+                        onChange={() => setConvertAction('move')}
+                        className="text-sky-600 focus:ring-0"
+                      />
+                      <span>Move & Convert</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 leading-tight">
+                      Remove from {store.activeOrientation} after converting.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-slate-800 pt-3">
+                <button
+                  onClick={() => setConvertModalOpen(false)}
+                  className="px-3 py-1.5 rounded text-xs text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConvertPage}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium shadow-md shadow-sky-900/30 transition-colors"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  Convert to {targetOrientation === 'portrait' ? 'Portrait' : 'Landscape'}
                 </button>
               </div>
             </div>

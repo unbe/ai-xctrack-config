@@ -4,6 +4,7 @@ import { getDeviceById, findMatchingDevice, getDeviceGrid, DEFAULT_DEVICE_ID } f
 import { snapRectToGrid, normToGrid, gridToNorm } from '../utils/gridMath';
 import { createPageFromTemplate } from '../data/page-templates';
 import { createBlankXcfg } from '../utils/xcfgSerializer';
+import { convertPageOrientation, ConversionStrategy } from '../utils/orientationConverter';
 
 export interface EditorState {
   config: XcfgFile;
@@ -375,25 +376,52 @@ export const editorStore = {
     emitChange();
   },
 
-  copyPageToOppositeOrientation(pageIndex: number) {
-    const sourcePages = currentState.config.layout[currentState.activeOrientation] || [];
-    if (!sourcePages[pageIndex]) return;
+  convertPageOrientation(
+    pageIndex: number,
+    options?: {
+      strategy?: ConversionStrategy;
+      action?: 'move' | 'duplicate';
+    }
+  ) {
+    const { strategy = 'adaptive', action = 'duplicate' } = options || {};
+    const fromOrientation = currentState.activeOrientation;
+    const toOrientation: Orientation = fromOrientation === 'portrait' ? 'landscape' : 'portrait';
+    const sourcePages = currentState.config.layout[fromOrientation] || [];
+    const sourcePage = sourcePages[pageIndex];
+    if (!sourcePage) return;
 
-    const oppOrientation = currentState.activeOrientation === 'portrait' ? 'landscape' : 'portrait';
     pushUndo();
 
     const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const clonedPage = JSON.parse(JSON.stringify(sourcePages[pageIndex])) as XcfgPage;
-    newConfig.layout[oppOrientation].push(clonedPage);
+    const convertedPage = convertPageOrientation(
+      sourcePage,
+      fromOrientation,
+      toOrientation,
+      {
+        strategy,
+        device: currentState.activeDevice,
+        useInsets: currentState.useInsets,
+      }
+    );
+
+    newConfig.layout[toOrientation].push(convertedPage);
+
+    if (action === 'move') {
+      newConfig.layout[fromOrientation].splice(pageIndex, 1);
+    }
 
     currentState = {
       ...currentState,
       config: newConfig,
-      activeOrientation: oppOrientation,
-      activePageIndex: newConfig.layout[oppOrientation].length - 1,
+      activeOrientation: toOrientation,
+      activePageIndex: newConfig.layout[toOrientation].length - 1,
       selectedWidgetIndices: [],
     };
     emitChange();
+  },
+
+  copyPageToOppositeOrientation(pageIndex: number) {
+    this.convertPageOrientation(pageIndex, { strategy: 'adaptive', action: 'duplicate' });
   },
 
   setDevice(device: DevicePreset) {
