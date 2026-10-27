@@ -487,6 +487,23 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Detailed spec cards per device: Name, category badge (e.g. `E-Ink / RLCD`), native resolution, aspect ratio, grid cols × rows, and screen size in inches.
   - Keyboard accessible (Escape closes) with click-outside dismissal.
 
+---
+
+## 12. Privacy Architecture: Expunging Personal Flight Configs & Git Isolation (v0.15.0)
+
+### 12.1 Absolute Privacy Rule on `.xcfg` / `.xczfg` Files
+- **Rule**: User personal flight configs (`*.xcfg`, `*.xczfg`) must **NEVER** be committed into git under any circumstances.
+- **`.gitignore` Enforcement**: Added `*.xcfg` and `*.xczfg` to `.gitignore`. All personal flight backup files on disk remain untouched for local editing, but git completely ignores them.
+- **Complete History Expunge**:
+  - Filtered all git branches and commits using `git filter-branch --index-filter 'git rm --cached --ignore-unmatch *.xcfg *.xczfg' --prune-empty`.
+  - Purged original refs and ran `git reflog expire --expire=now --all` and `git gc --prune=now`.
+  - Verified with `git log --all --full-history -- "**.xcfg" "**.xczfg"`: returned 0 entries. Zero personal config files or pilot identifiers exist anywhere in git history.
+- **Built-in Anonymized Sample Configs (`src/data/sample-configs.ts`)**:
+  - The application and test suite no longer rely on personal user backup files.
+  - Built-in clean templates (`DEMO_MODERN_BACKUP`, `DEMO_XC_ASSISTANT`, `DEMO_COMPETITION`, `DEMO_PAGES_ONLY`) are generated from official factory APK page layouts (`PAGE_TEMPLATES`) with generic identifiers.
+  - Test suites (`xcfgRoundTrip.test.ts`, `configValidator.test.ts`, `widgetCatalog.test.ts`, `preferencesAndEditor.test.ts`) test against these clean built-in templates, while conditionally validating any local files if present on disk.
+
+
 
 
 
