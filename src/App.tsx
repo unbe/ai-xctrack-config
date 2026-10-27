@@ -29,6 +29,31 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // Global keyboard shortcuts (Undo / Redo)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when user is actively editing text inputs
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          editorStore.redo();
+        } else {
+          editorStore.undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        editorStore.redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0b0e14] text-gray-100 font-sans">
       <TopToolbar />

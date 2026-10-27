@@ -163,7 +163,17 @@ export const ScreenCanvas: React.FC = () => {
         return;
       }
 
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          editorStore.redo();
+        } else {
+          editorStore.undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        editorStore.redo();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         editorStore.deleteSelectedWidgets();
       } else if (e.key === 'Escape') {
