@@ -18,41 +18,7 @@ import {
   createBlankXcfg,
 } from '../../utils/xcfgSerializer';
 import { APP_VERSION } from '../../version';
-
-// Import raw sample config files available in repository
-import sample2026ModernBackup from '../../../2026-10-27_backup-00.xcfg?raw';
-import sample2026Backup from '../../../2026-03-12_backup-00.xcfg?raw';
-import sample2024Pages from '../../../2024-06-12_pages-00.xcfg?raw';
-import sample2023AugBackup from '../../../2023-08-23_backup-00.xcfg?raw';
-import sample2023JunBackup from '../../../2023-06-28_backup-00.xcfg?raw';
-
-const SAMPLES = [
-  {
-    name: '2026-10-27 (Pixel 8 Pro, 1.0.7-beta Modern Backup)',
-    filename: '2026-10-27_backup-00.xcfg',
-    raw: sample2026ModernBackup,
-  },
-  {
-    name: '2026-03-12 (Pixel 8 Pro, 0.9.12.6 Backup)',
-    filename: '2026-03-12_backup-00.xcfg',
-    raw: sample2026Backup,
-  },
-  {
-    name: '2024-06-12 (Pixel 8 Pro, 0.9.11.10 Pages)',
-    filename: '2024-06-12_pages-00.xcfg',
-    raw: sample2024Pages,
-  },
-  {
-    name: '2023-08-23 (Pixel 6 Pro, 0.9.10.3 Backup)',
-    filename: '2023-08-23_backup-00.xcfg',
-    raw: sample2023AugBackup,
-  },
-  {
-    name: '2023-06-28 (Pixel 6 Pro, 0.9.10.2 Backup)',
-    filename: '2023-06-28_backup-00.xcfg',
-    raw: sample2023JunBackup,
-  },
-];
+import { BUILTIN_SAMPLES } from '../../data/sample-configs';
 
 export const TopToolbar: React.FC = () => {
   const store = useEditorStore();
@@ -94,10 +60,9 @@ export const TopToolbar: React.FC = () => {
     }
   };
 
-  const handleLoadSample = (sample: typeof SAMPLES[0]) => {
+  const handleLoadSample = (sample: (typeof BUILTIN_SAMPLES)[0]) => {
     try {
-      const parsed = parseXcfg(sample.raw);
-      editorStore.loadConfig(parsed, sample.filename);
+      editorStore.loadConfig(sample.config, sample.filename);
     } catch (err) {
       alert('Error loading sample: ' + (err as Error).message);
     }
@@ -197,7 +162,7 @@ export const TopToolbar: React.FC = () => {
             <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-xctrack-border mb-1">
               Workspace Config Examples
             </div>
-            {SAMPLES.map((sample) => (
+            {BUILTIN_SAMPLES.map((sample) => (
               <button
                 key={sample.filename}
                 onClick={() => handleLoadSample(sample)}

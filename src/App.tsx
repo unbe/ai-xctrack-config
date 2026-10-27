@@ -8,8 +8,7 @@ import { LayerOrderPanel } from './components/sidebar/LayerOrderPanel';
 import { WidgetPropertyInspector } from './components/inspector/WidgetPropertyInspector';
 import { PreferencesEditor } from './components/preferences/PreferencesEditor';
 import { useEditorStore, editorStore } from './store/useEditorStore';
-import { parseXcfg } from './utils/xcfgSerializer';
-import sample2026Backup from '../2026-03-12_backup-00.xcfg?raw';
+import { DEMO_MODERN_BACKUP } from './data/sample-configs';
 import { FileText, PlusCircle, Layers, Sliders } from 'lucide-react';
 
 type SidebarTab = 'pages' | 'widgets' | 'layers';
@@ -19,11 +18,10 @@ export const App: React.FC = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('pages');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Load the newest 2026 backup config by default on initial start so user immediately sees their widgets
+  // Initialize with standard modern XCTrack configuration
   useEffect(() => {
     try {
-      const initial = parseXcfg(sample2026Backup);
-      editorStore.loadConfig(initial, '2026-03-12_backup-00.xcfg');
+      editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg');
     } catch (e) {
       console.error('Failed to auto-load sample:', e);
     }
