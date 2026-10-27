@@ -5,6 +5,7 @@ import { snapRectToGrid, normToGrid, gridToNorm } from '../utils/gridMath';
 import { createPageFromTemplate } from '../data/page-templates';
 import { createBlankXcfg } from '../utils/xcfgSerializer';
 import { convertPageOrientation, ConversionStrategy } from '../utils/orientationConverter';
+import { resnapPageToGrid, resnapConfigToDevice } from '../utils/smartGridResnap';
 
 export interface EditorState {
   config: XcfgFile;
@@ -14,6 +15,7 @@ export interface EditorState {
   activePageIndex: number;
   selectedWidgetIndices: number[];
   activeDevice: DevicePreset;
+  autoResnapOnDeviceChange: boolean;
   useInsets: boolean;
   customGrid: { cols: number; rows: number } | null;
   snapToGrid: boolean;
@@ -27,6 +29,29 @@ export interface EditorState {
 }
 
 const LAST_DEVICE_KEY = 'xctrack_last_device_id';
+const AUTO_RESNAP_KEY = 'xctrack_auto_resnap';
+
+export function getStoredAutoResnap(): boolean {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const val = localStorage.getItem(AUTO_RESNAP_KEY);
+      if (val !== null) return val === 'true';
+    } catch (e) {
+      // ignore
+    }
+  }
+  return true; // Default to true: smart resnap enabled
+}
+
+export function persistAutoResnap(enabled: boolean): void {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(AUTO_RESNAP_KEY, String(enabled));
+    } catch (e) {
+      // ignore
+    }
+  }
+}
 
 export function getStoredDeviceId(): string | null {
   if (typeof localStorage !== 'undefined') {
@@ -67,6 +92,7 @@ let currentState: EditorState = {
   activePageIndex: 0,
   selectedWidgetIndices: [],
   activeDevice: getStoredDevice(),
+  autoResnapOnDeviceChange: getStoredAutoResnap(),
   useInsets: true,
   customGrid: null,
   snapToGrid: true,
@@ -424,9 +450,60 @@ export const editorStore = {
     this.convertPageOrientation(pageIndex, { strategy: 'adaptive', action: 'duplicate' });
   },
 
-  setDevice(device: DevicePreset) {
+  setDevice(device: DevicePreset, options?: { autoResnap?: boolean }) {
     persistDeviceId(device.id);
-    currentState = { ...currentState, activeDevice: device, customGrid: null };
+    const shouldResnap = options?.autoResnap ?? currentState.autoResnapOnDeviceChange;
+
+    if (shouldResnap) {
+      pushUndo();
+      const resnappedConfig = resnapConfigToDevice(currentState.config, device, {
+        useInsets: currentState.useInsets,
+        pagesToResnap: 'all',
+      });
+      currentState = {
+        ...currentState,
+        config: resnappedConfig,
+        activeDevice: device,
+        customGrid: null,
+      };
+    } else {
+      currentState = {
+        ...currentState,
+        activeDevice: device,
+        customGrid: null,
+      };
+    }
+    emitChange();
+  },
+
+  setAutoResnapOnDeviceChange(enabled: boolean) {
+    persistAutoResnap(enabled);
+    currentState = { ...currentState, autoResnapOnDeviceChange: enabled };
+    emitChange();
+  },
+
+  resnapCurrentPageToGrid() {
+    const page = editorStore.getCurrentPage();
+    if (!page) return;
+    pushUndo();
+
+    const targetGrid = editorStore.getCurrentGrid();
+    const resnappedPage = resnapPageToGrid(page, targetGrid);
+
+    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
+    newConfig.layout[currentState.activeOrientation][currentState.activePageIndex] = resnappedPage;
+
+    currentState = { ...currentState, config: newConfig };
+    emitChange();
+  },
+
+  resnapAllPagesToGrid() {
+    pushUndo();
+    const resnappedConfig = resnapConfigToDevice(currentState.config, currentState.activeDevice, {
+      useInsets: currentState.useInsets,
+      pagesToResnap: 'all',
+    });
+    currentState = { ...currentState, config: resnappedConfig };
     emitChange();
   },
 

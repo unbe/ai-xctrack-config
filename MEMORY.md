@@ -569,6 +569,45 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Each page card item features a `RotateCw` button on hover.
   - Interactive conversion modal allows pilots to select their preferred strategy and action mode with live target orientation indicators.
 
+---
+
+## 15. Smart Seam-Preserving Grid Resnap Architecture (v0.18.0)
+
+### 15.1 The Seam Breakage Problem on Device Changes
+- Switching target devices with different physical screen dimensions, DPIs, or aspect ratios alters the discrete grid matrix (e.g. Google Pixel 8 Pro: 23×52 vs Hannspree Lumo 7.8": 40×54 vs Air3 7.2": 31×50).
+- If widgets are rounded independently to the new grid lines:
+  1. Floating-point rounding can round adjacent edges in opposite directions (e.g. left widget right edge rounds to column 19, right widget left edge rounds to column 20), creating an unsightly 1-cell gap or overlap.
+  2. In stacked vertical decks (e.g. 4 gauges on the left of a map), gauges can round to alternating columns, resulting in a jagged, staggered border against the map.
+  3. Outer borders ($0$ and $10000$) can round to internal grid cells, leaving unwanted margins along screen edges.
+
+### 15.2 Topological Seam Clustering (`src/utils/smartGridResnap.ts`)
+- **1D Disjoint Set Clustering**:
+  - Coordinates on each axis (X and Y) are modeled as nodes in a Disjoint Set: `w_{i}_start`, `w_{i}_end`, `__BOUNDARY_MIN__` (0), and `__BOUNDARY_MAX__` (10000).
+  - Touching edges between adjacent widgets with cross-axis overlap (distance $\le \text{tolerance}$) are unified into the same equivalence class.
+  - Colinear edges (widgets starting or ending at the same column/row divider) are unified into the same equivalence class.
+  - Edges within tolerance of the canvas edge are anchored to `__BOUNDARY_MIN__` or `__BOUNDARY_MAX__`.
+- **Discrete Apportionment**:
+  - Each cluster computes the mean of its constituent coordinates and maps to an integer grid line: $g = \text{normToGrid}(\text{idealCoord}, \text{gridSpan})$.
+  - Monotonicity and minimum dimension constraints are enforced forward and backward: $g_{k} \ge g_{k-1} + \text{minCells}$, with $g_0 = 0$ and $g_M = \text{gridSpan}$.
+  - Every edge in a seam cluster receives the exact same discrete normalized coordinate: $\text{gridToNorm}(g, \text{gridSpan})$.
+- **Guarantees**:
+  - **Zero Gaps / Zero Overlaps**: Adjacent edges share identical values: $W_A.X_2 \equiv W_B.X_1$.
+  - **Zero Border Margins**: Canvas boundaries are strictly flush with $0$ and $10000$.
+  - **No Collapsed Widgets**: Minimum 1 grid cell width and height guaranteed.
+  - **Intentional Spacing Preserved**: Spaced or floating widgets separated by more than tolerance remain separated.
+
+### 15.3 Store & UI Integration
+- **State & Persistence**:
+  - `autoResnapOnDeviceChange: boolean` (persisted in `localStorage` under `'xctrack_auto_resnap'`, defaults to `true`).
+  - `editorStore.setAutoResnapOnDeviceChange(enabled)`
+  - `editorStore.resnapCurrentPageToGrid()` (manual one-click trigger).
+  - `editorStore.resnapAllPagesToGrid()`
+- **UI Elements**:
+  - `DeviceViewportBar`: Dropdown contains `[✓] Resnap layout to grid on device change` with subtitle "Seamless • No gaps".
+  - Dedicated `Resnap Grid` button in the toolbar header for manual single-click resnapping.
+  - Full Undo/Redo history support.
+
+
 
 
 

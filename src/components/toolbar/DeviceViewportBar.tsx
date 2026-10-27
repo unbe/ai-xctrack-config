@@ -218,6 +218,23 @@ export const DeviceViewportBar: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {/* Auto-resnap toggle */}
+                <div className="pt-2 border-t border-xctrack-border/60 flex items-center justify-between text-[11px]">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none text-gray-300 hover:text-white">
+                    <input
+                      type="checkbox"
+                      checked={store.autoResnapOnDeviceChange}
+                      onChange={(e) => editorStore.setAutoResnapOnDeviceChange(e.target.checked)}
+                      className="rounded border-gray-700 bg-xctrack-dark text-sky-600 focus:ring-0 w-3.5 h-3.5"
+                    />
+                    <div className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-sky-400" />
+                      <span>Resnap layout to grid on device change</span>
+                    </div>
+                  </label>
+                  <span className="text-[10px] text-sky-400 font-mono">No gaps</span>
+                </div>
               </div>
 
               {/* Device List Area */}
@@ -310,8 +327,19 @@ export const DeviceViewportBar: React.FC = () => {
         <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-xctrack-card/60 text-gray-300 border border-xctrack-border/60 font-mono text-[11px]">
           <span className="text-gray-400">Grid:</span>
           <span className="text-sky-300 font-semibold">{currentGrid.cols} × {currentGrid.rows}</span>
-          <span className="text-[10px] text-gray-500">({widgetCount} widgets)</span>
+          <span className="text-[10px] text-gray-500">({widgetCount} w)</span>
         </div>
+
+        {/* Smart Resnap Button */}
+        <button
+          onClick={() => editorStore.resnapCurrentPageToGrid()}
+          disabled={widgetCount === 0}
+          className="px-2 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-sky-400 hover:text-sky-300 font-medium border border-slate-700 shadow-sm transition-colors flex items-center gap-1 text-xs disabled:opacity-40"
+          title={`Smart Resnap: seamlessly snap all ${widgetCount} widgets to ${currentGrid.cols}×${currentGrid.rows} grid with zero gaps`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Resnap Grid</span>
+        </button>
       </div>
 
       {/* Viewport & Canvas Controls */}
