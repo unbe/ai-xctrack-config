@@ -72,6 +72,11 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
     color: s.color,
   }));
 
+  // Natural shadow tone: warm alpine olive-brown for XContest, never pitch black
+  const svgShadowColor = terrain.id === 'XContest'
+    ? '#28321e'
+    : (isDark ? '#0f172a' : '#332b24');
+
   return (
     <div
       className={`w-full h-full relative overflow-hidden select-none ${className}`}
@@ -163,19 +168,19 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
             {/* East Massif Main Shadow */}
             <path
               d="M 760 140 Q 890 280 840 450 T 980 780 L 1000 820 L 1000 320 Q 920 220 760 140 Z"
-              fill="black"
+              fill={svgShadowColor}
               fillOpacity={shadowOpacity}
             />
             {/* Mid Col Gully Shadow */}
             <path
               d="M 580 340 Q 680 480 630 620 T 780 880 L 720 900 Q 560 720 520 480 Z"
-              fill="black"
+              fill={svgShadowColor}
               fillOpacity={shadowOpacity * 0.85}
             />
             {/* West Ridge Leeward Shadow */}
             <path
               d="M 180 220 Q 280 380 240 560 T 290 840 L 250 860 Q 180 640 140 420 Z"
-              fill="black"
+              fill={svgShadowColor}
               fillOpacity={shadowOpacity * 0.8}
             />
           </g>

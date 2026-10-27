@@ -313,7 +313,7 @@ export const XCTRACK_VTM_SPECS: Record<string, VtmThemeSpec> = {
     "id": "ClearpilotForest",
     "name": "Clearpilot [forests]",
     "osmThemeFile": "vtm_themes/lightpilot/lightpilot-transp-forest.xml",
-    "isDark": true,
+    "isDark": false,
     "hasRoads": true,
     "isPro": true,
     "description": "Semi-transparent roads with lush green forest polygons to identify landable fields and terrain.",
@@ -398,7 +398,7 @@ export const XCTRACK_VTM_SPECS: Record<string, VtmThemeSpec> = {
     "id": "ClearpilotForestBig",
     "name": "Clearpilot [forests, big fonts]",
     "osmThemeFile": "vtm_themes/lightpilot/lightpilot-transp-forest-big.xml",
-    "isDark": true,
+    "isDark": false,
     "hasRoads": true,
     "isPro": true,
     "description": "Clearpilot with forests and enlarged typography for high-vibration cockpit legibility.",
@@ -649,7 +649,7 @@ export const XCTRACK_VTM_SPECS: Record<string, VtmThemeSpec> = {
     "id": "Clearpilot",
     "name": "Clearpilot",
     "osmThemeFile": "vtm_themes/lightpilot/lightpilot-transp.xml",
-    "isDark": true,
+    "isDark": false,
     "hasRoads": true,
     "isPro": true,
     "description": "Transparent road overlay allowing maximum terrain visibility underneath.",
@@ -1813,22 +1813,47 @@ export function buildMapLibreLayersForTheme(
           ["elevation"],
           ...getElevationColorStops(terrainId),
         ],
-        "color-relief-opacity": isDark ? 0.8 : 0.7,
+        // Full opacity renders rich, vibrant hypsometric relief without background dilution
+        "color-relief-opacity": isDark ? 0.9 : 1.0,
       },
     });
   }
 
   // 3. 3D Hillshading (Slope shadows and highlights)
   if (hasHillshading) {
+    // Dynamic shadow tone:
+    // - XContest: Warm dark alpine olive-brown (never pitch black!)
+    // - Light / LightLegacy: Warm umber slate
+    // - Dark / DarkShading: Soft deep navy/charcoal with controlled opacity
+    let shadowColor = "rgba(42, 52, 34, 0.40)"; // Warm olive-brown for XContest
+    let highlightColor = "rgba(255, 255, 255, 0.65)";
+    let exaggeration = 0.35;
+
+    if (terrainId === "Dark" || terrainId === "DarkShading" || isDark) {
+      shadowColor = "rgba(15, 23, 42, 0.55)";
+      highlightColor = "rgba(148, 163, 184, 0.45)";
+      exaggeration = 0.40;
+    } else if (terrainId === "Light" || terrainId === "LightLegacy") {
+      shadowColor = "rgba(65, 55, 45, 0.38)";
+      highlightColor = "rgba(255, 255, 255, 0.65)";
+      exaggeration = 0.35;
+    } else if (terrainId === "LightShading") {
+      shadowColor = "rgba(50, 60, 75, 0.42)";
+      highlightColor = "rgba(255, 255, 255, 0.70)";
+      exaggeration = 0.42;
+    }
+
     layers.push({
       id: "hillshade",
       type: "hillshade",
       source: "terrain-dem",
       paint: {
-        "hillshade-exaggeration": 0.85,
-        "hillshade-shadow-color": isDark ? "#000000" : "#1e293b",
-        "hillshade-highlight-color": isDark ? "#64748b" : "#ffffff",
-        "hillshade-accent-color": isDark ? "#0f172a" : "#334155",
+        "hillshade-exaggeration": exaggeration,
+        "hillshade-shadow-color": shadowColor,
+        "hillshade-highlight-color": highlightColor,
+        // MUST BE TRANSPARENT: MapLibre accent color applies to all steep slopes regardless
+        // of sun direction; opaque colors darken both sunlit and shadow faces.
+        "hillshade-accent-color": "rgba(0, 0, 0, 0)",
       },
     });
   }

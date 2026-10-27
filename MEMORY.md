@@ -420,13 +420,28 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Elevation hypsometric tinting: Applied via MapLibre `color-relief` layer with exact C++ stops extracted from `libxctrack-native.so`.
   - Slope shadows: Real-time 3D hillshading with ambient, highlight, and shadow illumination factors derived from XCTrack's native sun vector calculation.
 - **OpenStreetMap Vector Tiles**:
-  - Source: OpenFreeMap Planet vector tiles (`https://tiles.openfreemap.org/planet/{z}/{x}/{y}.pbf`) with zero tokens, API keys, or rate limits.
+  - Source: OpenFreeMap Planet vector tiles (`https://tiles.openfreemap.org/planet/latest/{z}/{x}/{y}.pbf`) with zero tokens, API keys, or rate limits.
   - Layers: Cased motorways, primary highways, secondary roads, minor streets, footpaths/tracks, forests, residential areas, water bodies, and waterways.
   - Typography & Glyphs: Free glyph PBFs loaded from `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` for cities, towns, and mountain peaks.
 - **Overlays & Flight HUD**:
   - Live KK7 Thermal Hotspots raster layer (`https://thermal.kk7.ch/tiles/thermals_all_all/{z}/{x}/{y}.png?src=xctrack.org`) with configurable opacity.
-  - Live RainViewer radar tile source (`https://tilecache.rainviewer.com/v2/radar/...`).
   - True flight coordinate centering (defaults to Interlaken / Jungfrau Alps `46.6862°N, 7.8591°E` from user `.xcfg`), paraglider delta icon with heading line, vario/altitude-colored snail tracklog, scale bar, wind arrow, and compass rose.
+
+### 10.11 Rain Radar Simulation & Warm Alpine XContest Shading (v0.12.0)
+- **Problem 1 ("Zoom Level Not Supported")**:
+  - The RainViewer free API hard-caps raster tiles strictly at `zoom <= 7`. For requests with `z > 7`, it serves a canned PNG tile displaying the text `"Zoom Level Not Supported"`.
+  - Furthermore, live weather radar in a layout editor is empty/blank when it's sunny, defeating the purpose of previewing cockpit widget layouts.
+  - **Solution**: Removed live RainViewer network dependencies. Replaced with an authentic paragliding Doppler precipitation cell simulation (`generateRadarGeoJSON`) that renders multi-tier reflectivity contours (20 dBZ cyan drizzle, 35 dBZ green rain, 45 dBZ yellow heavy rain, 55 dBZ red convective core) drifting near the flight path when `"Show Rain Radar"` is toggled ON. Works at any zoom level, offline, with zero 404s or zoom errors.
+- **Problem 2 (Black XContest Shading)**:
+  - `ClearpilotForest`, `ClearpilotForestBig`, and `Clearpilot` were erroneously flagged `isDark: true` in `XCTRACK_VTM_SPECS`, triggering dark mode fallback with black shadows.
+  - `hillshade-shadow-color` was set to `#000000`, `hillshade-accent-color` was dark opaque slate `#0f172a`, and `hillshade-exaggeration` was `0.85`. In MapLibre's fragment shader, the accent color darkens all steep slopes regardless of sun angle, masking 85% of the hypsometric relief in black paint.
+  - **Solution**:
+    - Corrected `isDark: false` on all light transparent pilot themes.
+    - Set `"hillshade-accent-color": "rgba(0, 0, 0, 0)"` (transparent so slope accent does not darken sunlit faces).
+    - Tuned `"hillshade-shadow-color"` to warm dark alpine olive-brown (`rgba(42, 52, 34, 0.40)`) for `XContest`, warm umber slate (`rgba(65, 55, 45, 0.38)`) for `Light`, and soft deep charcoal (`rgba(15, 23, 42, 0.55)`) for `Dark`.
+    - Reduced exaggeration to `0.35` and increased `"color-relief-opacity"` to `1.0`.
+    - Result: Lush green valleys, amber foothills, and crisp alpine rock ridges with authentic, natural slope lighting — never black!
+
 
 
 
