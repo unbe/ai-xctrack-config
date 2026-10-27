@@ -131,6 +131,7 @@ async function testMapAndWidgets() {
   console.log('✓ Saved editor preview screenshot to:', editorScreenshot);
 
   await page.close();
+  browser.disconnect();
   console.log('Done testing map and widgets successfully!');
 }
 
