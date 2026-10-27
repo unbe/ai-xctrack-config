@@ -285,27 +285,6 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
               <Navigation className="w-6 h-6 text-red-500 fill-red-500 stroke-white stroke-2" />
             </div>
           </div>
-
-          {/* Bottom Bar: Scale Bar & Real Coordinates Badge */}
-          <div className="flex items-end justify-between">
-            {hasScale && (
-              <div className="flex flex-col bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 text-[9px] font-mono text-gray-200">
-                <div className="flex justify-between w-16 mb-0.5">
-                  <span>0</span>
-                  <span>1 km</span>
-                </div>
-                <div className="w-16 h-1.5 bg-gray-600 rounded-sm overflow-hidden flex border border-black/40">
-                  <div className="w-1/2 h-full bg-white"></div>
-                  <div className="w-1/2 h-full bg-black"></div>
-                </div>
-              </div>
-            )}
-
-            {/* Real coordinates indicator */}
-            <div className="bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded border border-white/10 text-[9px] font-mono text-emerald-400">
-              GPS: {liveCenter[1].toFixed(4)}°N, {liveCenter[0].toFixed(4)}°E
-            </div>
-          </div>
         </div>
       )}
     </div>

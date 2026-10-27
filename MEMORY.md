@@ -706,6 +706,19 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Keyboard navigation: `Alt+Up` and `Alt+Down`.
   - Smoothly scrolls the active difference into view and highlights it with an active ring border (`ring-2 ring-sky-500 bg-sky-950/30`).
 
+---
+
+## 19. HUD Overlays Cleanup & Diff Presentation Refinement (v0.22.0)
+
+### 19.1 Map Widget Authenticity (Removal of GPS Coordinates & Scale Bar)
+- **Domain Nuance**: The real Android XCTrack application does not render raw GPS latitude/longitude text badges or a static bottom-left scale bar inside map widgets (such information is either provided by dedicated value widgets like `WPosition` or omitted).
+- **Cleanup**: Removed the artificial `GPS: ...°N, ...°E` bottom-right badge and the bottom-left `0 ... 1 km` scale bar overlay from both `RealXCTrackMap.tsx` and `RealisticMapSection.tsx`, keeping only authentic paragliding HUD indicators (wind vector, compass, and snail trail).
+
+### 19.2 Diff Code Presentation (Removal of Horizontal Line Dividers)
+- **Problem**: The presence of `divide-y divide-white/5` rendered horizontal divider borders between every single line of code in the diff viewer, creating excessive visual clutter reminiscent of a striped spreadsheet.
+- **Solution**: Removed the `.divide-y` classes from `SideBySideDiffView`, `UnifiedDiffView`, and `RawJsonView` in `JsonDiffViewer.tsx`. Code flows seamlessly as natural text lines with vertical line-number gutters, matching standard developer diff tooling (GitHub, VS Code).
+
+
 
 
 

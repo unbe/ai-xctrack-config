@@ -440,7 +440,7 @@ const SideBySideDiffView: React.FC<{
       </div>
 
       {/* Code diff lines */}
-      <div className="divide-y divide-white/5">
+      <div className="py-0.5">
         {sideBySide.map((pair, idx) => {
           const left = pair.left;
           const right = pair.right;
@@ -524,7 +524,7 @@ const UnifiedDiffView: React.FC<{
 
   return (
     <div className="rounded-lg border border-xctrack-border bg-xctrack-dark font-mono text-[11px] overflow-x-auto shadow-xl">
-      <div className="divide-y divide-white/5">
+      <div className="py-0.5">
         {lines.map((line, idx) => {
           let lineBg = 'text-gray-300';
           let marker = ' ';
@@ -661,7 +661,7 @@ const RawJsonView: React.FC<{
 
   return (
     <div className="rounded-lg border border-xctrack-border bg-xctrack-dark font-mono text-[11px] overflow-x-auto shadow-xl">
-      <div className="divide-y divide-white/5">
+      <div className="py-0.5">
         {lines.map((line, idx) => {
           const matches = !searchFilter || line.toLowerCase().includes(searchFilter.toLowerCase());
           if (!matches) return null;

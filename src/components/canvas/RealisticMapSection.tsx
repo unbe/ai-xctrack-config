@@ -750,20 +750,6 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
               <span className="text-[9px] text-gray-300">km/h SW</span>
             </div>
           )}
-
-          {/* Scale Bar (Bottom Left) */}
-          {hasScale && (
-            <div className="absolute bottom-2.5 left-2.5 flex flex-col bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 pointer-events-none text-[9px] font-mono text-gray-200">
-              <div className="flex justify-between w-16 mb-0.5">
-                <span>0</span>
-                <span>1 km</span>
-              </div>
-              <div className="w-16 h-1.5 bg-gray-600 rounded-sm overflow-hidden flex border border-black/40">
-                <div className="w-1/2 h-full bg-white"></div>
-                <div className="w-1/2 h-full bg-black"></div>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
