@@ -9,19 +9,29 @@ import {
   Sliders,
   FileCode,
   Sparkles,
-  Smartphone,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
-import { parseXcfg, serializeXcfg, generateExportFilename, createBlankXcfg } from '../../utils/xcfgSerializer';
+import {
+  parseXcfg,
+  serializeXcfg,
+  generateExportFilename,
+  createBlankXcfg,
+} from '../../utils/xcfgSerializer';
 import { APP_VERSION } from '../../version';
 
 // Import raw sample config files available in repository
+import sample2026ModernBackup from '../../../2026-10-27_backup-00.xcfg?raw';
 import sample2026Backup from '../../../2026-03-12_backup-00.xcfg?raw';
 import sample2024Pages from '../../../2024-06-12_pages-00.xcfg?raw';
 import sample2023AugBackup from '../../../2023-08-23_backup-00.xcfg?raw';
 import sample2023JunBackup from '../../../2023-06-28_backup-00.xcfg?raw';
 
 const SAMPLES = [
+  {
+    name: '2026-10-27 (Pixel 8 Pro, 1.0.7-beta Modern Backup)',
+    filename: '2026-10-27_backup-00.xcfg',
+    raw: sample2026ModernBackup,
+  },
   {
     name: '2026-03-12 (Pixel 8 Pro, 0.9.12.6 Backup)',
     filename: '2026-03-12_backup-00.xcfg',
@@ -183,7 +193,7 @@ export const TopToolbar: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             Examples
           </button>
-          <div className="absolute right-0 top-full mt-1.5 w-64 bg-xctrack-card border border-xctrack-border rounded-lg shadow-xl p-1 z-50 hidden group-hover:block animate-in fade-in slide-in-from-top-1">
+          <div className="absolute right-0 top-full mt-1.5 w-72 bg-xctrack-card border border-xctrack-border rounded-lg shadow-xl p-1 z-50 hidden group-hover:block animate-in fade-in slide-in-from-top-1">
             <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-xctrack-border mb-1">
               Workspace Config Examples
             </div>
@@ -200,7 +210,13 @@ export const TopToolbar: React.FC = () => {
         </div>
 
         {/* File actions */}
-        <input ref={fileInputRef} type="file" accept=".xcfg,.json,.xccfg" onChange={handleFileUpload} className="hidden" />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xcfg,.json,.xccfg"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
 
         <button
           onClick={handleNewConfig}
@@ -223,10 +239,10 @@ export const TopToolbar: React.FC = () => {
         <button
           onClick={handleExport}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium shadow-sm transition-colors"
-          title="Export XCTrack .xcfg"
+          title="Export XCTrack .xcfg configuration"
         >
           <Download className="w-3.5 h-3.5" />
-          Export
+          Export .xcfg
         </button>
       </div>
     </header>

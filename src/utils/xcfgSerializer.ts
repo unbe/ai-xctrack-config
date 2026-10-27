@@ -1,4 +1,4 @@
-import { XcfgFile, XcfgPage, XcfgWidget } from '../types/xcfg';
+import { XcfgFile, ExportType } from '../types/xcfg';
 
 /**
  * Parses an XCTrack .xcfg or .json configuration string.
@@ -56,7 +56,13 @@ export function serializeXcfg(xcfg: XcfgFile): string {
 
   // Include any other custom/unknown top-level keys
   for (const [k, v] of Object.entries(xcfg)) {
-    if (k !== 'airspaceSelectedChannels' && k !== 'info' && k !== 'layout' && k !== 'preferences' && k !== 'flarmUserTable') {
+    if (
+      k !== 'airspaceSelectedChannels' &&
+      k !== 'info' &&
+      k !== 'layout' &&
+      k !== 'preferences' &&
+      k !== 'flarmUserTable'
+    ) {
       copy[k] = v;
     }
   }
@@ -80,8 +86,8 @@ export function createBlankXcfg(
       exportType,
       proUpTo: 0,
       timeCreated,
-      versionCode: 91260,
-      versionName: '0.9.12.6',
+      versionCode: 100072,
+      versionName: '1.0.7-beta',
     },
     layout: {
       portrait: [],
@@ -109,10 +115,10 @@ export function createBlankXcfg(
  * e.g. "Google_Pixel_8_Pro_backup_2026-03-12.xcfg"
  */
 export function generateExportFilename(xcfg: XcfgFile): string {
+  const dateStr = new Date().toISOString().slice(0, 10);
   const deviceClean = (xcfg.info.device || 'xctrack')
     .replace(/[^a-zA-Z0-9_-]/g, '_')
     .replace(/_+/g, '_');
   const type = xcfg.info.exportType || 'config';
-  const dateStr = new Date().toISOString().slice(0, 10);
   return `${deviceClean}_${type}_${dateStr}.xcfg`;
 }

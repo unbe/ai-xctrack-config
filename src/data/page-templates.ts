@@ -39,7 +39,7 @@ export interface PageTemplate {
 }
 
 /**
- * All 4 XCTrack Navigation / Task Types
+ * All 5 XCTrack Navigation / Task Types (including 1.0 TaskToLivePilot)
  */
 export const NAVIGATION_TYPES: NavigationType[] = [
   {
@@ -66,12 +66,19 @@ export const NAVIGATION_TYPES: NavigationType[] = [
     name: 'Competition task',
     description: 'Competition task navigation (SSS, turnpoints, ESS, Goal, start gates)',
   },
+  {
+    className: 'org.xcontest.XCTrack.navig.TaskToLivePilot',
+    shortName: 'TaskToLivePilot',
+    name: 'Navigate to live pilot',
+    description: 'Direct navigation to any live tracking pilot with bearing, distance, and glide ratio',
+  },
 ];
 
 export const TASK_BACK_TO_TAKEOFF = NAVIGATION_TYPES[0];
 export const TASK_TRIANGLE_CLOSING = NAVIGATION_TYPES[1];
 export const TASK_TO_WAYPOINT = NAVIGATION_TYPES[2];
 export const TASK_COMPETITION = NAVIGATION_TYPES[3];
+export const TASK_TO_LIVE_PILOT = NAVIGATION_TYPES[4];
 
 /**
  * 1. XC Assistant Page Template
@@ -85,6 +92,7 @@ export const WPXCAssistant: PageTemplate = {
     'org.xcontest.XCTrack.navig.TaskBackToTakeoff',
     'org.xcontest.XCTrack.navig.TaskTriangleClosing',
     'org.xcontest.XCTrack.navig.TaskToWaypoint',
+    'org.xcontest.XCTrack.navig.TaskToLivePilot',
   ],
   defaultLayout: {
     portrait: [

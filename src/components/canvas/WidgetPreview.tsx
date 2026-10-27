@@ -6,6 +6,7 @@ import {
   Battery,
   Wifi,
   Satellite,
+  Volume1,
   Volume2,
   VolumeX,
   Camera,
@@ -299,6 +300,12 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     } else if (name === 'WButtonVario') {
       label = 'Vario';
       IconComp = Volume2;
+    } else if (name === 'WButtonVolume') {
+      label = widget.type === 1 || widget.type === 'ACTION_UP' ? 'Vol +' : 'Vol -';
+      IconComp = widget.type === 1 || widget.type === 'ACTION_UP' ? Volume2 : Volume1;
+    } else if (name === 'WButtonVolumeReminder') {
+      label = 'Volume!';
+      IconComp = VolumeX;
     } else if (name === 'WButtonBrightness') {
       label = widget.action === 'ACTION_MINUS' ? 'Dim' : 'Bright';
       IconComp = Sun;
@@ -413,6 +420,10 @@ function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderCon
       break;
     case 'WOptiUnfinishedTriangle':
       val = '82.4';
+      unit = 'km';
+      break;
+    case 'WOptiUnfinishedFAIPotential':
+      val = '120.5';
       unit = 'km';
       break;
     case 'WNextTurnpointDistance':

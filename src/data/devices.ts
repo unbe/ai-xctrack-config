@@ -108,6 +108,9 @@ export function findMatchingDevice(deviceString?: string): DevicePreset {
   if (lower.includes('palma')) {
     return getDeviceById('onyx-boox-palma');
   }
+  if (lower.includes('hannspree') || lower.includes('lumo') || lower.includes('sn08hd1b')) {
+    return getDeviceById('hannspree-lumo-7.8');
+  }
 
   for (const device of ALL_DEVICES) {
     if (lower.includes(device.name.toLowerCase()) || lower.includes(device.id)) {

@@ -1,6 +1,6 @@
 // XCTrack Configuration Domain Models & Type Definitions
 
-export type ExportType = 'pages' | 'backup';
+export type ExportType = 'pages' | 'backup' | 'backupwithmedia';
 export type Orientation = 'portrait' | 'landscape';
 
 export interface XcfgInfo {
@@ -113,7 +113,7 @@ export interface DevicePreset {
   id: string;
   name: string;
   brand: string;
-  category: 'Dedicated Flight Instrument' | 'Rugged Tablet' | 'Rugged Phone' | 'Phone' | 'Foldable' | 'E-Ink' | 'HUD Glasses' | 'Custom';
+  category: 'Dedicated Flight Instrument' | 'Dedicated Instrument' | 'Rugged Tablet' | 'Rugged Phone' | 'Phone' | 'Foldable' | 'E-Ink' | 'HUD Glasses' | 'Custom';
   screenWidthPx: number;
   screenHeightPx: number;
   densityDpi: number;

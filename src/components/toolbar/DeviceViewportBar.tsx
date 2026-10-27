@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Smartphone,
@@ -14,6 +14,9 @@ import {
   Settings2,
   Check,
   ChevronDown,
+  Search,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { getAllDevices, getDeviceCategories, getDevicesByCategory } from '../../data/devices';
@@ -22,15 +25,90 @@ import { DevicePreset, Orientation } from '../../types/xcfg';
 export const DeviceViewportBar: React.FC = () => {
   const store = useEditorStore();
   const [deviceMenuOpen, setDeviceMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [customModalOpen, setCustomModalOpen] = useState(false);
   const [customCols, setCustomCols] = useState(23);
   const [customRows, setCustomRows] = useState(48);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const categories = getDeviceCategories();
+  const allDevices = useMemo(() => getAllDevices(), []);
   const currentGrid = editorStore.getCurrentGrid();
   const pages = store.config.layout[store.activeOrientation] || [];
   const currentPage = pages[store.activePageIndex];
   const widgetCount = currentPage?.widgets.length || 0;
+
+  // Filter devices based on search query and category
+  const filteredDevices = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return allDevices.filter((d) => {
+      if (selectedCategory !== 'all' && d.category !== selectedCategory) {
+        return false;
+      }
+      if (!q) return true;
+      return (
+        d.name.toLowerCase().includes(q) ||
+        d.brand.toLowerCase().includes(q) ||
+        (d.category && d.category.toLowerCase().includes(q)) ||
+        (d.notes && d.notes.toLowerCase().includes(q)) ||
+        (d.screenSizeInches && `${d.screenSizeInches}`.includes(q)) ||
+        `${d.screenWidthPx}x${d.screenHeightPx}`.includes(q) ||
+        `${d.screenHeightPx}x${d.screenWidthPx}`.includes(q) ||
+        `${d.gridPortrait.cols}x${d.gridPortrait.rows}`.includes(q) ||
+        `${d.gridLandscape.cols}x${d.gridLandscape.rows}`.includes(q)
+      );
+    });
+  }, [allDevices, searchQuery, selectedCategory]);
+
+  // Group filtered devices by category when not searching, or show flat when searching
+  const groupedFiltered = useMemo(() => {
+    if (searchQuery.trim()) {
+      return null; // Flat list for search
+    }
+    const grouped: Record<string, DevicePreset[]> = {};
+    for (const d of filteredDevices) {
+      const cat = d.category || 'Other';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(d);
+    }
+    return grouped;
+  }, [filteredDevices, searchQuery]);
+
+  // Focus search input when opening dropdown
+  useEffect(() => {
+    if (deviceMenuOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    } else {
+      setSearchQuery('');
+    }
+  }, [deviceMenuOpen]);
+
+  // Close dropdown on click outside or Escape
+  useEffect(() => {
+    if (!deviceMenuOpen) return;
+
+    const handlePointerDown = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDeviceMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setDeviceMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [deviceMenuOpen]);
 
   const handleDeviceSelect = (device: DevicePreset) => {
     editorStore.setDevice(device);
@@ -45,17 +123,23 @@ export const DeviceViewportBar: React.FC = () => {
     setCustomModalOpen(false);
   };
 
+  const isTablet =
+    store.activeDevice.category === 'Rugged Tablet' ||
+    store.activeDevice.category === 'Dedicated Flight Instrument' ||
+    store.activeDevice.category === 'Dedicated Instrument' ||
+    (store.activeDevice.screenSizeInches && store.activeDevice.screenSizeInches >= 7.0);
+
   return (
     <div className="h-11 bg-xctrack-dark/95 border-b border-xctrack-border px-4 flex items-center justify-between text-xs select-none">
       {/* Device & Orientation Picker */}
       <div className="flex items-center gap-3">
         {/* Device selector dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDeviceMenuOpen(!deviceMenuOpen)}
             className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-xctrack-card text-gray-200 hover:text-white border border-xctrack-border hover:border-gray-500 transition-colors"
           >
-            {store.activeDevice.category === 'Rugged Tablet' || store.activeDevice.category === 'Dedicated Flight Instrument' ? (
+            {isTablet ? (
               <Tablet className="w-3.5 h-3.5 text-sky-400" />
             ) : (
               <Smartphone className="w-3.5 h-3.5 text-sky-400" />
@@ -65,50 +149,120 @@ export const DeviceViewportBar: React.FC = () => {
           </button>
 
           {deviceMenuOpen && (
-            <div className="absolute left-0 top-full mt-1.5 w-80 bg-xctrack-card border border-xctrack-border rounded-lg shadow-2xl p-1 z-50 max-h-[480px] overflow-y-auto animate-in fade-in">
-              <div className="px-2 py-1 text-[10px] font-semibold uppercase text-gray-400 border-b border-xctrack-border flex justify-between items-center">
-                <span>Select Target Screen Preset</span>
-                <button
-                  onClick={() => {
-                    setDeviceMenuOpen(false);
-                    setCustomModalOpen(true);
-                  }}
-                  className="text-sky-400 hover:text-sky-300 normal-case font-normal"
-                >
-                  Custom Grid...
-                </button>
-              </div>
+            <div className="absolute left-0 top-full mt-1.5 w-[390px] bg-xctrack-card border border-xctrack-border rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in flex flex-col max-h-[520px]">
+              {/* Header with Search and Custom Grid action */}
+              <div className="p-2.5 border-b border-xctrack-border bg-xctrack-dark/70 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase text-gray-400 tracking-wider">
+                    Target Device Preset ({allDevices.length})
+                  </span>
+                  <button
+                    onClick={() => {
+                      setDeviceMenuOpen(false);
+                      setCustomModalOpen(true);
+                    }}
+                    className="text-sky-400 hover:text-sky-300 text-[11px] font-medium"
+                  >
+                    Custom Grid...
+                  </button>
+                </div>
 
-              {categories.map((cat) => {
-                const devs = getDevicesByCategory(cat);
-                if (devs.length === 0) return null;
-                return (
-                  <div key={cat} className="mt-1">
-                    <div className="px-2 py-1 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-                      {cat}
-                    </div>
-                    {devs.map((d) => (
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search lumo, pixel, air3, boox, 7.8, e-ink..."
+                    className="w-full bg-xctrack-card border border-xctrack-border rounded-md pl-8 pr-7 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category filter pills */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-0.5 no-scrollbar text-[10px]">
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-colors ${
+                      selectedCategory === 'all'
+                        ? 'bg-sky-600 text-white font-medium shadow-sm'
+                        : 'bg-xctrack-card text-gray-400 hover:text-white border border-xctrack-border'
+                    }`}
+                  >
+                    All ({allDevices.length})
+                  </button>
+                  {categories.map((cat) => {
+                    const count = getDevicesByCategory(cat).length;
+                    return (
                       <button
-                        key={d.id}
-                        onClick={() => handleDeviceSelect(d)}
-                        className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-center justify-between transition-colors ${
-                          store.activeDevice.id === d.id
-                            ? 'bg-sky-600/30 text-sky-200 font-medium'
-                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-colors ${
+                          selectedCategory === cat
+                            ? 'bg-sky-600 text-white font-medium shadow-sm'
+                            : 'bg-xctrack-card text-gray-400 hover:text-white border border-xctrack-border'
                         }`}
                       >
-                        <div className="truncate mr-2">
-                          <div>{d.name}</div>
-                          <div className="text-[10px] text-gray-400">
-                            {d.screenWidthPx}×{d.screenHeightPx} ({d.aspectRatio}) • {d.gridPortrait.cols}×{d.gridPortrait.rows} grid
-                          </div>
-                        </div>
-                        {store.activeDevice.id === d.id && <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
+                        {cat} ({count})
                       </button>
-                    ))}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Device List Area */}
+              <div className="overflow-y-auto p-1.5 flex-1 divide-y divide-xctrack-border/40">
+                {filteredDevices.length === 0 ? (
+                  <div className="py-8 text-center px-4">
+                    <p className="text-gray-400 text-xs mb-2">
+                      No devices matching &ldquo;<span className="text-white font-medium">{searchQuery}</span>&rdquo;
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedCategory('all');
+                      }}
+                      className="text-xs text-sky-400 hover:text-sky-300 underline"
+                    >
+                      Reset filters
+                    </button>
                   </div>
-                );
-              })}
+                ) : groupedFiltered ? (
+                  /* Grouped view by category */
+                  Object.entries(groupedFiltered).map(([cat, devs]) => {
+                    if (devs.length === 0) return null;
+                    return (
+                      <div key={cat} className="pt-1.5 first:pt-0">
+                        <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                          <span>{cat}</span>
+                          <span className="text-gray-500 font-mono text-[9px]">{devs.length}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          {devs.map((d) => renderDeviceItem(d, store.activeDevice.id, handleDeviceSelect))}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  /* Flat search results */
+                  <div className="space-y-0.5">
+                    <div className="px-2 py-1 text-[10px] text-gray-400">
+                      Found {filteredDevices.length} matching {filteredDevices.length === 1 ? 'device' : 'devices'}
+                    </div>
+                    {filteredDevices.map((d) => renderDeviceItem(d, store.activeDevice.id, handleDeviceSelect))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -282,3 +436,51 @@ export const DeviceViewportBar: React.FC = () => {
     </div>
   );
 };
+
+function renderDeviceItem(
+  d: DevicePreset,
+  activeDeviceId: string,
+  onSelect: (device: DevicePreset) => void
+) {
+  const isSelected = activeDeviceId === d.id;
+  const isTablet =
+    d.category === 'Rugged Tablet' ||
+    d.category === 'Dedicated Flight Instrument' ||
+    d.category === 'Dedicated Instrument' ||
+    (d.screenSizeInches && d.screenSizeInches >= 7.0);
+
+  return (
+    <button
+      key={d.id}
+      onClick={() => onSelect(d)}
+      className={`w-full text-left px-2.5 py-2 rounded-md text-xs flex items-center justify-between transition-colors ${
+        isSelected
+          ? 'bg-sky-600/30 text-sky-200 font-medium border border-sky-500/40 shadow-sm'
+          : 'text-gray-300 hover:bg-white/5 hover:text-white border border-transparent'
+      }`}
+    >
+      <div className="truncate mr-2 flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className="font-medium text-white truncate">{d.name}</span>
+          {d.category === 'E-Ink' && (
+            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-950/70 text-amber-300 border border-amber-800/50 shrink-0">
+              E-Ink / RLCD
+            </span>
+          )}
+        </div>
+        <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5 font-mono">
+          <span>{d.screenWidthPx}×{d.screenHeightPx} ({d.aspectRatio})</span>
+          <span>•</span>
+          <span className="text-sky-300/80">{d.gridPortrait.cols}×{d.gridPortrait.rows} grid</span>
+          {d.screenSizeInches && (
+            <>
+              <span>•</span>
+              <span className="text-gray-300">{d.screenSizeInches}&quot;</span>
+            </>
+          )}
+        </div>
+      </div>
+      {isSelected && <Check className="w-4 h-4 text-sky-400 shrink-0" />}
+    </button>
+  );
+}

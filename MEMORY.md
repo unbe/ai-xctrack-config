@@ -449,6 +449,45 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - **Selected State**: Once selected (`isSelected === true`), `RealXCTrackMap.tsx` enables `pointer-events-auto`, re-enables map navigation (`map.dragPan.enable()`, `map.scrollZoom.enable()`), and attaches `onMouseDown={(e) => e.stopPropagation()}` on the map container. Clicking and dragging inside the map pans the map across the real terrain smoothly and never moves the widget container.
   - **Repositioning Selected Maps**: Added a dedicated "Move" grip pill (`<Move className="w-2.5 h-2.5" /> Move`) to the selection overlay header in `ScreenCanvas.tsx`. The user can drag this grip to move the widget across the canvas even while the map is active and selected.
 
+---
+
+## 11. XCTrack 1.0 Support, Hannspree Lumo 7.8 & Enhanced Device Search (v0.14.0)
+
+### 11.1 XCTrack 1.0 Modern Architecture & `.xcfg` Standardization
+- **Standardized on `.xcfg`**: All imports, exports, and templates use standard UTF-8 `.xcfg` JSON.
+- **Modern Example Added**: `2026-10-27_backup-00.xcfg` (`info.versionName: "1.0.7-beta"`, `versionCode: 100072`, `device: "Google Pixel 8 Pro 17"`). Contains 6 portrait pages and 3 landscape pages with up-to-date XCTrack 1.0 widget layouts and preferences.
+- **New XCTrack 1.0 Widgets Cataloged (85 Total Widgets)**:
+  1. `WButtonVolume` ("Media volume"): Controls device audio volume up/down with optional long-click confirmation (`type`, `longClick`).
+  2. `WButtonVolumeReminder` ("Volume reminder"): Appears only when media volume is below target to ensure pilots hear vario audio.
+  3. `WOptiUnfinishedFAIPotential` ("FAI potential"): Real, max, and min achievable FAI triangle lengths from longest leg.
+  4. `WDebugHwAccTestMap` ("Debug HW acceleration test map"): Map overlay verifying hardware acceleration status.
+  5. `WEmitTestEvent` ("Emit a test event"): Triggers test events on tap.
+  6. `WProFallback` ("Pro"): Fallback placeholder for Pro features.
+- **New Navigation Mode**: Added `org.xcontest.XCTrack.navig.TaskToLivePilot` ("Navigate to live pilot") to `NAVIGATION_TYPES` and `WPXCAssistant.defaultNavigations`.
+
+### 11.2 Hannspree Lumo 7.8" Display & Grid Specification
+- **Hardware Profile**:
+  - Model: SN08HD1B (`Android 14`, MediaTek MT8781).
+  - Screen Size: 7.8 inches (19.8 cm), 4:3 aspect ratio.
+  - Native Resolution: `768 × 1024` pixels portrait (`1024 × 768` landscape).
+  - Display Technology: Reflective LCD (RLCD) ecoVISION™ Paper Display (full sunlight-readable color, 60 Hz high refresh rate, 5 ms response, zero ghosting, integrated adjustable front light).
+  - PPI / Density: `164 PPI` (~160 mdpi baseline).
+  - Physical Dimensions: 134.1 × 185.1 × 6.6 mm, 250 g.
+- **XCTrack Grid Dimensions**:
+  - Cell size: `19.12 px` (`19.12 dp`).
+  - Recommended Grid: Portrait **`40 × 54`** / Landscape **`54 × 40`**.
+  - Inset Grid (with status/nav bars): Portrait **`40 × 50`** / Landscape **`54 × 37`**.
+  - Auto-detection: Matches `"Hannspree"`, `"Lumo"`, and `"SN08HD1B"`.
+
+### 11.3 Searchable & Filterable Device Picker
+- **Problem**: Finding a target device among 43+ presets in a raw scrolling menu was cumbersome.
+- **Solution**:
+  - Instant live search input with autofocus and clear button (`Search lumo, pixel, air3, boox, 7.8, e-ink...`).
+  - Horizontal category filter pills: `All (43)`, `E-Ink (6)`, `Dedicated (4)`, `Rugged Tablet (6)`, `Rugged Phone (6)`, `Phone (20)`, `Foldable (2)`.
+  - Detailed spec cards per device: Name, category badge (e.g. `E-Ink / RLCD`), native resolution, aspect ratio, grid cols × rows, and screen size in inches.
+  - Keyboard accessible (Escape closes) with click-outside dismissal.
+
+
 
 
 

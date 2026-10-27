@@ -21,8 +21,8 @@ import {
 } from '../data/page-templates';
 
 describe('widgets-catalog', () => {
-  it('exports exactly 79 registered widget classes', () => {
-    expect(WIDGET_CATALOG).toHaveLength(79);
+  it('exports exactly 85 registered widget classes', () => {
+    expect(WIDGET_CATALOG).toHaveLength(85);
   });
 
   it('covers all 11 categories with the exact expected counts', () => {
@@ -33,14 +33,14 @@ describe('widgets-catalog', () => {
       System: 3,
       Flying: 21,
       Air: 8,
-      XContest: 4,
+      XContest: 5,
       Navigation: 11,
       Competition: 12,
       Livetracking: 1,
-      'Action Buttons': 7,
-      Others: 3,
-      Testing: 2,
-      Debug: 7,
+      'Action Buttons': 9,
+      Others: 4,
+      Testing: 3,
+      Debug: 8,
     };
 
     let total = 0;
@@ -49,7 +49,7 @@ describe('widgets-catalog', () => {
       expect(categoryWidgets, `Category ${cat} count mismatch`).toHaveLength(count);
       total += count;
     }
-    expect(total).toBe(79);
+    expect(total).toBe(85);
   });
 
   it('validates required fields on every widget definition', () => {
@@ -81,10 +81,10 @@ describe('widgets-catalog', () => {
       classNames.add(w.className);
     }
 
-    expect(classNames.size).toBe(79);
+    expect(classNames.size).toBe(85);
   });
 
-  it('identifies the 12 Pro widgets accurately', () => {
+  it('identifies the 14 Pro widgets accurately', () => {
     const proWidgets = WIDGET_CATALOG.filter((w) => w.isPro).map((w) => w.shortName);
     const expectedPro = [
       'WBrightnessInfo',
@@ -99,6 +99,8 @@ describe('widgets-catalog', () => {
       'WButtonBrightness',
       'WButtonIntentLauncher',
       'WWebView',
+      'WOptiUnfinishedFAIPotential',
+      'WProFallback',
     ];
 
     expect(proWidgets.sort()).toEqual(expectedPro.sort());
@@ -192,14 +194,15 @@ describe('page-templates', () => {
     expect(WPEmpty.defaultLayout.landscape).toHaveLength(0);
   });
 
-  it('exports all 4 navigation types with English names', () => {
-    expect(NAVIGATION_TYPES).toHaveLength(4);
+  it('exports all 5 navigation types with English names', () => {
+    expect(NAVIGATION_TYPES).toHaveLength(5);
 
     const navClassNames = NAVIGATION_TYPES.map((n) => n.className);
     expect(navClassNames).toContain('org.xcontest.XCTrack.navig.TaskBackToTakeoff');
     expect(navClassNames).toContain('org.xcontest.XCTrack.navig.TaskTriangleClosing');
     expect(navClassNames).toContain('org.xcontest.XCTrack.navig.TaskToWaypoint');
     expect(navClassNames).toContain('org.xcontest.XCTrack.navig.TaskCompetition');
+    expect(navClassNames).toContain('org.xcontest.XCTrack.navig.TaskToLivePilot');
 
     const takeoff = getNavigationType('TaskBackToTakeoff');
     expect(takeoff?.name).toBe('Back to takeoff');
@@ -212,6 +215,9 @@ describe('page-templates', () => {
 
     const comp = getNavigationType('TaskCompetition');
     expect(comp?.name).toBe('Competition task');
+
+    const livePilot = getNavigationType('TaskToLivePilot');
+    expect(livePilot?.name).toBe('Navigate to live pilot');
   });
 
   it('creates page clones from templates without mutating the template', () => {

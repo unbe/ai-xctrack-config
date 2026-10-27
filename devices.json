@@ -1884,6 +1884,60 @@
           "rows": 37
         }
       }
+    },
+    {
+      "id": "hannspree-lumo-7.8",
+      "name": "Hannspree Lumo 7.8\"",
+      "brand": "Hannspree",
+      "category": "E-Ink",
+      "screenSizeInches": 7.8,
+      "nativeResolution": {
+        "width": 768,
+        "height": 1024
+      },
+      "aspectRatio": "4:3",
+      "ppi": 164,
+      "androidDensityDpi": 160,
+      "panelType": "Reflective LCD (RLCD) ecoVISION",
+      "brightnessNits": 0,
+      "batteryMah": 3000,
+      "sources": [
+        "hannspree.com",
+        "xctrack.org"
+      ],
+      "notes": "7.8-inch reflective color LCD (RLCD) ecoVISION paper tablet with front light. 60Hz refresh with full sunlight readability and zero ghosting.",
+      "cellSizePx": 19.12,
+      "cellSizeDp": 19.12,
+      "logicalViewportDp": {
+        "portrait": {
+          "width": 768.0,
+          "height": 1024.0
+        },
+        "landscape": {
+          "width": 1024.0,
+          "height": 768.0
+        }
+      },
+      "recommendedGrid": {
+        "portrait": {
+          "cols": 40,
+          "rows": 54
+        },
+        "landscape": {
+          "cols": 54,
+          "rows": 40
+        }
+      },
+      "systemInsetsGrid": {
+        "portrait": {
+          "cols": 40,
+          "rows": 50
+        },
+        "landscape": {
+          "cols": 54,
+          "rows": 37
+        }
+      }
     }
   ],
   "hudDevices": [

@@ -70,6 +70,6 @@ describe('widgets-catalog', () => {
     expect(PAGE_TEMPLATES.some(p => p.shortName === 'WPCompetition')).toBe(true);
     expect(PAGE_TEMPLATES.some(p => p.shortName === 'WPEmpty')).toBe(true);
 
-    expect(NAVIGATION_TYPES.length).toBe(4);
+    expect(NAVIGATION_TYPES.length).toBe(5);
   });
 });

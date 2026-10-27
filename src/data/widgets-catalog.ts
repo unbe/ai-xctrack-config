@@ -10573,6 +10573,382 @@ export const WIDGET_CATALOG: WidgetDefinition[] = [
         "description": "VTM styling theme"
       }
     ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WButtonVolume",
+    "shortName": "WButtonVolume",
+    "title": "Media volume",
+    "description": "Increase or decrease media volume",
+    "category": "Action Buttons",
+    "defaultGrid": {
+      "width": 4,
+      "height": 4
+    },
+    "isPro": false,
+    "baseClass": "d0",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 80,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency (100% = transparent, 0% = opaque)"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      },
+      {
+        "key": "_title",
+        "label": "Show Title",
+        "type": "boolean",
+        "defaultValue": false,
+        "description": "Display title text on button"
+      },
+      {
+        "key": "type",
+        "label": "Action",
+        "type": "enum",
+        "defaultValue": 1,
+        "options": [
+          { "value": 1, "label": "Volume Up (+)" },
+          { "value": 0, "label": "Volume Down (-)" }
+        ],
+        "description": "Media volume direction"
+      },
+      {
+        "key": "longClick",
+        "label": "Require Long Click",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Require long click to change volume"
+      }
+    ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WButtonVolumeReminder",
+    "shortName": "WButtonVolumeReminder",
+    "title": "Volume reminder",
+    "description": "Shown only when the media volume is below the configured target volume. Tap to raise the volume to the target.",
+    "category": "Action Buttons",
+    "defaultGrid": {
+      "width": 4,
+      "height": 4
+    },
+    "isPro": false,
+    "baseClass": "d0",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 80,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency (100% = transparent, 0% = opaque)"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      },
+      {
+        "key": "_title",
+        "label": "Show Title",
+        "type": "boolean",
+        "defaultValue": false,
+        "description": "Display title text on button"
+      },
+      {
+        "key": "longClick",
+        "label": "Require Long Click",
+        "type": "boolean",
+        "defaultValue": false,
+        "description": "Require long click to raise volume"
+      }
+    ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WOptiUnfinishedFAIPotential",
+    "shortName": "WOptiUnfinishedFAIPotential",
+    "title": "FAI potential",
+    "description": "Min and max FAI triangle length still achievable from the longest leg of the unfinished triangle",
+    "category": "XContest",
+    "defaultGrid": {
+      "width": 8,
+      "height": 3
+    },
+    "isPro": true,
+    "baseClass": "MultiValueWidget",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": false,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 100,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency (100% = transparent, 0% = opaque)"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      },
+      {
+        "key": "_title",
+        "label": "Show Title",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Display widget title"
+      },
+      {
+        "key": "titletext",
+        "label": "Custom Title",
+        "type": "string",
+        "defaultValue": "",
+        "description": "Custom title override (Pro feature)"
+      },
+      {
+        "key": "_unit",
+        "label": "Show Unit",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Display unit label"
+      },
+      {
+        "key": "real",
+        "label": "Real Potential (▲)",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Show the largest FAI triangle justified by flight so far"
+      },
+      {
+        "key": "max",
+        "label": "Maximum Achievable (↑)",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Show maximum achievable FAI triangle length"
+      },
+      {
+        "key": "min",
+        "label": "Minimum Achievable (↓)",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Show minimum achievable FAI triangle length"
+      }
+    ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WDebugHwAccTestMap",
+    "shortName": "WDebugHwAccTestMap",
+    "title": "Debug HW acceleration test map",
+    "description": "Empty map widget that prints the results of Canvas.isHardwareAccelerated() and View.isHardwareAccelerated()",
+    "category": "Debug",
+    "defaultGrid": {
+      "width": 100,
+      "height": 50
+    },
+    "isPro": false,
+    "baseClass": "MapWidget",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 100,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      }
+    ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WEmitTestEvent",
+    "shortName": "WEmitTestEvent",
+    "title": "Emit a test event",
+    "description": "Triggers the selected event on click",
+    "category": "Testing",
+    "defaultGrid": {
+      "width": 4,
+      "height": 4
+    },
+    "isPro": false,
+    "baseClass": "d0",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 80,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      },
+      {
+        "key": "event",
+        "label": "Test Event",
+        "type": "string",
+        "defaultValue": "TAKEOFF",
+        "description": "Event name to trigger"
+      }
+    ]
+  },
+  {
+    "className": "org.xcontest.XCTrack.widget.w.WProFallback",
+    "shortName": "WProFallback",
+    "title": "Pro",
+    "description": "Pro fallback placeholder widget",
+    "category": "Others",
+    "defaultGrid": {
+      "width": 5,
+      "height": 3
+    },
+    "isPro": true,
+    "baseClass": "d0",
+    "properties": [
+      {
+        "key": "_border",
+        "label": "Border",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Draw widget border"
+      },
+      {
+        "key": "_bg",
+        "label": "Background Transparency",
+        "type": "number",
+        "defaultValue": 80,
+        "min": 0,
+        "max": 100,
+        "step": 20,
+        "unit": "%",
+        "description": "Background transparency"
+      },
+      {
+        "key": "_theme",
+        "label": "Theme Override",
+        "type": "enum",
+        "defaultValue": "",
+        "options": [
+          { "value": "", "label": "System Default" },
+          { "value": "BlackTheme", "label": "Black" },
+          { "value": "BlackHCTheme", "label": "Black High Contrast" },
+          { "value": "WhiteTheme", "label": "White" },
+          { "value": "WhiteHCTheme", "label": "White High Contrast" },
+          { "value": "WhiteEInkTheme", "label": "White E-Ink" }
+        ],
+        "description": "Force display theme for this widget"
+      }
+    ]
   }
 ];
 
