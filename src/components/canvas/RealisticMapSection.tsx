@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigation, Compass, Wind, Flag } from 'lucide-react';
 import { MapThemeDef, TerrainDef } from '../../data/map-styles';
+import { ELEVATION_PROFILES } from '../../data/xctrack-vtm-specs';
 
 export interface RealisticMapSectionProps {
   theme: MapThemeDef;
@@ -63,6 +64,14 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
   const urbanFill = isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(203, 213, 225, 0.55)';
   const urbanBorder = isDark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.7)';
 
+  // Native elevation stops from decompiled C++ libxctrack-native.so
+  const elevProfile = ELEVATION_PROFILES[terrain.id] || ELEVATION_PROFILES['Light'];
+  const maxElev = elevProfile.stops[elevProfile.stops.length - 1].elevation || 6500;
+  const reliefStops = [...elevProfile.stops].reverse().map((s) => ({
+    pct: Math.min(100, Math.max(0, Math.round(((maxElev - s.elevation) / maxElev) * 100))),
+    color: s.color,
+  }));
+
   return (
     <div
       className={`w-full h-full relative overflow-hidden select-none ${className}`}
@@ -78,18 +87,26 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
         <defs>
           {/* Elevation Relief Topographic Gradient for Mountain Massif (Top Right) */}
           <radialGradient id="massifGrad" cx="78%" cy="28%" r="65%">
-            <stop offset="0%" stopColor={isDark ? '#e2e8f0' : '#ffffff'} stopOpacity="0.95" /> {/* Snow summit */}
-            <stop offset="18%" stopColor={isDark ? '#78350f' : '#b45309'} stopOpacity="0.85" /> {/* High rock ridge */}
-            <stop offset="42%" stopColor={isDark ? '#854d0e' : '#eab308'} stopOpacity="0.75" /> {/* Upper mountain pasture */}
-            <stop offset="68%" stopColor={isDark ? '#14532d' : '#84cc16'} stopOpacity="0.65" /> {/* Mid-slope forest belt */}
-            <stop offset="100%" stopColor={isDark ? '#052e16' : '#22c55e'} stopOpacity="0.5" /> {/* Valley floor */}
+            {reliefStops.map((stop, i) => (
+              <stop
+                key={i}
+                offset={`${stop.pct}%`}
+                stopColor={stop.color}
+                stopOpacity={stop.pct === 0 ? 0.95 : stop.pct < 50 ? 0.8 : 0.6}
+              />
+            ))}
           </radialGradient>
 
           {/* Elevation Relief Gradient for West Ridge (Left) */}
           <radialGradient id="westRidgeGrad" cx="15%" cy="50%" r="55%">
-            <stop offset="0%" stopColor={isDark ? '#854d0e' : '#eab308'} stopOpacity="0.8" />
-            <stop offset="40%" stopColor={isDark ? '#166534' : '#84cc16'} stopOpacity="0.7" />
-            <stop offset="100%" stopColor={isDark ? '#052e16' : '#22c55e'} stopOpacity="0.45" />
+            {reliefStops.map((stop, i) => (
+              <stop
+                key={i}
+                offset={`${stop.pct}%`}
+                stopColor={stop.color}
+                stopOpacity={stop.pct === 0 ? 0.85 : stop.pct < 50 ? 0.75 : 0.55}
+              />
+            ))}
           </radialGradient>
 
           {/* Airspace Hatch Pattern */}

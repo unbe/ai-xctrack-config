@@ -24,7 +24,7 @@ import { XcfgWidget } from '../../types/xcfg';
 import { getWidgetDefinition } from '../../data/widgets-catalog';
 import { parseXctrackColor, bgTransparencyToAlpha, rgbaToCss } from '../../utils/colorMath';
 import { getMapTheme, getTerrainStyle } from '../../data/map-styles';
-import { RealisticMapSection } from './RealisticMapSection';
+import { RealXCTrackMap } from './RealXCTrackMap';
 
 interface WidgetPreviewProps {
   widget: XcfgWidget;
@@ -148,10 +148,24 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     const hasCompass = widget.showCompass !== false;
     const hasWind = widget.nav_showWind !== false;
 
+    // Convert XCTrack scale and rotation to MapLibre camera values
+    const scaleObj = widget.mapWidget_scale as any;
+    const scaleVal = typeof scaleObj?.value === 'number'
+      ? scaleObj.value
+      : (typeof widget.mapWidget_scale === 'number' ? widget.mapWidget_scale : 28);
+    const zoom = Math.max(8, Math.min(16, 11.5 + (scaleVal - 26) * 0.35));
+
+    const rotationObj = widget.rotation as any;
+    const rotationVal = typeof rotationObj === 'string' ? rotationObj : rotationObj?.value;
+    const isNorthUp = rotationVal !== 'HEADING_AT_TOP' && rotationVal !== 'BEARING_AT_TOP';
+    const bearing = isNorthUp ? 0 : 35;
+
     return (
-      <RealisticMapSection
+      <RealXCTrackMap
         theme={themeDef}
         terrain={terrainDef}
+        zoom={zoom}
+        bearing={bearing}
         hasRoads={hasRoads}
         hasTerrain={hasTerrain}
         hasRainRadar={hasRainRadar}
@@ -161,7 +175,6 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
         hasScale={hasScale}
         hasCompass={hasCompass}
         hasWind={hasWind}
-        showFlightData={true}
         tracklogColor={ctx.tracklogColorCss}
       />
     );

@@ -374,5 +374,61 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - **Flight & Aeronautical Overlays**: Takeoff site (`⚑ Takeoff 1150m`), landing field (`⚑ LZ Doussard`), summit spot heights (`▲ La Tournette 2351m`), controlled airspace sector (`TMA CHAMBERY 1 / FL115`), thermal trigger circles with climb rates, competition turnpoint cylinder (`TP1 (R:1km)`), and pilot glider with tracklog snail trail.
   - **Unified Rendering**: Shared between `WidgetPreview.tsx` (canvas widgets) and `MapStyleGalleryModal.tsx` (gallery thumbnails).
 
+### 10.9 Exact Decompiled VTM Themes & Hypsometric Relief Specifications (`xctrack-vtm-specs.ts` - v0.11.0)
+- **Source**: Reverse-engineered directly from APK decompiled assets (`vtm_themes/`, `vtm/`) and native ARM64/x86_64 library disassembly (`libxctrack-native.so`):
+  - `ElevProfile::getHeightRgb(double)`: Binary struct with 8-byte stops `(int32 elevation_meters, uint8 r, uint8 g, uint8 b, uint8 pad)`.
+  - `ColorProfile::ColorProfile(bool isDark, double amb, double diff, double spec, Rgb contourColor, bool isBackground, ElevProfileType type)`: Native lighting, contour color, and elevation profile assignment.
+  - `Generator::contoursM`: Native contour generation intervals: `10m` (minor), `50m` (intermediate), `100m` (index/major).
+- **Exact Native Hypsometric Profiles**:
+  1. **`XContest`** (8 stops):
+     - `0m`: `#6aa050` (lush valley green)
+     - `200m`: `#50b240` (grassland green)
+     - `700m`: `#c7c748` (pasture yellow-green)
+     - `1100m`: `#ab8f3a` (foothills golden-brown)
+     - `1400m`: `#ab7348` (timberline warm brown)
+     - `2800m`: `#c7c7c7` (high alpine rock gray)
+     - `4600m`: `#ffffff` (glacier snow summit)
+     - `6500m`: `#c7c7ff` (stratospheric icy tint)
+     - Contour line color: `#403020` (warm dark brown).
+  2. **`Light` (`xctrackProfile`)** (6 stops):
+     - `0m`: `#ffffff` -> `1100m`: `#eddeb2` -> `1400m`: `#edc2a6` -> `2800m`: `#f0f0f0` -> `4600m`: `#ffffff` -> `6500m`: `#efefff`.
+     - Contour line color: `#403020`.
+  3. **`Dark` (`darkProfile`)** (6 stops):
+     - `0m`: `#c0c0c0` -> `500m`: `#a0a0a0` -> `1200m`: `#cfcf02` -> `2800m`: `#b34724` -> `4600m`: `#ffffff` -> `6500m`: `#efefff`.
+     - Contour line color: `#c0c0c0` (silver gray).
+  4. **`LightLegacy` (`xctrackLegacyProfile`)** (6 stops):
+     - `0m`: `#ffffff` -> `1100m`: `#ede4c9` -> `1400m`: `#ebdbcf` -> `2800m`: `#f0f0f0` -> `4600m`: `#ffffff` -> `6500m`: `#efefff`.
+     - Contour line color: `#403020`.
+- **Exact VTM XML Vector Themes**:
+  - `Hyperpilot`: Background `#ffffff`, water `#99badf`, forests `#c2e4c2`, motorways `#e97446` (width 2.5), primaries `#e8af5f` (width 2.0), secondaries `#ebdeaa` (width 2.0).
+  - `HyperpilotBlack`: Background `#000000`, water `#05356b`, forests `#0f4c0f`, motorways `#7c2706` (width 2.5), primaries `#915808` (width 2.0), secondaries `#846a03` (width 2.0).
+  - `Frenchkiss`: Background `#ebebeb`, water `#b3d9fe`, forests `#ccfcb4`, motorways `#ff0000` (casing `#000000`), secondaries `#ff994c`.
+  - `ClearpilotForest`: Forests `rgba(0, 96, 32, 0.106)` (`#1b006020`), water `#406684`, motorways `#608bbf`.
+  - `ClearpilotForestDark`: Forests `rgba(0, 155, 186, 0.188)` (`#30009bba`), water `#78c7ff`, motorways `#a005fa`.
+  - `Newtron` & `Tronrender`: Background `#000000` / `#050508`, water `#001223`, motorways `#fedb52` with glowing casings.
+  - `Osmarender` & `VtmDefault`: Classic OSM red/orange/yellow road hierarchy.
+  - `Biker`: Topo bike touring styling with red motorway `#e892a2`, orange trunk `#f9b29c`, amber primary `#ffc982`, yellow secondary `#fffa9b`.
+
+### 10.10 Live MapLibre GL Vector & 3D Terrain Engine (`RealXCTrackMap.tsx` - v0.11.0)
+- **Zero Synthetic Fakes**: Map widgets (`WXCAssistant`, `WCompMap`) render actual OpenStreetMap vector tiles and global 3D DEM elevation tiles matching real XCTrack behavior.
+- **Vite Web Worker Bundling**:
+  - In MapLibre GL v6, the worker loader resolves relative to `import.meta.url`, which in Vite dev mode resolves to `.vite/deps/` and results in a 404 Not Found error.
+  - Resolved using Vite's native worker URL import: `import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'; setWorkerUrl(maplibreWorkerUrl);`.
+  - Vite emits a dedicated chunk in `npm run build` (`dist/assets/maplibre-gl-worker-*.js`), ensuring zero worker loading errors in development and production.
+- **Global Elevation DEM & Hillshading Source**:
+  - Source: AWS Open Data Terrarium DEM (`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`) with `encoding: "terrarium"`.
+  - Elevation hypsometric tinting: Applied via MapLibre `color-relief` layer with exact C++ stops extracted from `libxctrack-native.so`.
+  - Slope shadows: Real-time 3D hillshading with ambient, highlight, and shadow illumination factors derived from XCTrack's native sun vector calculation.
+- **OpenStreetMap Vector Tiles**:
+  - Source: OpenFreeMap Planet vector tiles (`https://tiles.openfreemap.org/planet/{z}/{x}/{y}.pbf`) with zero tokens, API keys, or rate limits.
+  - Layers: Cased motorways, primary highways, secondary roads, minor streets, footpaths/tracks, forests, residential areas, water bodies, and waterways.
+  - Typography & Glyphs: Free glyph PBFs loaded from `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` for cities, towns, and mountain peaks.
+- **Overlays & Flight HUD**:
+  - Live KK7 Thermal Hotspots raster layer (`https://thermal.kk7.ch/tiles/thermals_all_all/{z}/{x}/{y}.png?src=xctrack.org`) with configurable opacity.
+  - Live RainViewer radar tile source (`https://tilecache.rainviewer.com/v2/radar/...`).
+  - True flight coordinate centering (defaults to Interlaken / Jungfrau Alps `46.6862°N, 7.8591°E` from user `.xcfg`), paraglider delta icon with heading line, vario/altitude-colored snail tracklog, scale bar, wind arrow, and compass rose.
+
+
+
 
 

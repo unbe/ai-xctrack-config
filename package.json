@@ -1,7 +1,7 @@
 {
   "name": "ai-xctrack-config",
   "private": true,
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
+    "maplibre-gl": "^6.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0"
