@@ -7,6 +7,7 @@ import { WidgetPalettePanel } from './components/sidebar/WidgetPalettePanel';
 import { LayerOrderPanel } from './components/sidebar/LayerOrderPanel';
 import { WidgetPropertyInspector } from './components/inspector/WidgetPropertyInspector';
 import { PreferencesEditor } from './components/preferences/PreferencesEditor';
+import { JsonDiffViewer } from './components/json/JsonDiffViewer';
 import { useEditorStore, editorStore } from './store/useEditorStore';
 import { DEMO_MODERN_BACKUP } from './data/sample-configs';
 import { FileText, PlusCircle, Layers, Sliders } from 'lucide-react';
@@ -18,10 +19,10 @@ export const App: React.FC = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('pages');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Initialize with standard modern XCTrack configuration
+  // Initialize with standard modern XCTrack configuration (preserving remembered device if set)
   useEffect(() => {
     try {
-      editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg');
+      editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg', true);
     } catch (e) {
       console.error('Failed to auto-load sample:', e);
     }
@@ -58,7 +59,7 @@ export const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0b0e14] text-gray-100 font-sans">
       <TopToolbar />
-      <DeviceViewportBar />
+      {store.activeTab === 'layout' && <DeviceViewportBar />}
 
       <main className="flex-1 flex overflow-hidden relative">
         {store.activeTab === 'layout' && (
@@ -147,17 +148,9 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {store.activeTab === 'preferences' && (
-          <PreferencesEditor />
-        )}
+        {store.activeTab === 'preferences' && <PreferencesEditor />}
 
-        {store.activeTab === 'json' && (
-          <div className="flex-1 p-6 overflow-auto font-mono text-xs text-gray-300">
-            <pre className="bg-xctrack-dark p-4 rounded-xl border border-xctrack-border overflow-x-auto">
-              {JSON.stringify(store.config, null, 2)}
-            </pre>
-          </div>
-        )}
+        {store.activeTab === 'json' && <JsonDiffViewer />}
       </main>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { XcfgFile, XcfgPage, XcfgWidget, Orientation, DevicePreset } from '../types/xcfg';
-import { getDeviceById, findMatchingDevice, getDeviceGrid } from '../data/devices';
+import { getDeviceById, findMatchingDevice, getDeviceGrid, DEFAULT_DEVICE_ID } from '../data/devices';
 import { snapRectToGrid, normToGrid, gridToNorm } from '../utils/gridMath';
 import { createPageFromTemplate } from '../data/page-templates';
 import { createBlankXcfg } from '../utils/xcfgSerializer';
@@ -25,7 +25,38 @@ export interface EditorState {
   copiedWidgets: XcfgWidget[];
 }
 
-const initialConfig = createBlankXcfg('backup', 'Google Pixel 8 Pro');
+const LAST_DEVICE_KEY = 'xctrack_last_device_id';
+
+export function getStoredDeviceId(): string | null {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      return localStorage.getItem(LAST_DEVICE_KEY);
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null;
+}
+
+export function getStoredDevice(): DevicePreset {
+  const savedId = getStoredDeviceId();
+  if (savedId) {
+    return getDeviceById(savedId);
+  }
+  return getDeviceById(DEFAULT_DEVICE_ID);
+}
+
+export function persistDeviceId(id: string): void {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(LAST_DEVICE_KEY, id);
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
+const initialConfig = createBlankXcfg('backup', getStoredDevice().name);
 
 let currentState: EditorState = {
   config: initialConfig,
@@ -34,7 +65,7 @@ let currentState: EditorState = {
   activeOrientation: 'portrait',
   activePageIndex: 0,
   selectedWidgetIndices: [],
-  activeDevice: getDeviceById('pixel-8-pro'),
+  activeDevice: getStoredDevice(),
   useInsets: true,
   customGrid: null,
   snapToGrid: true,
@@ -74,8 +105,15 @@ export const editorStore = {
     return () => listeners.delete(listener);
   },
 
-  loadConfig(config: XcfgFile, filename = 'config.xcfg') {
-    const matchedDevice = findMatchingDevice(config.info?.device);
+  loadConfig(config: XcfgFile, filename = 'config.xcfg', respectSavedDevice = false) {
+    let matchedDevice: DevicePreset;
+    const savedId = getStoredDeviceId();
+    if (respectSavedDevice && savedId) {
+      matchedDevice = getDeviceById(savedId);
+    } else {
+      matchedDevice = findMatchingDevice(config.info?.device);
+      persistDeviceId(matchedDevice.id);
+    }
     const cloned = JSON.parse(JSON.stringify(config));
     currentState = {
       ...currentState,
@@ -359,6 +397,7 @@ export const editorStore = {
   },
 
   setDevice(device: DevicePreset) {
+    persistDeviceId(device.id);
     currentState = { ...currentState, activeDevice: device, customGrid: null };
     emitChange();
   },

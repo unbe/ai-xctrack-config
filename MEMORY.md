@@ -503,6 +503,33 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Built-in clean templates (`DEMO_MODERN_BACKUP`, `DEMO_XC_ASSISTANT`, `DEMO_COMPETITION`, `DEMO_PAGES_ONLY`) are generated from official factory APK page layouts (`PAGE_TEMPLATES`) with generic identifiers.
   - Test suites (`xcfgRoundTrip.test.ts`, `configValidator.test.ts`, `widgetCatalog.test.ts`, `preferencesAndEditor.test.ts`) test against these clean built-in templates, while conditionally validating any local files if present on disk.
 
+---
+
+## 13. Device Persistence & Comprehensive JSON Diff System (v0.16.0)
+
+### 13.1 Device Persistence via LocalStorage
+- **Problem**: Selecting a custom target device (e.g. Hannspree Lumo 7.8") did not persist across page reloads or tab switches; restarting the app reset the active canvas back to the default Pixel 8 Pro.
+- **Solution**:
+  - Key `'xctrack_last_device_id'` stored in `localStorage`.
+  - When user selects any device via `editorStore.setDevice(device)`, its ID is immediately persisted.
+  - On application startup or browser reload, `editorStore.loadConfig(..., respectSavedDevice = true)` prioritizes the remembered device ID.
+  - `DEFAULT_DEVICE_ID` normalized to `'google-pixel-8-pro'` with fallback tolerance in `getDeviceById`.
+
+### 13.2 Context-Aware Visual Editing Controls Isolation
+- **Problem**: The `DeviceViewportBar` (screen orientation, device selector, grid snap, grid lines, zoom buttons, preview theme dropdown) remained visible on the `JSON & Diff` and `Preferences & Backup` tabs where visual canvas editing does not apply.
+- **Solution**:
+  - Scoped `<DeviceViewportBar />` strictly to `{store.activeTab === 'layout' && <DeviceViewportBar />}`.
+  - The `JSON & Diff` and `Preferences & Backup` tabs now have full vertical space and clean dedicated toolbars.
+
+### 13.3 Real JSON Diff Engine (`JsonDiffViewer.tsx` & `diffEngine.ts`)
+- **Features**:
+  1. **Side-by-Side Split View**: Parallel columns comparing loaded baseline (`originalConfig`) vs live modifications (`config`) with aligned line numbers, red highlights for removed lines, and green highlights for added lines.
+  2. **Unified Diff View**: Git-style diff format with `+`/`-` line markers and line numbers for both versions.
+  3. **High-Level Semantic Change Summary**: Categorized cards summarizing changes to Layout (pages added/removed, widget count shifts), Preferences (individual setting modifications with before/after values), and File Metadata.
+  4. **Raw JSON View**: Formatted, readable current `.xcfg` document.
+  5. **Actions**: Instant "Copy JSON" to clipboard with checkmark confirmation, direct ".xcfg Download", and "Reset Changes" to restore the baseline configuration.
+
+
 
 
 

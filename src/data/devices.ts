@@ -49,14 +49,14 @@ export const ALL_DEVICES: DevicePreset[] = (data.devices || []).map((d) => ({
   notes: d.notes,
 }));
 
-export const DEFAULT_DEVICE_ID = 'pixel-8-pro';
+export const DEFAULT_DEVICE_ID = 'google-pixel-8-pro';
 
 export function getAllDevices(): DevicePreset[] {
   return ALL_DEVICES;
 }
 
 export function getDeviceById(id: string): DevicePreset {
-  const found = ALL_DEVICES.find((d) => d.id === id);
+  const found = ALL_DEVICES.find((d) => d.id === id || d.id === `google-${id}` || d.id.replace('google-', '') === id);
   if (found) return found;
   return ALL_DEVICES[0];
 }
