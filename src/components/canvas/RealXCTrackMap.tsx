@@ -5,6 +5,7 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 import { MapThemeDef, TerrainDef } from '../../data/map-styles';
 import { buildMapLibreLayersForTheme } from '../../data/xctrack-vtm-specs';
 import { Navigation, Compass, Wind } from 'lucide-react';
+import { generateThunderstormGeoJSON } from '../../utils/thunderstormRadar';
 
 // Configure MapLibre Web Worker URL for Vite bundler
 setWorkerUrl(maplibreWorkerUrl);
@@ -28,52 +29,6 @@ export interface RealXCTrackMapProps {
   className?: string;
   isThumbnail?: boolean;
   isSelected?: boolean;
-}
-
-// Generate authentic paragliding Doppler precipitation cell overlay
-function generateRadarGeoJSON(center: [number, number]) {
-  const [lon, lat] = center;
-  // Offset storm cell ~4 km northeast of pilot position
-  const cLon = lon + 0.04;
-  const cLat = lat + 0.03;
-
-  function makeCell(radiusDeg: number, points = 32) {
-    const coords: [number, number][] = [];
-    for (let i = 0; i <= points; i++) {
-      const angle = (i * 2 * Math.PI) / points;
-      // Slight ellipse to model natural storm cell elongation along prevailing wind
-      const dx = Math.cos(angle) * radiusDeg * 1.35;
-      const dy = Math.sin(angle) * radiusDeg;
-      coords.push([cLon + dx, cLat + dy]);
-    }
-    return [coords];
-  }
-
-  return {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        properties: { dbz: 20, color: 'rgba(56, 189, 248, 0.40)' }, // Light drizzle (20 dBZ)
-        geometry: { type: 'Polygon', coordinates: makeCell(0.045) },
-      },
-      {
-        type: 'Feature',
-        properties: { dbz: 35, color: 'rgba(34, 197, 94, 0.55)' },  // Moderate rain (35 dBZ)
-        geometry: { type: 'Polygon', coordinates: makeCell(0.030) },
-      },
-      {
-        type: 'Feature',
-        properties: { dbz: 45, color: 'rgba(234, 179, 8, 0.70)' },  // Heavy rain (45 dBZ)
-        geometry: { type: 'Polygon', coordinates: makeCell(0.018) },
-      },
-      {
-        type: 'Feature',
-        properties: { dbz: 55, color: 'rgba(239, 68, 68, 0.85)' },  // Thunderstorm core (55 dBZ)
-        geometry: { type: 'Polygon', coordinates: makeCell(0.009) },
-      },
-    ],
-  };
 }
 
 // Generate MapLibre GL style specification dynamically matching XCTrack themes & terrain profiles
@@ -127,7 +82,7 @@ function generateXCTrackMapStyle(
   if (hasRainRadar) {
     sources['rain-radar'] = {
       type: 'geojson',
-      data: generateRadarGeoJSON(center),
+      data: generateThunderstormGeoJSON(center),
     };
     layers.push({
       id: 'rain-radar-fill',
@@ -135,7 +90,7 @@ function generateXCTrackMapStyle(
       source: 'rain-radar',
       paint: {
         'fill-color': ['get', 'color'],
-        'fill-opacity': 0.85,
+        'fill-opacity': ['get', 'opacity'],
       },
     });
     layers.push({
@@ -143,9 +98,9 @@ function generateXCTrackMapStyle(
       type: 'line',
       source: 'rain-radar',
       paint: {
-        'line-color': ['get', 'color'],
+        'line-color': ['get', 'strokeColor'],
         'line-width': 1.5,
-        'line-opacity': 0.9,
+        'line-opacity': 0.85,
       },
     });
   }
@@ -223,6 +178,9 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
     });
 
     mapRef.current = map;
+    if (containerRef.current) {
+      (containerRef.current as any)._map = map;
+    }
 
     return () => {
       map.remove();

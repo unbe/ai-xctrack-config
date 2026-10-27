@@ -18,12 +18,16 @@ export const App: React.FC = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('pages');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Initialize with standard modern XCTrack configuration (preserving remembered device if set)
+  // Initialize: restore previous session work via auto-save if present, otherwise load standard modern backup
   useEffect(() => {
     try {
-      editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg', true);
+      const restored = editorStore.restoreAutosavedSession();
+      if (!restored) {
+        editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg', true);
+      }
     } catch (e) {
-      console.error('Failed to auto-load sample:', e);
+      console.error('Failed to restore autosaved session:', e);
+      editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg', true);
     }
   }, []);
 

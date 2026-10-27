@@ -122,25 +122,36 @@ export const DEMO_PAGES_ONLY: XcfgFile = {
   },
 };
 
-export const BUILTIN_SAMPLES = [
+export interface BuiltinSample {
+  name: string;
+  filename: string;
+  description?: string;
+  config: XcfgFile;
+}
+
+export const BUILTIN_SAMPLES: BuiltinSample[] = [
   {
     name: 'XCTrack 1.0 Modern Full Setup (Pixel 8 Pro)',
     filename: 'xctrack_1.0_modern_backup.xcfg',
+    description: '3 pages portrait & landscape with widgets, maps and modern preferences',
     config: DEMO_MODERN_BACKUP,
   },
   {
     name: 'XC Assistant + Thermal (Hannspree Lumo 7.8" E-Ink)',
     filename: 'xctrack_lumo_xc.xcfg',
+    description: 'Optimized high-contrast layout for 7.8" sunlight readable color E-Ink',
     config: DEMO_XC_ASSISTANT,
   },
   {
     name: 'Competition Task Cockpit (AIR³ 7.3 Landscape)',
     filename: 'xctrack_competition_landscape.xcfg',
+    description: 'Competition task navigation, turnpoint cylinders & glide angle cockpit',
     config: DEMO_COMPETITION,
   },
   {
     name: 'Pages Only Layout Template',
     filename: 'xctrack_pages_template.xcfg',
+    description: 'Standard layout pages export without user preferences or pilots',
     config: DEMO_PAGES_ONLY,
   },
 ];

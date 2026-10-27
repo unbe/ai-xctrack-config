@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigation, Compass, Wind, Flag } from 'lucide-react';
 import { MapThemeDef, TerrainDef } from '../../data/map-styles';
 import { ELEVATION_PROFILES } from '../../data/xctrack-vtm-specs';
+import { generateThunderstormSvgContours } from '../../utils/thunderstormRadar';
 
 export interface RealisticMapSectionProps {
   theme: MapThemeDef;
@@ -624,13 +625,37 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
         )}
 
         {/* ========================================================
-            LAYER 10: RAIN RADAR (Doppler Storm Cells)
+            LAYER 10: RAIN RADAR (Convective Thunderstorm Doppler Cells)
             ======================================================== */}
         {hasRainRadar && (
-          <g className="rain-radar" opacity="0.8">
-            <ellipse cx="880" cy="800" rx="140" ry="110" fill="rgba(34, 197, 94, 0.4)" filter="blur(8px)" />
-            <ellipse cx="890" cy="810" rx="80" ry="60" fill="rgba(234, 179, 8, 0.6)" filter="blur(6px)" />
-            <ellipse cx="900" cy="815" rx="40" ry="30" fill="rgba(239, 68, 68, 0.75)" filter="blur(4px)" />
+          <g className="rain-radar">
+            {generateThunderstormSvgContours(820, 320, 1.15).map((contour, idx) => (
+              <path
+                key={idx}
+                d={contour.d}
+                fill={contour.color}
+                fillOpacity={contour.opacity}
+                stroke={contour.strokeColor}
+                strokeWidth={contour.dbz >= 52 ? 2 : 1.2}
+                strokeOpacity={0.8}
+              />
+            ))}
+            {/* Storm Cell dBZ / Lightning Warning Marker */}
+            <g transform="translate(800, 275)">
+              <rect
+                x="-8"
+                y="-14"
+                width="116"
+                height="22"
+                rx="4"
+                fill="rgba(0, 0, 0, 0.75)"
+                stroke="#ef4444"
+                strokeWidth="1.5"
+              />
+              <text x="0" y="2" fill="#fca5a5" fontSize="10" fontWeight="bold" fontFamily="monospace">
+                ⚡ MAX 65 dBZ
+              </text>
+            </g>
           </g>
         )}
 

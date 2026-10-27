@@ -30,6 +30,91 @@ export interface EditorState {
 
 const LAST_DEVICE_KEY = 'xctrack_last_device_id';
 const AUTO_RESNAP_KEY = 'xctrack_auto_resnap';
+export const AUTOSAVE_STORAGE_KEY = 'xctrack_autosave_state';
+
+export interface AutosaveData {
+  config: XcfgFile;
+  originalConfig: XcfgFile;
+  filename: string;
+  activeOrientation: Orientation;
+  activePageIndex: number;
+  activeDeviceId: string;
+  activeTab: 'layout' | 'preferences' | 'json';
+  zoom: number;
+  updatedAt: number;
+}
+
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+let lastAutosavedAt: number | null = null;
+
+export function getLastAutosaveTime(): number | null {
+  return lastAutosavedAt;
+}
+
+export function saveAutosaveNow(): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    const data: AutosaveData = {
+      config: currentState.config,
+      originalConfig: currentState.originalConfig,
+      filename: currentState.filename,
+      activeOrientation: currentState.activeOrientation,
+      activePageIndex: currentState.activePageIndex,
+      activeDeviceId: currentState.activeDevice.id,
+      activeTab: currentState.activeTab,
+      zoom: currentState.zoom,
+      updatedAt: Date.now(),
+    };
+    localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(data));
+    lastAutosavedAt = data.updatedAt;
+  } catch (e) {
+    console.warn('Autosave failed:', e);
+  }
+}
+
+export function scheduleAutosave(): void {
+  if (typeof window === 'undefined') return;
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    saveAutosaveNow();
+  }, 350);
+}
+
+export function getStoredAutosave(): AutosaveData | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.config) {
+      return parsed as AutosaveData;
+    }
+  } catch (e) {
+    console.warn('Failed to parse autosave data:', e);
+  }
+  return null;
+}
+
+export function hasAutosavedSession(): boolean {
+  return getStoredAutosave() !== null;
+}
+
+export function clearAutosave(): void {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem(AUTOSAVE_STORAGE_KEY);
+      lastAutosavedAt = null;
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    saveAutosaveNow();
+  });
+}
 
 export function getStoredAutoResnap(): boolean {
   if (typeof localStorage !== 'undefined') {
@@ -108,6 +193,7 @@ let currentState: EditorState = {
 const listeners = new Set<() => void>();
 
 function emitChange() {
+  scheduleAutosave();
   for (const listener of listeners) {
     listener();
   }
@@ -130,6 +216,39 @@ export const editorStore = {
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
+  },
+
+  restoreAutosavedSession(): boolean {
+    const saved = getStoredAutosave();
+    if (!saved) return false;
+    const device = getDeviceById(saved.activeDeviceId || DEFAULT_DEVICE_ID);
+    currentState = {
+      ...currentState,
+      config: saved.config,
+      originalConfig: saved.originalConfig || saved.config,
+      filename: saved.filename || 'autosaved.xcfg',
+      activeOrientation: saved.activeOrientation || 'portrait',
+      activePageIndex: typeof saved.activePageIndex === 'number' ? saved.activePageIndex : 0,
+      activeDevice: device,
+      activeTab: saved.activeTab || 'layout',
+      zoom: saved.zoom || 1.0,
+      undoStack: [],
+      redoStack: [],
+    };
+    lastAutosavedAt = saved.updatedAt || Date.now();
+    for (const listener of listeners) {
+      listener();
+    }
+    return true;
+  },
+
+  clearAutosave() {
+    clearAutosave();
+    emitChange();
+  },
+
+  saveAutosaveNow() {
+    saveAutosaveNow();
   },
 
   loadConfig(config: XcfgFile, filename = 'config.xcfg', respectSavedDevice = false) {

@@ -625,6 +625,56 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Unified all widget selection, layer Z-ordering, reordering (`Bring to Front`, `Bring Forward`, `Send Backward`, `Send to Back`), duplication, deletion, and property inspection into [`WidgetPropertyInspector.tsx`](file:///Users/artem/src/ai-xctrack-config/src/components/inspector/WidgetPropertyInspector.tsx) on the right.
   - Added a Z-Order vs Page Index view mode toggle, a quick `← Widgets` return button when inspecting, and header layer reordering buttons for the selected widget.
 
+---
+
+## 17. Dynamic Local Examples Discovery, Session Auto-Save & Convective Thunderstorm Radar (v0.20.0)
+
+### 17.1 Dynamic Local Examples via Vite Dev Server Middleware
+- **Context & Security**:
+  - User `.xcfg` flight configurations and backups must never be committed to git (`.gitignore` rule).
+  - To make local `.xcfg` files immediately discoverable and testable in the web editor without manual registration, Vite dev server middleware was implemented in `vite.config.ts`.
+- **Endpoints**:
+  - `GET /api/local-examples`:
+    - Scans `process.cwd()` for `*.xcfg` files dynamically on every request using `fs.promises.readdir`.
+    - Parses file metadata (`size`, `mtime`, `portraitPages`, `landscapePages`, `totalPages`, `deviceName`, `exportType`).
+    - Sorts files by most recently modified.
+  - `GET /api/local-examples/file?name=...`:
+    - Enforces path sanitization (rejects directory traversal characters `/` and `\`, verifies `.xcfg` extension).
+    - Reads and returns JSON file payload directly to `editorStore.loadConfig(data, filename)`.
+
+### 17.2 Click-to-Toggle Popover with Search & Badging
+- **Problem**: Hover-based dropdowns (`group-hover:block`) with margin offsets close immediately when the cursor transitions across the gap, frustrating users.
+- **Architecture**:
+  - Converted the Examples menu in `TopToolbar.tsx` to a controlled click-to-toggle popover with a document click-outside listener.
+  - Real-time search filter input querying both local workspace files and built-in templates by name, device, or export type.
+  - Visual metadata chips: `Local` (emerald) vs `Template` (amber), device label, page counts (`6P · 3L`), and file sizes.
+  - Includes a "Reset to default template" fallback button.
+
+### 17.3 Full-Session Auto-Save & Reload Persistence
+- **Problem**: Previously, refreshing the browser invoked `editorStore.loadConfig(DEMO_MODERN_BACKUP)` unconditionally, wiping active layout edits.
+- **Implementation**:
+  - `AUTOSAVE_STORAGE_KEY = 'xctrack_autosave_state'` in `localStorage`.
+  - State tracked: `config`, `originalConfig` (for JSON diff viewer), `filename`, `activeOrientation`, `activePageIndex`, `activeDeviceId`, `activeTab`, `zoom`, and `updatedAt`.
+  - Debounced at 350ms inside `emitChange()` on all state mutations, plus synchronous flush on `window.beforeunload`.
+  - Restored on initial `App.tsx` mount via `editorStore.restoreAutosavedSession()`.
+  - "Auto-saved" live indicator chip in `TopToolbar` provides continuous visual feedback.
+
+### 17.4 Authentic Alpine Convective Thunderstorm Radar Generator (`src/utils/thunderstormRadar.ts`)
+- **Atmospheric Physics & Morphology**:
+  - Replaced crude concentric circles with an authentic convective supercell storm model located ~6–8 km northeast of default Interlaken center (`[7.859, 46.686]`) along the mountain ridge.
+  - Models windward/leeward elongation along prevailing SW-to-NE storm propagation axis.
+  - Multi-frequency harmonic fractal perturbations (`n = 2, 3, 5, 7`) produce realistic turbulent cloud boundaries and anvil rain shields.
+  - Secondary flanking feeder cell modeled 4 km south-southeast of main core.
+  - 6-tier Doppler reflectivity scale:
+    - 20 dBZ (Light rain / anvil shield, `#38bdf8`)
+    - 32 dBZ (Moderate rain boundary, `#22c55e`)
+    - 42 dBZ (Heavy rain core, `#eab308`)
+    - 52 dBZ (Torrential downdraft, `#f97316`)
+    - 58 dBZ (Severe storm core, `#ef4444`)
+    - 65 dBZ (Severe hail core shaft, `#d946ef`)
+  - Integrated into both `RealXCTrackMap.tsx` (MapLibre GL WebGL GeoJSON layers) and `RealisticMapSection.tsx` (static SVG paths with max dBZ alert badge).
+
+
 
 
 
