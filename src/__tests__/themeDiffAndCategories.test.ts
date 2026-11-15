@@ -145,7 +145,7 @@ line 3
 line 4 (new)
 line 5`;
 
-    const { sideBySide, unified, stats } = computeLineDiff(original, modified);
+    const { unified, stats } = computeLineDiff(original, modified);
     expect(stats.isIdentical).toBe(false);
 
     // Compute contiguous hunks

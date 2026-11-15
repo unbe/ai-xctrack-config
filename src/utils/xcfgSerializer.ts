@@ -1,4 +1,4 @@
-import { XcfgFile, ExportType } from '../types/xcfg';
+import { XcfgFile } from '../types/xcfg';
 
 /**
  * Parses an XCTrack .xcfg or .json configuration string.

@@ -5,7 +5,6 @@ import {
   WIDGET_CATALOG,
   getWidgetDefinition,
   getAllCategories,
-  getWidgetsByCategory,
   searchWidgets,
 } from '../data/widgets-catalog';
 import { PAGE_TEMPLATES, NAVIGATION_TYPES } from '../data/page-templates';

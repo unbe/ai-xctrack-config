@@ -1,10 +1,8 @@
 import React from 'react';
 import {
   Compass,
-  Map as MapIcon,
   Navigation,
   Battery,
-  Wifi,
   Satellite,
   Volume1,
   Volume2,
@@ -17,8 +15,6 @@ import {
   Globe,
   Radio,
   Clock,
-  Wind,
-  TrendingUp,
   Plus,
 } from 'lucide-react';
 import { XcfgWidget } from '../../types/xcfg';
@@ -48,7 +44,6 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
   const def = getWidgetDefinition(widget.CLASS);
   const themeName = widget._theme || globalTheme;
   const isWhiteTheme = themeName.toLowerCase().includes('white');
-  const isEInk = themeName.toLowerCase().includes('eink');
 
   // Background transparency calculation matching XCTrack d0.java:
   // In XCTrack, _bg is Transparency % (100 = transparent, 0 = solid)
@@ -69,7 +64,6 @@ export const WidgetPreview: React.FC<WidgetPreviewProps> = ({
   const showTitle = widget._title !== false;
   const displayTitle = widget.titletext || def?.title || widget.CLASS.split('.').pop() || '';
   const titleHeight = showTitle ? Math.max(12, Math.min(18, Math.round(heightPx * 0.22))) : 0;
-  const showUnit = widget._unit !== false;
 
   // Tracklog color
   const tracklogRgba = parseXctrackColor(widget.tracklog_color as number | string | undefined, '#FFA500');
@@ -379,8 +373,8 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
 }
 
 function renderNumericTelemetry(name: string, widget: XcfgWidget, ctx: RenderContext) {
-  let val = '0';
-  let unit = '';
+  let val: string;
+  let unit: string;
 
   switch (name) {
     case 'WSpeed':

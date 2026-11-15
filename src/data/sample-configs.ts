@@ -1,5 +1,5 @@
 import { XcfgFile } from '../types/xcfg';
-import { WPXCAssistant, WPThermalAssistant, WPCompetition, WPEmpty, createPageFromTemplate } from './page-templates';
+import { createPageFromTemplate } from './page-templates';
 
 /**
  * Standard, clean demo configurations (no personal user data).

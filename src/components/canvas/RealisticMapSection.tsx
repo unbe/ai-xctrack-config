@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { Navigation, Compass, Wind, Flag } from 'lucide-react';
+import { Compass, Wind } from 'lucide-react';
 import { MapThemeDef, TerrainDef } from '../../data/map-styles';
 import { ELEVATION_PROFILES } from '../../data/xctrack-vtm-specs';
 import { generateThunderstormSvgContours } from '../../utils/thunderstormRadar';
@@ -35,7 +35,7 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
   hasKK7Timed = false,
   kk7TimedOpacity = 0.8,
   hasAirspaces = true,
-  hasScale = true,
+  hasScale: _hasScale = true,
   hasCompass = true,
   hasWind = true,
   showFlightData = true,

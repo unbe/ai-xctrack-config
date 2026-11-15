@@ -3,15 +3,11 @@ import { createPortal } from 'react-dom';
 import {
   Smartphone,
   Tablet,
-  RotateCw,
   Magnet,
   Grid as GridIcon,
   ZoomIn,
   ZoomOut,
-  Maximize2,
   Palette,
-  Layers,
-  Settings2,
   Check,
   ChevronDown,
   Search,
@@ -20,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { getAllDevices, getDeviceCategories, getDevicesByCategory } from '../../data/devices';
-import { DevicePreset, Orientation } from '../../types/xcfg';
+import { DevicePreset } from '../../types/xcfg';
 
 export const DeviceViewportBar: React.FC = () => {
   const store = useEditorStore();
@@ -471,11 +467,6 @@ function renderDeviceItem(
   onSelect: (device: DevicePreset) => void
 ) {
   const isSelected = activeDeviceId === d.id;
-  const isTablet =
-    d.category === 'Rugged Tablet' ||
-    d.category === 'Dedicated Flight Instrument' ||
-    d.category === 'Dedicated Instrument' ||
-    (d.screenSizeInches && d.screenSizeInches >= 7.0);
 
   return (
     <button

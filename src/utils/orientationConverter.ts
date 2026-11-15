@@ -1,7 +1,7 @@
 import { XcfgPage, XcfgWidget, Orientation, DevicePreset } from '../types/xcfg';
 import { getDeviceGrid } from '../data/devices';
-import { snapRectToGrid, normToGrid, gridToNorm } from './gridMath';
-import { PAGE_TEMPLATES, WidgetLayoutItem } from '../data/page-templates';
+import { snapRectToGrid } from './gridMath';
+import { PAGE_TEMPLATES } from '../data/page-templates';
 
 export type ConversionStrategy = 'adaptive' | 'proportional' | 'rotate90' | 'template';
 

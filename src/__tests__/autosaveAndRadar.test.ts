@@ -9,7 +9,6 @@ import {
   getStoredAutosave,
   hasAutosavedSession,
   clearAutosave,
-  AUTOSAVE_STORAGE_KEY,
 } from '../store/useEditorStore';
 import { DEMO_MODERN_BACKUP } from '../data/sample-configs';
 

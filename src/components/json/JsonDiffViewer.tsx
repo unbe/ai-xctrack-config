@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   GitCommit,
   Split,
@@ -10,11 +10,7 @@ import {
   Download,
   Search,
   X,
-  Sliders,
-  Layout,
-  Info,
   ShieldCheck,
-  AlertCircle,
   ChevronUp,
   ChevronDown,
 } from 'lucide-react';

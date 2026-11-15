@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
@@ -109,6 +110,11 @@ function localXcfgPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), localXcfgPlugin()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setupTests.ts'],
+  },
   build: {
     rollupOptions: {
       output: {

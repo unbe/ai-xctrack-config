@@ -6,7 +6,7 @@
  * Action Buttons, Others, Testing, Debug), plus legacy aliases.
  */
 
-import { WidgetDefinition, PropertyDescriptor, PropertyType, PropertyOption } from '../types/xcfg';
+import { WidgetDefinition } from '../types/xcfg';
 
 export type WidgetCategory =
   | 'System'

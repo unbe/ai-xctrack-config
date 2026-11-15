@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Sparkles, Filter, X } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 import {
   WIDGET_CATALOG,
   WIDGET_CATEGORIES,
@@ -8,11 +8,10 @@ import {
   WidgetCategory,
 } from '../../data/widgets-catalog';
 import { WidgetDefinition, XcfgWidget } from '../../types/xcfg';
-import { useEditorStore, editorStore } from '../../store/useEditorStore';
+import { editorStore } from '../../store/useEditorStore';
 import { gridToNorm } from '../../utils/gridMath';
 
 export const WidgetPalettePanel: React.FC = () => {
-  const store = useEditorStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 

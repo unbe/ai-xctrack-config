@@ -11,14 +11,11 @@ import {
   Flame,
   Trophy,
   FileText,
-  Settings,
   Check,
   RotateCw,
   ArrowRightLeft,
   Sparkles,
   Layers,
-  Smartphone,
-  Monitor,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { PAGE_TEMPLATES, NAVIGATION_TYPES } from '../../data/page-templates';

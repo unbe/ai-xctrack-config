@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Check, Map as MapIcon, Mountain, Eye, Sparkles, Filter } from 'lucide-react';
+import { X, Check, Map as MapIcon } from 'lucide-react';
 import {
   MAP_APPEARANCE_PRESETS,
   MAP_THEMES,
   TERRAIN_STYLES,
   getMapTheme,
   getTerrainStyle,
-  MapAppearancePreset,
 } from '../../data/map-styles';
 import { RealisticMapSection } from '../canvas/RealisticMapSection';
 

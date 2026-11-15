@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   WIDGET_CATALOG,
   WIDGET_CATEGORIES,
-  WIDGET_ALIASES,
   getWidgetDefinition,
   getWidgetsByCategory,
   searchWidgets,
@@ -15,7 +14,6 @@ import {
   WPThermalAssistant,
   WPCompetition,
   WPEmpty,
-  getPageTemplate,
   getNavigationType,
   createPageFromTemplate,
 } from '../data/page-templates';

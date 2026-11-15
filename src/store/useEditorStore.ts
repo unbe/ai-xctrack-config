@@ -1,7 +1,7 @@
 import { useSyncExternalStore, useRef, useCallback } from 'react';
 import { XcfgFile, XcfgPage, XcfgWidget, Orientation, DevicePreset } from '../types/xcfg';
 import { getDeviceById, findMatchingDevice, getDeviceGrid, DEFAULT_DEVICE_ID } from '../data/devices';
-import { snapRectToGrid, normToGrid, gridToNorm } from '../utils/gridMath';
+import { snapRectToGrid } from '../utils/gridMath';
 import { createPageFromTemplate } from '../data/page-templates';
 import { createBlankXcfg } from '../utils/xcfgSerializer';
 import { convertPageOrientation, ConversionStrategy } from '../utils/orientationConverter';

@@ -825,3 +825,58 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   2. Used `widget._editorId || 'widget-${index}'` as stable React keys in `ScreenCanvas.tsx`.
   3. Updated `cleanWidgetForExport` in `src/utils/xcfgSerializer.ts` to purge `_editorId` so that it is never written to exported `.xcfg` files.
   4. Added `_editorId` to `ignoredKeys` in `diffEngine.ts` to ensure in-memory editor IDs are never flagged as semantic differences.
+
+---
+
+## 22. Architecture Modularization, Tooling & UI Integration Testing (v0.27.0)
+
+### 22.1 Decomposition of Monolithic PreferencesEditor.tsx
+- **Problem**: `PreferencesEditor.tsx` grew to 1,197 lines containing 8 distinct settings domains (pilot/glider polar, display/units, 16-point acoustic vario synthesizer, trigger action rules, hardware keybindings, sensors/airspace, file metadata, and diff/validation) inside a single monolithic component.
+- **Solution**: Decomposed into a clean orchestrator (`src/components/preferences/PreferencesEditor.tsx`, 190 lines) and 8 dedicated tab subcomponents under `src/components/preferences/tabs/`:
+  - `PilotGliderTab.tsx`: Pilot identity, glider model, FAI class, engine type, speeds, polars, and SI unit conversions.
+  - `DisplayUnitsTab.tsx`: Theme, fullscreen, orientation lock, repaint intervals, and metric/imperial measurement units.
+  - `AcousticVarioTab.tsx`: Web Audio tone synthesizer engine with start/stop preview, 16-point vario curve table (`confTable`), and sound event toggles.
+  - `TriggersTab.tsx`: `EventMapping` trigger-action visual rule builder with parse/serialize helpers and rule addition/deletion.
+  - `KeybindingsTab.tsx`: Hardware key mappings for Next/Prev Page, Zoom, Waypoints, and Pan.
+  - `SensorsTab.tsx`: Configured BLE/internal vario sensors list and subscribed airspace channels.
+  - `FileMetadataTab.tsx`: Device info, timestamp, version code, and version name.
+  - `DiffValidationTab.tsx`: JSON copy button, schema validation issues list with formatted messages, and visual changes summary.
+
+### 22.2 Decomposition of Monolithic WidgetPropertyInspector.tsx
+- **Problem**: `WidgetPropertyInspector.tsx` spanned 1,017 lines handling two disparate views (full page widget & layer stack when nothing is selected, and multi-section property inspector when a widget is selected).
+- **Solution**: Decomposed into an orchestrator (`src/components/inspector/WidgetPropertyInspector.tsx`, 129 lines), top-level subcomponents, and modular section components:
+  - `PageWidgetsLayerList.tsx`: Complete layer manager with Z-order / Page-order switching, instant search filtering, layer reordering (top, up, down, bottom), duplicate, and delete actions.
+  - `InspectorHeader.tsx`: Quick widget dropdown switcher, prev/next navigation, PRO badge indicator, and layer reordering actions for the selected widget.
+  - `sections/MapAppearanceSection.tsx`: Vector road map styles, terrain relief/hillshading, popular presets, rotation modes, zoom scale, tracklog color picker, and 9 map layer toggles.
+  - `sections/WidgetGeometrySection.tsx`: Discrete grid coordinate inputs (X1, Y1, width, height) and quick-fit actions (Full Width, Full Height, Center Horiz, Fill Screen).
+  - `sections/WidgetAppearanceSection.tsx`: Title visibility toggle, custom title input, 1px border toggle, and background transparency slider.
+  - `sections/RawPropertiesSection.tsx`: Restored raw and unmanaged JSON property editor, full JSON view toggle, property input fields, deletion buttons, and custom property adder.
+
+### 22.3 TypeScript Solution Project References & `noUnusedLocals`
+- **Problem**: The project relied on a single `tsconfig.json` that included only `src/`, omitting `vite.config.ts` from compilation and typechecking. Furthermore, `noUnusedLocals` was disabled, allowing dead imports and abandoned variables (90 TS6133 errors across 24 files) to accumulate.
+- **Solution**:
+  1. Configured TypeScript project references:
+     - `tsconfig.app.json`: Targets `src/` with `"composite": true`, `"noUnusedLocals": true`, `"moduleResolution": "bundler"`, and `"jsx": "react-jsx"`.
+     - `tsconfig.node.json`: Targets `vite.config.ts` with `"composite": true` and `"noUnusedLocals": true`.
+     - `tsconfig.json`: Solution root referencing `tsconfig.app.json` and `tsconfig.node.json`.
+  2. Fixed all TS6133 unused local imports and declarations across all 24 files without regressing functionality.
+  3. Added `"typecheck": "tsc -b"` script to `package.json`, verifying 0 compilation errors across both application code and Vite configuration.
+
+### 22.4 ESLint 9 Flat Configuration
+- **Problem**: The project lacked automated linting infrastructure, allowing style deviations, unused assignments, and syntax warnings to persist.
+- **Solution**:
+  1. Configured ESLint 9 using modern flat config (`eslint.config.js`) with `@eslint/js`, `typescript-eslint`, and `globals`.
+  2. Set up environment globals for browser and Node.js environments.
+  3. Added `"lint": "eslint ."` script to `package.json`, passing with 0 errors and 0 warnings.
+
+### 22.5 Component & UI Integration Testing via `@testing-library/react` and `jsdom`
+- **Problem**: All 15 existing test suites only exercised pure utility functions or static data fixtures; 0 React component or DOM interaction tests existed.
+- **Solution**:
+  1. Installed `@testing-library/react`, `@testing-library/jest-dom`, and `jsdom`.
+  2. Configured `test.environment: 'jsdom'` and `setupFiles: ['./src/__tests__/setupTests.ts']` in `vite.config.ts`.
+  3. Created `src/__tests__/setupTests.ts` providing `@testing-library/jest-dom` matchers and mock polyfills for `window.AudioContext` and `navigator.clipboard`.
+  4. Added component integration test suites in `src/__tests__/components/`:
+     - `PreferencesEditor.test.tsx`: Tests rendering of all 8 tabs, Pilot name store mutations, theme dropdown changes, Acoustic Vario audio test toggle, trigger rule creation, and metadata editing.
+     - `WidgetPropertyInspector.test.tsx`: Tests layer list rendering and filtering, Inspector sections upon selection, Quick Fit coordinate modifications, title changes, custom raw property additions, and navigation back to the layer list.
+  5. Expanded test coverage to 19 test files and 152 unit and UI integration tests.
+

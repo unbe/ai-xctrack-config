@@ -11,7 +11,6 @@ import {
   Sparkles,
   Search,
   HardDrive,
-  FileText,
   CheckCircle2,
   ChevronDown,
   RotateCcw,
@@ -51,7 +50,6 @@ export const TopToolbar: React.FC = () => {
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [loadingFileTarget, setLoadingFileTarget] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [saveIndicatorTime, setSaveIndicatorTime] = useState<number>(Date.now());
 
   // Close examples menu on click outside
   useEffect(() => {
@@ -89,11 +87,6 @@ export const TopToolbar: React.FC = () => {
   useEffect(() => {
     fetchLocalExamples();
   }, []);
-
-  // Update save indicator timestamp when config changes
-  useEffect(() => {
-    setSaveIndicatorTime(Date.now());
-  }, [store.config, store.filename]);
 
   const toggleExamples = () => {
     const next = !examplesOpen;

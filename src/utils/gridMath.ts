@@ -103,8 +103,8 @@ export function snapRectToGrid(
   gridCols: number,
   gridRows: number
 ) {
-  let gx1 = normToGrid(x1, gridCols);
-  let gy1 = normToGrid(y1, gridRows);
+  const gx1 = normToGrid(x1, gridCols);
+  const gy1 = normToGrid(y1, gridRows);
   let gx2 = normToGrid(x2, gridCols);
   let gy2 = normToGrid(y2, gridRows);
 

@@ -42,7 +42,7 @@
 |---|------|-------|-------------|--------|
 | 1 | M1: P0 Bug Fixes | Features 1-9 (R1) | none | DONE |
 | 2 | M2: P1 Performance & Reliability | Features 10-15 (R2) | M1 | DONE |
-| 3 | M3: P2 Architecture & Tooling | Features 16-20 (R3) | M1, M2 | PLANNED |
+| 3 | M3: P2 Architecture & Tooling | Features 16-20 (R3) | M1, M2 | DONE |
 | 4 | M4: P3 Cleanup, UX & Purge | Features 21-26 (R4) | M1, M2, M3 | PLANNED |
 | 5 | M5: E2E Verification & Audit | Feature 27 (Dual Track + Final Acceptance) | M1, M2, M3, M4 | PLANNED |
 

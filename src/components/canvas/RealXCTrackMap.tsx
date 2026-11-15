@@ -147,8 +147,8 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
   kk7Opacity = 0.4,
   hasKK7Timed = false,
   kk7TimedOpacity = 0.8,
-  hasAirspaces = true,
-  hasScale = true,
+  hasAirspaces: _hasAirspaces = true,
+  hasScale: _hasScale = true,
   hasCompass = true,
   hasWind = true,
   tracklogColor = '#ff962d',
@@ -159,7 +159,6 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [liveCenter, setLiveCenter] = useState<[number, number]>(center);
 
   // Initialize MapLibre instance
   useEffect(() => {
@@ -195,11 +194,6 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
 
     map.on('load', () => {
       setMapLoaded(true);
-    });
-
-    map.on('move', () => {
-      const c = map.getCenter();
-      setLiveCenter([c.lng, c.lat]);
     });
 
     mapRef.current = map;

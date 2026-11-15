@@ -91,7 +91,7 @@ describe('Preferences & Store Integration', () => {
 
     // Undo reverts back to original
     editorStore.undo();
-    let revertedWidget = editorStore.getCurrentPage()!.widgets[0];
+    const revertedWidget = editorStore.getCurrentPage()!.widgets[0];
     expect(revertedWidget.X1).toBe(originalWidget.X1);
     expect(revertedWidget.Y1).toBe(originalWidget.Y1);
 

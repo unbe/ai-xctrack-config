@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { editorStore, clearAutosave, AUTOSAVE_STORAGE_KEY } from '../../store/useEditorStore';
 
 interface Props {

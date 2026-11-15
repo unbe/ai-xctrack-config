@@ -3,7 +3,7 @@ import { convertPageOrientation } from '../utils/orientationConverter';
 import { editorStore } from '../store/useEditorStore';
 import { getDeviceById } from '../data/devices';
 import { DEMO_MODERN_BACKUP } from '../data/sample-configs';
-import { XcfgPage, XcfgWidget } from '../types/xcfg';
+import { XcfgPage } from '../types/xcfg';
 
 // Mock localStorage for Vitest Node environment
 if (typeof globalThis.localStorage === 'undefined') {

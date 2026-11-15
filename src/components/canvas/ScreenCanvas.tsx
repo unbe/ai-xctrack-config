@@ -1,11 +1,9 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
 import { WidgetPreview } from './WidgetPreview';
-import { XcfgWidget } from '../../types/xcfg';
-import { normToGrid, gridToNorm, snapRectToGrid } from '../../utils/gridMath';
+import { normToGrid, snapRectToGrid } from '../../utils/gridMath';
 import {
   AlignLeft,
-  AlignCenter,
   AlignRight,
   Copy,
   Trash2,

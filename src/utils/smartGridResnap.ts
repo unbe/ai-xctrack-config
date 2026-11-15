@@ -1,4 +1,4 @@
-import { XcfgPage, XcfgWidget, XcfgFile, Orientation, DevicePreset } from '../types/xcfg';
+import { XcfgPage, XcfgFile, Orientation, DevicePreset } from '../types/xcfg';
 import { getDeviceGrid } from '../data/devices';
 import { normToGrid, gridToNorm } from './gridMath';
 

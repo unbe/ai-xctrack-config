@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resnapPageToGrid, resnapConfigToDevice } from '../utils/smartGridResnap';
+import { resnapPageToGrid } from '../utils/smartGridResnap';
 import { editorStore } from '../store/useEditorStore';
 import { getDeviceById } from '../data/devices';
 import { normToGrid, gridToNorm } from '../utils/gridMath';
 import { DEMO_MODERN_BACKUP } from '../data/sample-configs';
-import { XcfgPage, XcfgWidget } from '../types/xcfg';
+import { XcfgPage } from '../types/xcfg';
 
 // Mock localStorage for Vitest Node environment
 if (typeof globalThis.localStorage === 'undefined') {
@@ -22,7 +22,6 @@ if (typeof globalThis.localStorage === 'undefined') {
 }
 
 describe('Smart Seam-Preserving Grid Resnap', () => {
-  const pixelGrid = { cols: 23, rows: 52 };
   const lumoGrid = { cols: 40, rows: 54 };
   const air3Grid = { cols: 31, rows: 50 };
 
