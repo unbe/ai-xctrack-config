@@ -925,3 +925,9 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **Filesystem & Git**: Deleted untracked disk file `./2026-10-27_backupwithmedia-00.xczfg` and removed `*.xczfg` from `.gitignore`. Documented in Section 12.1 and 23.6.
 
 
+## 24. Verification Workflow & Repo Hygiene (v0.29.0)
+
+- **Verification commands** (all must pass before a commit): `npm run typecheck` (`tsc -b`, app + node projects), `npm run lint` (`eslint .`, flat config), `npm test` (Vitest + jsdom, 20 suites / 161 tests at v0.28.0), `npm run build` (vendor chunks: `vendor-map`, `vendor-react`, `vendor-lucide`, lazy `RealXCTrackMap`). Dev server: `npm run dev -- --host` on port 3000.
+- **Test layout**: pure/domain tests in `src/__tests__/`, React component/UI integration tests in `src/__tests__/components/` (`@testing-library/react`, setup in `src/__tests__/setupTests.ts`).
+- **Key contracts** (from the v0.25–v0.28 refactor): window undo/redo is handled only in `App.tsx` (canvas handles Delete/Escape/Ctrl+D/arrows); multi-widget operations take a single undo snapshot (`recordCustomUndo`, then `saveUndo=false`); stable widget `_editorId`s are in-memory only and stripped by `cleanWidgetForExport`; page orientation conversion is copy-only (no `move`).
+- **Process artifacts removed**: the agent team's planning notes (`PROJECT.md`, `TEST_INFRA.md`, `TEST_READY.md`) were deleted at the user's request; durable decisions live here in `MEMORY.md` (sections 20–24). Do not recreate such files in the repo root.
