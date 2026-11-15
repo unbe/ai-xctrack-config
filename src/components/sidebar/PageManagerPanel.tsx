@@ -18,6 +18,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
+import { dialogStore } from '../../store/useDialogStore';
 import { PAGE_TEMPLATES, NAVIGATION_TYPES } from '../../data/page-templates';
 import { ConversionStrategy } from '../../utils/orientationConverter';
 
@@ -195,13 +196,19 @@ export const PageManagerPanel: React.FC = () => {
                   <RotateCw className="w-3 h-3" />
                 </button>
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
                     if (pages.length <= 1) {
-                      alert('Cannot delete the last remaining page.');
+                      dialogStore.warning('Cannot delete the last remaining page.');
                       return;
                     }
-                    if (confirm(`Delete Page ${index + 1} (${getPageTitle(page.CLASS)})?`)) {
+                    const confirmed = await dialogStore.confirm({
+                      title: 'Delete Page',
+                      message: `Delete Page ${index + 1} (${getPageTitle(page.CLASS)})?`,
+                      confirmText: 'Delete',
+                      variant: 'danger',
+                    });
+                    if (confirmed) {
                       editorStore.deletePage(index);
                     }
                   }}

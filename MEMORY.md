@@ -66,11 +66,11 @@ XCTrack configuration files (`.xcfg` / `.xccfg` / `.json`) are UTF-8 JSON docume
     - `Google Pixel 8 Pro 14` (`448×997 dp`): Portrait **`23 × 48`** (with Android 14 system bar insets).
     - `Google Pixel 8 Pro 16` (`448×997 dp`): Portrait **`23 × 52`** (fullscreen edge-to-edge on Android 16).
     - Built-in Landscape Templates (`res/raw/layout_*_landscape.json`, `360×640 dp` 16:9): **`33 × 19`** landscape / **`19 × 31`** portrait.
-  - Full preset database of 32 device families (60+ models + ActiveLook & Maverick HUD glasses) is stored in `devices.json` in the project root.
+  - Full preset database of 32 device families (60+ models + ActiveLook & Maverick HUD glasses) is stored in `src/data/devices.json`.
 
 ---
 
-## 3. Complete Widget Catalog & Property Schemas (79 Registered Classes in `org.xcontest.XCTrack.widget.o`)
+## 3. Complete Widget Catalog & Property Schemas (85 Registered Classes in `org.xcontest.XCTrack.widget.o`)
 
 ### 3.1 Universal Base Properties (`org.xcontest.XCTrack.widget.d0`)
 Every widget in `org.xcontest.XCTrack.widget.w.*` has:
@@ -97,7 +97,7 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 - **`WNextTurnpointSpeedSomething` (`gw=8, gh=3`)**: extends `WNextTurnpointSomething`, adds `speed_type` (`"GROUND" | "AIRSPEED" | "GLIDE" | "XC"`, default `"GROUND"`), `speed_avg` (`int` ms, default `0`).
 - **`MapWidget` (`gw=10, gh=10`)**: base for `WXCAssistant` and `WCompMap` with 30+ map settings (`mapWidget_mapAppearance`, `mapWidget_osmLanguage`, `rotation`, `mapWidget_scale`, `mapWidget_pilotPosCenter`, `mapWidget_pilotEdgeDistance`, `mapWidget_drawScale`, `mapWidget_drawBearing`, `fontSize`, `mapWidget_heading_arrow_sizecoef`, `line_thickness`, `tracklog_color`, `mapWidget_showRainRadar`, `mapWidget_showKK7`, `mapWidget_KK7opacity`, `mapWidget_KK7timed`, `mapWidget_KK7timedOpacity`, `mapWidget_showAirspaces`, `postponedFloorLimit`, `postponedDisplayDistance`, `mapWidget_emergencyObstacles`, `mapWidget_emergencyZoom`, `live_ShowNearby`, `live_ShowTracklogs`, `wpt_showWaypoints`, `wpt_showCities`, `wpt_showTakeoffs`, `nav_target`, `nav_use_brackets`, `nav_line`, `thermals`, `nav_showWind`, `nav_showSun`, `live_ShowFinalGlide`, `live_ShowFinalGlideAvg`, `mapWidget_showRelativePositionWhilePanning`, etc.).
 
-### 3.3 All 79 Registered Widget Classes by Category (`o.java`)
+### 3.3 All 85 Registered Widget Classes by Category (`o.java`)
 1. **System (3 in `o.java` under `wgSystem`, plus time/airtime/sunset under `wgFlying`)**:
    - `WStatusLine` (`gw=100, gh=1`): `showGps`, `showSensors`, `showLive`, `showLiveLabel`, `showBatteryIcon`, `showBatteryPercent`, `showTime`
    - `WBrightnessInfo` (`ValueWidget`, `gw=8, gh=3`)
@@ -220,7 +220,7 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   - Page cards show page title, class name, widget count, and auto-activation task badge (`navigations`).
   - Actions: Add Page (modal selecting template with optional widget seeding), Duplicate Page, Delete Page (maintains at least 1 page), Reorder Pages (up/down), Copy to Opposite Orientation, and Task Navigation filter modal.
 - **`WidgetPalettePanel`**:
-  - Full catalog of all 79 registered XCTrack widget classes.
+  - Full catalog of all 85 registered XCTrack widget classes.
   - Search filter (matches title, description, class, category) + Category filter chips (System, Flying, Air, XContest, Navigation, Competition, Livetracking, Action Buttons, Others, Testing, Debug).
   - Clicking a widget adds it centered on the canvas according to its default grid dimensions (`gw` × `gh`) with default properties.
 - **`LayerOrderPanel`**:
@@ -492,9 +492,12 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 
 ## 12. Privacy Architecture: Expunging Personal Flight Configs & Git Isolation (v0.15.0)
 
-### 12.1 Absolute Privacy Rule on `.xcfg` / `.xczfg` Files
-- **Rule**: User personal flight configs (`*.xcfg`, `*.xczfg`) must **NEVER** be committed into git under any circumstances.
-- **`.gitignore` Enforcement**: Added `*.xcfg` and `*.xczfg` to `.gitignore`. All personal flight backup files on disk remain untouched for local editing, but git completely ignores them.
+### 12.1 Absolute Privacy Rule & Rejection of `.xczfg` / `backupwithmedia`
+- **Rule**: User personal flight configs (`*.xcfg`) must **NEVER** be committed into git under any circumstances.
+- **Intentional Rejection of `.xczfg` & `backupwithmedia`**:
+  - The `.xczfg` archive format (ZIP bundle containing binary media, audio files, and airspaces) and `backupwithmedia` export types are **intentionally unsupported and rejected**. The editor operates strictly on standard plaintext `.xcfg` / `.json` files (`ExportType = 'pages' | 'backup'`).
+  - All `.xczfg` references, sample bundles, and gitignore entries have been purged from the repository.
+- **`.gitignore` Enforcement**: Added `*.xcfg` to `.gitignore`. All personal flight backup files on disk remain untouched for local editing, but git completely ignores them.
 - **Complete History Expunge**:
   - Filtered all git branches and commits using `git filter-branch --index-filter 'git rm --cached --ignore-unmatch *.xcfg *.xczfg' --prune-empty`.
   - Purged original refs and ran `git reflog expire --expire=now --all` and `git gc --prune=now`.
@@ -709,7 +712,7 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 
 ---
 
-## 19. HUD Overlays Cleanup & Diff Presentation Refinement (v0.22.0)
+## 19. HUD Overlays Cleanup & Diff Presentation Refinement (v0.24.0)
 
 ### 19.1 Map Widget Authenticity (Removal of GPS Coordinates & Scale Bar)
 - **Domain Nuance**: The real Android XCTrack application does not render raw GPS latitude/longitude text badges or a static bottom-left scale bar inside map widgets (such information is either provided by dedicated value widgets like `WPosition` or omitted).
@@ -879,4 +882,46 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
      - `PreferencesEditor.test.tsx`: Tests rendering of all 8 tabs, Pilot name store mutations, theme dropdown changes, Acoustic Vario audio test toggle, trigger rule creation, and metadata editing.
      - `WidgetPropertyInspector.test.tsx`: Tests layer list rendering and filtering, Inspector sections upon selection, Quick Fit coordinate modifications, title changes, custom raw property additions, and navigation back to the layer list.
   5. Expanded test coverage to 19 test files and 152 unit and UI integration tests.
+
+---
+
+## 23. Milestone 4: Repository Hygiene, Dialog System, Drag-and-Drop Ingestion & .xczfg Purge (v0.28.0)
+
+### 23.1 Relocation of `devices.json` & Source Organization (Feature 21, R4.1)
+- **Problem**: `devices.json` was stored at the root directory of the repository while its TypeScript wrapper was at `src/data/devices.ts`, creating an awkward cross-boundary import `import rawDevices from '../../devices.json'`.
+- **Solution**:
+  - Relocated `devices.json` to `src/data/devices.json`.
+  - Updated `src/data/devices.ts` to `import rawDevices from './devices.json'`.
+  - All device presets (32 device families, 60+ models) are now properly self-contained within `src/data/`.
+
+### 23.2 Dependency & Asset Cleanup (Feature 22, R4.2)
+- **Unused Dependency**: Removed `@types/jszip` from `package.json` (`npm uninstall @types/jszip`). The project does not process zip archives or binary payloads.
+- **Unreferenced Font**: Removed abandoned font asset `src/assets/fonts/activelook_symbol.ttf`.
+
+### 23.3 Documentation & Catalog Corrections (Feature 23, R4.3)
+- **Widget Count Update**: Synchronized widget count references from outdated `79` to verified `85` across `src/data/widgets-catalog.ts`, `src/__tests__/widgetCatalog.test.ts`, `MEMORY.md`, and `WALKTHROUGH.md`.
+- **Version Heading Correction**: Corrected `MEMORY.md` Section 19 heading from `(v0.22.0)` to `(v0.24.0)`.
+
+### 23.4 Native HTML5 Drag-and-Drop Ingestion (Feature 24, R4.4)
+- **Problem**: Loading `.xcfg` files previously required clicking "Choose file" or picking from the example modal.
+- **Solution**:
+  - Implemented window-level native HTML5 drag-and-drop listener in `src/App.tsx`.
+  - Integrated `dragCounter` state to prevent flicker during child element traversals.
+  - Added visual dropzone overlay (`data-testid="dropzone-overlay"`) with high-contrast dashed border, backdrop blur, upload cloud icon, and clear instructions.
+  - On file drop: reads file as text, parses via `parseXcfg`, loads into `editorStore` (`loadConfig(config, file.name)`), and triggers a success toast notification. If parsing fails, gracefully displays an error toast without crashing the editor.
+
+### 23.5 Non-Blocking Modal & Toast Dialog Service (Feature 25, R4.4)
+- **Problem**: The UI used native browser blocking dialogs `alert()` and `confirm()` (9 occurrences), halting thread execution and breaking modern UX and accessibility standards.
+- **Solution**:
+  - Built `useDialogStore` (`src/store/useDialogStore.ts`) providing an external store with `useSyncExternalStore` reactive subscription for toasts (`info`, `success`, `warning`, `error`) and async promises for `confirm()`.
+  - Created `DialogContainer` (`src/components/ui/DialogContainer.tsx`) containing:
+    - `<ConfirmModal />`: Accessible alert dialog (`role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby`), keyboard navigable (`Escape` to cancel, `Enter` to confirm), click-outside cancellation, auto-focused confirm button, and danger/warning/primary variants.
+    - `<ToastNotification />`: Accessible notification stack (`role="status"`, `aria-live="polite"`), color-coded icon badges, auto-dismiss timers (default 4000ms), and manual close buttons.
+  - Replaced all 9 native occurrences across `JsonDiffViewer.tsx`, `PageManagerPanel.tsx`, and `TopToolbar.tsx`.
+
+### 23.6 Purge of `.xczfg` and `backupwithmedia` (Feature 26, R4.5)
+- **Format Policy**: `.xczfg` (zipped backup bundle with media) is intentionally unsupported. The editor is dedicated to standard `.xcfg` / `.json` configs.
+- **Type Definition**: Narrowed `ExportType` in `src/types/xcfg.ts` to `'pages' | 'backup'`.
+- **Filesystem & Git**: Deleted untracked disk file `./2026-10-27_backupwithmedia-00.xczfg` and removed `*.xczfg` from `.gitignore`. Documented in Section 12.1 and 23.6.
+
 

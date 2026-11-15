@@ -20,6 +20,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
+import { dialogStore } from '../../store/useDialogStore';
 import {
   parseXcfg,
   serializeXcfg,
@@ -106,8 +107,9 @@ export const TopToolbar: React.FC = () => {
         const text = event.target?.result as string;
         const parsed = parseXcfg(text);
         editorStore.loadConfig(parsed, file.name);
+        dialogStore.success(`Successfully loaded ${file.name}`);
       } catch (err) {
-        alert('Failed to parse .xcfg file: ' + (err as Error).message);
+        dialogStore.error('Failed to parse .xcfg file: ' + (err as Error).message);
       }
     };
     reader.readAsText(file);
@@ -127,8 +129,9 @@ export const TopToolbar: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      dialogStore.success(`Exported ${filename}`);
     } catch (err) {
-      alert('Failed to export configuration: ' + (err as Error).message);
+      dialogStore.error('Failed to export configuration: ' + (err as Error).message);
     }
   };
 
@@ -136,8 +139,9 @@ export const TopToolbar: React.FC = () => {
     try {
       editorStore.loadConfig(sample.config, sample.filename);
       setExamplesOpen(false);
+      dialogStore.success(`Loaded sample: ${sample.name}`);
     } catch (err) {
-      alert('Error loading sample: ' + (err as Error).message);
+      dialogStore.error('Error loading sample: ' + (err as Error).message);
     }
   };
 
@@ -154,24 +158,39 @@ export const TopToolbar: React.FC = () => {
       }
       editorStore.loadConfig(json.data, file.name);
       setExamplesOpen(false);
+      dialogStore.success(`Loaded local file: ${file.name}`);
     } catch (err) {
-      alert('Failed to load local config: ' + (err as Error).message);
+      dialogStore.error('Failed to load local config: ' + (err as Error).message);
     } finally {
       setLoadingFileTarget(null);
     }
   };
 
-  const handleNewConfig = () => {
-    if (confirm('Create new blank configuration? Unsaved changes will be replaced.')) {
+  const handleNewConfig = async () => {
+    const confirmed = await dialogStore.confirm({
+      title: 'New Blank Configuration',
+      message: 'Create new blank configuration? Unsaved changes will be replaced.',
+      confirmText: 'Create Blank',
+      variant: 'warning',
+    });
+    if (confirmed) {
       const blank = createBlankXcfg('backup', store.activeDevice.name);
       editorStore.loadConfig(blank, 'untitled.xcfg');
+      dialogStore.info('Created new blank configuration');
     }
   };
 
-  const handleResetToTemplate = () => {
-    if (confirm('Reset editor to default 2026 modern template? Your current edits will be replaced.')) {
+  const handleResetToTemplate = async () => {
+    const confirmed = await dialogStore.confirm({
+      title: 'Reset to Default Template',
+      message: 'Reset editor to default 2026 modern template? Your current edits will be replaced.',
+      confirmText: 'Reset Template',
+      variant: 'warning',
+    });
+    if (confirmed) {
       editorStore.clearAutosave();
       editorStore.loadConfig(DEMO_MODERN_BACKUP, 'modern_xctrack_config.xcfg', true);
+      dialogStore.success('Reset to default 2026 template');
     }
   };
 

@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useEditorStore, editorStore } from '../../store/useEditorStore';
+import { dialogStore } from '../../store/useDialogStore';
 import { serializeXcfg, generateExportFilename } from '../../utils/xcfgSerializer';
 import { computeLineDiff, computeSemanticDiff, DiffLine, SideBySideLine, SemanticChangeItem } from '../../utils/diffEngine';
 
@@ -212,8 +213,14 @@ export const JsonDiffViewer: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleResetToOriginal = () => {
-    if (confirm('Discard all unsaved edits and restore the original loaded configuration?')) {
+  const handleResetToOriginal = async () => {
+    const confirmed = await dialogStore.confirm({
+      title: 'Restore Original Configuration',
+      message: 'Discard all unsaved edits and restore the original loaded configuration?',
+      confirmText: 'Discard Edits',
+      variant: 'danger',
+    });
+    if (confirmed) {
       editorStore.loadConfig(store.originalConfig, store.filename);
     }
   };

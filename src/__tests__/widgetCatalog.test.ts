@@ -12,8 +12,8 @@ import { parseXcfg } from '../utils/xcfgSerializer';
 import { BUILTIN_SAMPLES } from '../data/sample-configs';
 
 describe('widgets-catalog', () => {
-  it('contains at least 79 official widgets', () => {
-    expect(WIDGET_CATALOG.length).toBeGreaterThanOrEqual(79);
+  it('contains at least 85 official widgets', () => {
+    expect(WIDGET_CATALOG.length).toBeGreaterThanOrEqual(85);
   });
 
   it('contains all 11 categories', () => {

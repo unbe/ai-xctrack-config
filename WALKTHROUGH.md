@@ -2,7 +2,7 @@
 
 A modern web editor for [XCTrack](https://play.google.com/store/apps/details?id=org.xcontest.XCTrack) Android configuration files (`.xcfg` / `.json`).
 
-Built with **React 18**, **TypeScript**, **Tailwind CSS**, and **Vite**, this application provides a visual design environment for paragliding and hang gliding flight instruments, supporting multi-page layouts, physical grid math across 60+ devices, all 79 official widgets, and complete backup editing (including an interactive 16-point acoustic vario synthesizer with Web Audio API sound preview).
+Built with **React 18**, **TypeScript**, **Tailwind CSS**, and **Vite**, this application provides a visual design environment for paragliding and hang gliding flight instruments, supporting multi-page layouts, physical grid math across 60+ devices, all 85 official widgets, and complete backup editing (including an interactive 16-point acoustic vario synthesizer with Web Audio API sound preview).
 
 ---
 
@@ -15,7 +15,7 @@ Built with **React 18**, **TypeScript**, **Tailwind CSS**, and **Vite**, this ap
    - Live drag-and-drop movement, snapping, 8 resize handles, and multi-selection alignment bar.
 2. **Left Panel Navigation**:
    - **Screen Pages**: Switch pages, view auto-activation task triggers (`WPXCAssistant`, `WPThermalAssistant`, `WPCompetition`, `WPEmpty`), duplicate, delete, reorder, or copy to the opposite orientation.
-   - **Widget Library**: Searchable catalog of all 79 registered widget classes across 11 categories (System, Flying, Air, XContest, Navigation, Competition, Livetracking, Action Buttons, Others, Testing, Debug).
+   - **Widget Library**: Searchable catalog of all 85 registered widget classes across 11 categories (System, Flying, Air, XContest, Navigation, Competition, Livetracking, Action Buttons, Others, Testing, Debug).
    - **Layers & Z-Order**: Complete visual layer stack with move forward/backward controls, ensuring maps remain at the bottom while speed/vario/nav overlays render on top.
 3. **Right Property Inspector**:
    - **Geometry & Grid**: Discrete column/row cell adjustments (`gx1, gy1, gx2, gy2`), cell dimensions, quick-fit buttons (*Full Width*, *Full Height*, *Fill Screen*, *Center*).

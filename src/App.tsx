@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { TopToolbar } from './components/toolbar/TopToolbar';
 import { DeviceViewportBar } from './components/toolbar/DeviceViewportBar';
 import { ScreenCanvas } from './components/canvas/ScreenCanvas';
@@ -7,9 +7,12 @@ import { WidgetPalettePanel } from './components/sidebar/WidgetPalettePanel';
 import { WidgetPropertyInspector } from './components/inspector/WidgetPropertyInspector';
 import { PreferencesEditor } from './components/preferences/PreferencesEditor';
 import { JsonDiffViewer } from './components/json/JsonDiffViewer';
+import { DialogContainer } from './components/ui/DialogContainer';
 import { useEditorStore, editorStore } from './store/useEditorStore';
+import { dialogStore } from './store/useDialogStore';
+import { parseXcfg } from './utils/xcfgSerializer';
 import { DEMO_MODERN_BACKUP } from './data/sample-configs';
-import { FileText, PlusCircle } from 'lucide-react';
+import { FileText, PlusCircle, UploadCloud } from 'lucide-react';
 
 type SidebarTab = 'pages' | 'widgets';
 
@@ -17,6 +20,8 @@ export const App: React.FC = () => {
   const store = useEditorStore();
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('pages');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const dragCounter = useRef(0);
 
   // Initialize: restore previous session work via auto-save if present, otherwise load standard modern backup
   useEffect(() => {
@@ -57,6 +62,74 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // HTML5 Drag-and-Drop file ingestion
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer?.types.includes('Files')) {
+        dragCounter.current++;
+        setIsDraggingFile(true);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter.current--;
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setIsDraggingFile(false);
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter.current = 0;
+      setIsDraggingFile(false);
+
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+
+      const file = files[0];
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        try {
+          const text = event.target?.result as string;
+          const parsed = parseXcfg(text);
+          editorStore.loadConfig(parsed, file.name);
+          dialogStore.success(`Successfully loaded configuration from ${file.name}`);
+        } catch (err) {
+          dialogStore.error(`Failed to parse file "${file.name}": ${(err as Error).message}`);
+        }
+      };
+
+      reader.onerror = () => {
+        dialogStore.error(`Failed to read file "${file.name}"`);
+      };
+
+      reader.readAsText(file);
+    };
+
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
+    };
   }, []);
 
   return (
@@ -135,6 +208,27 @@ export const App: React.FC = () => {
 
         {store.activeTab === 'json' && <JsonDiffViewer />}
       </main>
+
+      {/* Drag & Drop Visual Dropzone Overlay */}
+      {isDraggingFile && (
+        <div
+          data-testid="dropzone-overlay"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none p-8 animate-in fade-in duration-150"
+        >
+          <div className="border-2 border-dashed border-blue-500 rounded-3xl p-10 bg-blue-950/40 flex flex-col items-center gap-4 text-white shadow-2xl max-w-lg text-center animate-in zoom-in-95 duration-150">
+            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+              <UploadCloud className="w-8 h-8 animate-bounce" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Drop .xcfg Configuration</h3>
+            <p className="text-gray-300 text-sm">
+              Release the file to load and edit it in the workspace. Supports standard <span className="font-mono text-blue-400">.xcfg</span> and JSON configuration files.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Global Toast & Modal Dialog System */}
+      <DialogContainer />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 {
   "name": "ai-xctrack-config",
   "private": true,
-  "version": "0.27.0",
+  "version": "0.28.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -23,7 +23,6 @@
     "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@types/jszip": "^3.4.1",
     "@types/node": "^26.6.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

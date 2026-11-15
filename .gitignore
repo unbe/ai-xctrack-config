@@ -8,4 +8,3 @@ scripts/*.txt
 
 # User personal flight configs & backups - NEVER commit to git
 *.xcfg
-*.xczfg

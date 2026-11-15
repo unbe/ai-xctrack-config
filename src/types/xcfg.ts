@@ -1,6 +1,6 @@
 // XCTrack Configuration Domain Models & Type Definitions
 
-export type ExportType = 'pages' | 'backup' | 'backupwithmedia';
+export type ExportType = 'pages' | 'backup';
 export type Orientation = 'portrait' | 'landscape';
 
 export interface XcfgInfo {

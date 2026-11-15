@@ -1,4 +1,4 @@
-import rawDevices from '../../devices.json';
+import rawDevices from './devices.json';
 import { DevicePreset, Orientation } from '../types/xcfg';
 
 interface RawDeviceItem {

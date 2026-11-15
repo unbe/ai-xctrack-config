@@ -1,7 +1,7 @@
 /**
  * Comprehensive XCTrack Widget Catalog (v0.9.10 - 0.9.12.10)
  *
- * Complete definitions for all 79 registered widget classes in `org.xcontest.XCTrack.widget.o`
+ * Complete definitions for all 85 registered widget classes in `org.xcontest.XCTrack.widget.o`
  * across 11 categories (System, Flying, Air, XContest, Navigation, Competition, Livetracking,
  * Action Buttons, Others, Testing, Debug), plus legacy aliases.
  */
@@ -36,7 +36,7 @@ export const WIDGET_CATEGORIES: WidgetCategory[] = [
 ];
 
 /**
- * All 79 Registered XCTrack Widget Definitions
+ * All 85 Registered XCTrack Widget Definitions
  */
 export const WIDGET_CATALOG: WidgetDefinition[] = [
   {
