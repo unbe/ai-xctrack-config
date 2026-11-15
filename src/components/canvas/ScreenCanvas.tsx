@@ -23,7 +23,7 @@ export const ScreenCanvas: React.FC = () => {
     startX: number;
     startY: number;
     initialCoords: { X1: number; Y1: number; X2: number; Y2: number };
-    initialConfig: any;
+    currentCoords: { X1: number; Y1: number; X2: number; Y2: number };
     handle?: string;
   } | null>(null);
 
@@ -67,7 +67,7 @@ export const ScreenCanvas: React.FC = () => {
         startX: e.clientX,
         startY: e.clientY,
         initialCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
-        initialConfig: JSON.parse(JSON.stringify(store.config)),
+        currentCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
       });
     }
   };
@@ -83,7 +83,7 @@ export const ScreenCanvas: React.FC = () => {
       startX: e.clientX,
       startY: e.clientY,
       initialCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
-      initialConfig: JSON.parse(JSON.stringify(store.config)),
+      currentCoords: { X1: w.X1, Y1: w.Y1, X2: w.X2, Y2: w.Y2 },
     });
   };
 
@@ -103,6 +103,11 @@ export const ScreenCanvas: React.FC = () => {
       const width = X2 - X1;
       const height = Y2 - Y1;
 
+      let finalX1 = X1;
+      let finalY1 = Y1;
+      let finalX2 = X2;
+      let finalY2 = Y2;
+
       if (dragState.type === 'move') {
         let newX1 = Math.max(0, Math.min(10000 - width, X1 + deltaNormX));
         let newY1 = Math.max(0, Math.min(10000 - height, Y1 + deltaNormY));
@@ -117,7 +122,10 @@ export const ScreenCanvas: React.FC = () => {
           newY2 = snapped.Y2;
         }
 
-        editorStore.updateWidgetCoords(dragState.widgetIndex, Math.round(newX1), Math.round(newY1), Math.round(newX2), Math.round(newY2), false);
+        finalX1 = Math.round(newX1);
+        finalY1 = Math.round(newY1);
+        finalX2 = Math.round(newX2);
+        finalY2 = Math.round(newY2);
       } else if (dragState.type === 'resize' && dragState.handle) {
         let nX1 = X1;
         let nY1 = Y1;
@@ -138,27 +146,50 @@ export const ScreenCanvas: React.FC = () => {
           nY2 = snapped.Y2;
         }
 
-        editorStore.updateWidgetCoords(dragState.widgetIndex, Math.round(nX1), Math.round(nY1), Math.round(nX2), Math.round(nY2), false);
+        finalX1 = Math.round(nX1);
+        finalY1 = Math.round(nY1);
+        finalX2 = Math.round(nX2);
+        finalY2 = Math.round(nY2);
       }
+
+      setDragState((prev) => {
+        if (!prev) return null;
+        if (
+          prev.currentCoords.X1 === finalX1 &&
+          prev.currentCoords.Y1 === finalY1 &&
+          prev.currentCoords.X2 === finalX2 &&
+          prev.currentCoords.Y2 === finalY2
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          currentCoords: { X1: finalX1, Y1: finalY1, X2: finalX2, Y2: finalY2 },
+        };
+      });
     },
     [dragState, store.snapToGrid, currentGrid]
   );
 
   const handleMouseUp = useCallback(() => {
     if (dragState) {
-      const page = editorStore.getCurrentPage();
-      const currentWidget = page?.widgets[dragState.widgetIndex];
-      if (currentWidget) {
-        const { X1, Y1, X2, Y2 } = dragState.initialCoords;
-        const hasChanged =
-          currentWidget.X1 !== X1 ||
-          currentWidget.Y1 !== Y1 ||
-          currentWidget.X2 !== X2 ||
-          currentWidget.Y2 !== Y2;
+      const { X1, Y1, X2, Y2 } = dragState.initialCoords;
+      const { X1: curX1, Y1: curY1, X2: curX2, Y2: curY2 } = dragState.currentCoords;
+      const hasChanged =
+        curX1 !== X1 ||
+        curY1 !== Y1 ||
+        curX2 !== X2 ||
+        curY2 !== Y2;
 
-        if (hasChanged && dragState.initialConfig) {
-          editorStore.recordCustomUndo(dragState.initialConfig);
-        }
+      if (hasChanged) {
+        editorStore.updateWidgetCoords(
+          dragState.widgetIndex,
+          curX1,
+          curY1,
+          curX2,
+          curY2,
+          true
+        );
       }
       setDragState(null);
     }
@@ -354,23 +385,29 @@ export const ScreenCanvas: React.FC = () => {
           {/* Render All Widgets on Page */}
           {widgets.map((widget, index) => {
             const isSelected = selectedIndices.includes(index);
-            const leftPct = (widget.X1 / 10000) * 100;
-            const topPct = (widget.Y1 / 10000) * 100;
-            const widthPct = ((widget.X2 - widget.X1) / 10000) * 100;
-            const heightPct = ((widget.Y2 - widget.Y1) / 10000) * 100;
+            const stableKey = widget._editorId || `widget-${index}`;
+
+            const isDragging = dragState?.widgetIndex === index;
+            const displayCoords = isDragging ? dragState.currentCoords : widget;
+
+            const leftPct = (displayCoords.X1 / 10000) * 100;
+            const topPct = (displayCoords.Y1 / 10000) * 100;
+            const widthPct = ((displayCoords.X2 - displayCoords.X1) / 10000) * 100;
+            const heightPct = ((displayCoords.Y2 - displayCoords.Y1) / 10000) * 100;
 
             const widgetPixelW = (baseWidth * widthPct) / 100;
             const widgetPixelH = (baseHeight * heightPct) / 100;
 
-            const gx1 = normToGrid(widget.X1, currentGrid.cols);
-            const gy1 = normToGrid(widget.Y1, currentGrid.rows);
-            const gx2 = normToGrid(widget.X2, currentGrid.cols);
-            const gy2 = normToGrid(widget.Y2, currentGrid.rows);
+            const gx1 = normToGrid(displayCoords.X1, currentGrid.cols);
+            const gy1 = normToGrid(displayCoords.Y1, currentGrid.rows);
+            const gx2 = normToGrid(displayCoords.X2, currentGrid.cols);
+            const gy2 = normToGrid(displayCoords.Y2, currentGrid.rows);
 
             return (
               <div
-                key={index}
+                key={stableKey}
                 data-widget-index={index}
+                data-widget-id={stableKey}
                 onMouseDown={(e) => handleWidgetMouseDown(e, index)}
                 onClick={(e) => e.stopPropagation()}
                 className={`absolute transition-shadow ${
@@ -386,7 +423,7 @@ export const ScreenCanvas: React.FC = () => {
               >
                 {/* Widget High-Fidelity Preview Content */}
                 <WidgetPreview
-                  widget={widget}
+                  widget={isDragging ? { ...widget, ...displayCoords } : widget}
                   isSelected={isSelected}
                   globalTheme={store.globalTheme}
                   widthPx={widgetPixelW}
@@ -398,7 +435,7 @@ export const ScreenCanvas: React.FC = () => {
                   <>
                     {/* Live Grid Coordinates Tooltip */}
                     <div className="absolute -top-6 left-0 bg-sky-950/90 text-sky-200 border border-sky-600/60 rounded px-1.5 py-0.5 text-[9px] font-mono pointer-events-none whitespace-nowrap z-40 shadow">
-                      {gx2 - gx1}×{gy2 - gy1} cells ({Math.round((widget.X2 - widget.X1) / 100)}%w)
+                      {gx2 - gx1}×{gy2 - gy1} cells ({Math.round((displayCoords.X2 - displayCoords.X1) / 100)}%w)
                     </div>
 
                     {/* Drag Handle (for repositioning widgets that contain internal interactive canvas like Map) */}

@@ -25,7 +25,10 @@ import { XcfgWidget } from '../../types/xcfg';
 import { getWidgetDefinition } from '../../data/widgets-catalog';
 import { parseXctrackColor, bgTransparencyToAlpha, rgbaToCss } from '../../utils/colorMath';
 import { getMapTheme, getTerrainStyle } from '../../data/map-styles';
-import { RealXCTrackMap } from './RealXCTrackMap';
+
+const RealXCTrackMap = React.lazy(() =>
+  import('./RealXCTrackMap').then((mod) => ({ default: mod.RealXCTrackMap }))
+);
 
 interface WidgetPreviewProps {
   widget: XcfgWidget;
@@ -166,25 +169,34 @@ function renderWidgetContent(widget: XcfgWidget, shortName: string = '', ctx: Re
     const bearing = isNorthUp ? 0 : 35;
 
     return (
-      <RealXCTrackMap
-        theme={themeDef}
-        terrain={terrainDef}
-        zoom={zoom}
-        bearing={bearing}
-        hasRoads={hasRoads}
-        hasTerrain={hasTerrain}
-        hasRainRadar={hasRainRadar}
-        hasKK7={hasKK7}
-        kk7Opacity={kk7Opacity}
-        hasKK7Timed={hasKK7Timed}
-        kk7TimedOpacity={kk7TimedOpacity}
-        hasAirspaces={hasAirspaces}
-        hasScale={hasScale}
-        hasCompass={hasCompass}
-        hasWind={hasWind}
-        tracklogColor={ctx.tracklogColorCss}
-        isSelected={ctx.isSelected}
-      />
+      <React.Suspense
+        fallback={
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900/90 text-slate-400 font-mono text-xs gap-1 select-none">
+            <div className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+            <span className="text-[10px]">Loading map...</span>
+          </div>
+        }
+      >
+        <RealXCTrackMap
+          theme={themeDef}
+          terrain={terrainDef}
+          zoom={zoom}
+          bearing={bearing}
+          hasRoads={hasRoads}
+          hasTerrain={hasTerrain}
+          hasRainRadar={hasRainRadar}
+          hasKK7={hasKK7}
+          kk7Opacity={kk7Opacity}
+          hasKK7Timed={hasKK7Timed}
+          kk7TimedOpacity={kk7TimedOpacity}
+          hasAirspaces={hasAirspaces}
+          hasScale={hasScale}
+          hasCompass={hasCompass}
+          hasWind={hasWind}
+          tracklogColor={ctx.tracklogColorCss}
+          isSelected={ctx.isSelected}
+        />
+      </React.Suspense>
     );
   }
 

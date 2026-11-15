@@ -30,13 +30,14 @@ export function parseXcfg(jsonString: string): XcfgFile {
   return parsed as XcfgFile;
 }
 
-function cleanWidgetForExport(widget: any): any {
+export function cleanWidgetForExport(widget: any): any {
   if (!widget || typeof widget !== 'object') return widget;
   const cleaned = { ...widget };
   delete cleaned.gridX1;
   delete cleaned.gridY1;
   delete cleaned.gridX2;
   delete cleaned.gridY2;
+  delete cleaned._editorId;
   return cleaned;
 }
 

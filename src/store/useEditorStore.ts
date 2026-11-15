@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useRef, useCallback } from 'react';
 import { XcfgFile, XcfgPage, XcfgWidget, Orientation, DevicePreset } from '../types/xcfg';
 import { getDeviceById, findMatchingDevice, getDeviceGrid, DEFAULT_DEVICE_ID } from '../data/devices';
 import { snapRectToGrid, normToGrid, gridToNorm } from '../utils/gridMath';
@@ -6,6 +6,7 @@ import { createPageFromTemplate } from '../data/page-templates';
 import { createBlankXcfg } from '../utils/xcfgSerializer';
 import { convertPageOrientation, ConversionStrategy } from '../utils/orientationConverter';
 import { resnapPageToGrid, resnapConfigToDevice } from '../utils/smartGridResnap';
+import { populateEditorIds, assignEditorId, generateEditorId } from '../utils/widgetId';
 
 export interface EditorState {
   config: XcfgFile;
@@ -88,8 +89,20 @@ export function getStoredAutosave(): AutosaveData | null {
     const raw = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed && parsed.config) {
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      parsed.config &&
+      typeof parsed.config === 'object' &&
+      parsed.config.layout &&
+      typeof parsed.config.layout === 'object' &&
+      Array.isArray(parsed.config.layout.portrait) &&
+      Array.isArray(parsed.config.layout.landscape)
+    ) {
       return parsed as AutosaveData;
+    }
+    if (parsed) {
+      console.warn('Rejected invalid autosave state: layout.portrait or layout.landscape missing/not array');
     }
   } catch (e) {
     console.warn('Failed to parse autosave data:', e);
@@ -170,6 +183,7 @@ export function persistDeviceId(id: string): void {
 }
 
 const initialConfig = createBlankXcfg('backup', getStoredDevice().name);
+populateEditorIds(initialConfig);
 
 let currentState: EditorState = {
   config: initialConfig,
@@ -223,6 +237,20 @@ export const editorStore = {
   restoreAutosavedSession(): boolean {
     const saved = getStoredAutosave();
     if (!saved) return false;
+    if (
+      !saved.config ||
+      typeof saved.config !== 'object' ||
+      !saved.config.layout ||
+      typeof saved.config.layout !== 'object' ||
+      !Array.isArray(saved.config.layout.portrait) ||
+      !Array.isArray(saved.config.layout.landscape)
+    ) {
+      return false;
+    }
+    populateEditorIds(saved.config);
+    if (saved.originalConfig) {
+      populateEditorIds(saved.originalConfig);
+    }
     const device = getDeviceById(saved.activeDeviceId || DEFAULT_DEVICE_ID);
     const themeFromConfig = typeof saved.config?.preferences?.['Display.Theme'] === 'string'
       ? saved.config.preferences['Display.Theme']
@@ -268,6 +296,7 @@ export const editorStore = {
       persistDeviceId(matchedDevice.id);
     }
     const cloned = JSON.parse(JSON.stringify(config));
+    populateEditorIds(cloned);
     const themeFromConfig = cloned.preferences?.['Display.Theme'] || 'BlackTheme';
     currentState = {
       ...currentState,
@@ -337,33 +366,49 @@ export const editorStore = {
   },
 
   updateWidget(index: number, partialProps: Partial<XcfgWidget>, saveUndo = true) {
-    const page = editorStore.getCurrentPage();
-    if (!page || !page.widgets[index]) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex]) return;
+    const currentPage = currentPages[pageIndex];
+    if (!currentPage.widgets || !currentPage.widgets[index]) return;
 
     if (saveUndo) pushUndo();
 
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetWidget = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex].widgets[index] as any;
-
-    // Purge any rogue non-XCTrack grid properties
-    delete targetWidget.gridX1;
-    delete targetWidget.gridY1;
-    delete targetWidget.gridX2;
-    delete targetWidget.gridY2;
-
+    const currentWidget = currentPage.widgets[index];
     const cleanProps = { ...partialProps } as any;
     delete cleanProps.gridX1;
     delete cleanProps.gridY1;
     delete cleanProps.gridX2;
     delete cleanProps.gridY2;
 
+    const updatedWidget = { ...currentWidget };
+    delete updatedWidget.gridX1;
+    delete updatedWidget.gridY1;
+    delete updatedWidget.gridX2;
+    delete updatedWidget.gridY2;
+
     for (const [k, v] of Object.entries(cleanProps)) {
       if (v === undefined) {
-        delete targetWidget[k];
+        delete updatedWidget[k];
       } else {
-        targetWidget[k] = v;
+        updatedWidget[k] = v;
       }
     }
+
+    const updatedWidgets = [...currentPage.widgets];
+    updatedWidgets[index] = updatedWidget;
+
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: updatedWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = { ...currentState, config: newConfig };
     emitChange();
@@ -384,32 +429,59 @@ export const editorStore = {
   },
 
   addWidget(widget: XcfgWidget) {
-    const page = editorStore.getCurrentPage();
-    if (!page) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex]) return;
+    const currentPage = currentPages[pageIndex];
 
     pushUndo();
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
-    targetPage.widgets.push(widget);
+
+    const clonedWidget = { ...widget };
+    assignEditorId(clonedWidget);
+
+    const updatedWidgets = [...currentPage.widgets, clonedWidget];
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: updatedWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = {
       ...currentState,
       config: newConfig,
-      selectedWidgetIndices: [targetPage.widgets.length - 1],
+      selectedWidgetIndices: [updatedWidgets.length - 1],
     };
     emitChange();
   },
 
   deleteSelectedWidgets() {
-    const page = editorStore.getCurrentPage();
-    if (!page || currentState.selectedWidgetIndices.length === 0) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex] || currentState.selectedWidgetIndices.length === 0) return;
+    const currentPage = currentPages[pageIndex];
 
     pushUndo();
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
-    const toDelete = new Set(currentState.selectedWidgetIndices);
 
-    targetPage.widgets = targetPage.widgets.filter((_, i) => !toDelete.has(i));
+    const toDelete = new Set(currentState.selectedWidgetIndices);
+    const updatedWidgets = currentPage.widgets.filter((_, i) => !toDelete.has(i));
+
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: updatedWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = {
       ...currentState,
@@ -420,12 +492,15 @@ export const editorStore = {
   },
 
   duplicateSelectedWidgets() {
-    const page = editorStore.getCurrentPage();
-    if (!page || currentState.selectedWidgetIndices.length === 0) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex] || currentState.selectedWidgetIndices.length === 0) return;
+    const currentPage = currentPages[pageIndex];
 
     pushUndo();
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
+
+    const newWidgets = [...currentPage.widgets];
     const newIndices: number[] = [];
 
     const grid = editorStore.getCurrentGrid();
@@ -433,18 +508,32 @@ export const editorStore = {
     const shiftY = Math.round(10000 / grid.rows);
 
     for (const idx of currentState.selectedWidgetIndices) {
-      const original = targetPage.widgets[idx];
+      const original = currentPage.widgets[idx];
       if (!original) continue;
 
-      const dup = JSON.parse(JSON.stringify(original)) as XcfgWidget;
-      dup.X1 = Math.min(10000 - (dup.X2 - dup.X1), dup.X1 + shiftX);
-      dup.Y1 = Math.min(10000 - (dup.Y2 - dup.Y1), dup.Y1 + shiftY);
-      dup.X2 = Math.min(10000, dup.X2 + shiftX);
-      dup.Y2 = Math.min(10000, dup.Y2 + shiftY);
+      const dup: XcfgWidget = {
+        ...original,
+        _editorId: generateEditorId(),
+        X1: Math.min(10000 - (original.X2 - original.X1), original.X1 + shiftX),
+        Y1: Math.min(10000 - (original.Y2 - original.Y1), original.Y1 + shiftY),
+        X2: Math.min(10000, original.X2 + shiftX),
+        Y2: Math.min(10000, original.Y2 + shiftY),
+      };
 
-      targetPage.widgets.push(dup);
-      newIndices.push(targetPage.widgets.length - 1);
+      newWidgets.push(dup);
+      newIndices.push(newWidgets.length - 1);
     }
+
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: newWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = {
       ...currentState,
@@ -455,13 +544,25 @@ export const editorStore = {
   },
 
   deleteWidget(index: number) {
-    const page = editorStore.getCurrentPage();
-    if (!page || !page.widgets[index]) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex] || !currentPages[pageIndex].widgets[index]) return;
+    const currentPage = currentPages[pageIndex];
 
     pushUndo();
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
-    targetPage.widgets.splice(index, 1);
+
+    const updatedWidgets = currentPage.widgets.filter((_, i) => i !== index);
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: updatedWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = {
       ...currentState,
@@ -472,30 +573,44 @@ export const editorStore = {
   },
 
   duplicateWidget(index: number) {
-    const page = editorStore.getCurrentPage();
-    if (!page || !page.widgets[index]) return;
+    const orientation = currentState.activeOrientation;
+    const pageIndex = currentState.activePageIndex;
+    const currentPages = currentState.config.layout?.[orientation];
+    if (!currentPages || !currentPages[pageIndex] || !currentPages[pageIndex].widgets[index]) return;
+    const currentPage = currentPages[pageIndex];
+    const original = currentPage.widgets[index];
 
     pushUndo();
-    const newConfig = JSON.parse(JSON.stringify(currentState.config)) as XcfgFile;
-    const targetPage = newConfig.layout[currentState.activeOrientation][currentState.activePageIndex];
-    const original = targetPage.widgets[index];
 
     const grid = editorStore.getCurrentGrid();
     const shiftX = Math.round(10000 / grid.cols);
     const shiftY = Math.round(10000 / grid.rows);
 
-    const dup = JSON.parse(JSON.stringify(original)) as XcfgWidget;
-    dup.X1 = Math.min(10000 - (dup.X2 - dup.X1), dup.X1 + shiftX);
-    dup.Y1 = Math.min(10000 - (dup.Y2 - dup.Y1), dup.Y1 + shiftY);
-    dup.X2 = Math.min(10000, dup.X2 + shiftX);
-    dup.Y2 = Math.min(10000, dup.Y2 + shiftY);
+    const dup: XcfgWidget = {
+      ...original,
+      _editorId: generateEditorId(),
+      X1: Math.min(10000 - (original.X2 - original.X1), original.X1 + shiftX),
+      Y1: Math.min(10000 - (original.Y2 - original.Y1), original.Y1 + shiftY),
+      X2: Math.min(10000, original.X2 + shiftX),
+      Y2: Math.min(10000, original.Y2 + shiftY),
+    };
 
-    targetPage.widgets.push(dup);
+    const updatedWidgets = [...currentPage.widgets, dup];
+    const updatedPages = [...currentPages];
+    updatedPages[pageIndex] = { ...currentPage, widgets: updatedWidgets };
+
+    const newConfig: XcfgFile = {
+      ...currentState.config,
+      layout: {
+        ...currentState.config.layout,
+        [orientation]: updatedPages,
+      },
+    };
 
     currentState = {
       ...currentState,
       config: newConfig,
-      selectedWidgetIndices: [targetPage.widgets.length - 1],
+      selectedWidgetIndices: [updatedWidgets.length - 1],
     };
     emitChange();
   },
@@ -865,6 +980,64 @@ export const editorStore = {
   },
 };
 
-export function useEditorStore(): EditorState {
-  return useSyncExternalStore(editorStore.subscribe, editorStore.getState);
+export function shallowEqual<T>(a: T, b: T): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+  const keysA = Object.keys(a) as (keyof T)[];
+  const keysB = Object.keys(b) as (keyof T)[];
+  if (keysA.length !== keysB.length) return false;
+  for (const k of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function useEditorStore<T = EditorState>(
+  selector?: (state: EditorState) => T,
+  equalityFn?: (a: T, b: T) => boolean
+): T {
+  const selRef = useRef(selector);
+  selRef.current = selector;
+  const eqRef = useRef(equalityFn);
+  eqRef.current = equalityFn;
+
+  const lastSnapshotRef = useRef<EditorState | null>(null);
+  const lastSelectionRef = useRef<T | undefined>(undefined);
+  const lastSelectorRef = useRef(selector);
+
+  const getSnapshot = useCallback(() => {
+    const state = editorStore.getState();
+    const sel = selRef.current;
+    const eq = eqRef.current ?? Object.is;
+
+    if (sel === undefined) {
+      return state as unknown as T;
+    }
+
+    if (
+      lastSnapshotRef.current === state &&
+      lastSelectorRef.current === sel &&
+      lastSelectionRef.current !== undefined
+    ) {
+      return lastSelectionRef.current;
+    }
+
+    const nextSelection = sel(state);
+    if (
+      lastSelectionRef.current !== undefined &&
+      lastSelectorRef.current === sel &&
+      eq(lastSelectionRef.current, nextSelection)
+    ) {
+      return lastSelectionRef.current;
+    }
+
+    lastSnapshotRef.current = state;
+    lastSelectorRef.current = sel;
+    lastSelectionRef.current = nextSelection;
+    return nextSelection;
+  }, []);
+
+  return useSyncExternalStore(editorStore.subscribe, getSnapshot);
 }

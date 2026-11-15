@@ -786,3 +786,42 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
 
 
 
+
+---
+
+## 21. Performance & Reliability Improvements (v0.26.0)
+
+### 21.1 Selective Store Subscriptions with Snapshot Memoization
+- **Problem**: `useEditorStore` subscribed all consuming components to the entire `EditorState` without selector support. Whenever any store mutation called `emitChange()` (such as changing active orientation or moving a widget), all 9 components mounted across the application re-rendered simultaneously.
+- **Solution**: Enhanced `useEditorStore` with slice selector subscriptions and snapshot memoization:
+  `export function useEditorStore<T = EditorState>(selector?: (state: EditorState) => T, equalityFn?: (a: T, b: T) => boolean): T`
+  Unselected store mutations bypass re-rendering if the selected slice is referentially or shallowly identical (`shallowEqual`). Components calling `useEditorStore()` without arguments remain 100% backward compatible.
+
+### 21.2 Drag State Isolation & Shallow Path Updates
+- **Problem**: Drag and resize gestures in `ScreenCanvas.tsx` dispatched `editorStore.updateWidgetCoords` on every `mousemove` event (60–120 times per second), executing `JSON.parse(JSON.stringify(config))` repeatedly on every mouse delta and scheduling autosave writes.
+- **Solution**: Isolated drag motion to local React state (`dragState.currentCoords`) in `ScreenCanvas.tsx`, recalculating coordinates and live tooltips smoothly without dispatching store actions or deep JSON cloning during the gesture. On `mouseup`, a single shallow path update (`updateWidgetCoords` with `saveUndo = true`) commits the final coordinates. In `useEditorStore.ts`, replaced deep JSON cloning in `updateWidget`, `addWidget`, `deleteWidget`, and `duplicateSelectedWidgets` with immutable shallow path cloning (structural sharing).
+
+### 21.3 React ErrorBoundary & Autosave Layout Sanitization
+- **Problem**: If an unexpected exception occurred during component rendering (e.g. malformed localStorage payload or corrupt layout array), React unmounted the entire DOM tree, leaving a blank white screen with no user recovery option. Furthermore, `getStoredAutosave` and `restoreAutosavedSession` did not validate whether `layout.portrait` and `layout.landscape` were valid arrays.
+- **Solution**:
+  1. Implemented `ErrorBoundary` in `src/components/ui/ErrorBoundary.tsx` featuring an application error card and a "Reset Session" button that purges `AUTOSAVE_STORAGE_KEY` from localStorage, clears editor selections, and reloads/resets the interface. Wrapped `<App />` with `<ErrorBoundary>` in `src/main.tsx`.
+  2. Added strict schema validation in `getStoredAutosave` and `restoreAutosavedSession` in `useEditorStore.ts`: verifies `layout.portrait` and `layout.landscape` are valid arrays. Corrupt or truncated autosave states are safely rejected with `false`/`null` without crashing.
+
+### 21.4 Code Splitting & Rollup manualChunks Optimization
+- **Problem**: `RealXCTrackMap` statically imported MapLibre GL (`maplibre-gl`), causing a monolithic production bundle of 1.70 MB where `maplibre-gl` was bundled directly into the main entry script (`index.js`).
+- **Solution**:
+  1. Lazy-loaded `RealXCTrackMap` in `src/components/canvas/WidgetPreview.tsx` using `React.lazy` with a `React.Suspense` fallback spinner.
+  2. Configured Rollup `manualChunks` in `vite.config.ts`, cleanly splitting `vendor-map` (`maplibre-gl`), `vendor-lucide` (`lucide-react`), and `vendor-react` (`react`, `react-dom`).
+  3. Dramatically reduced the primary application bundle from 1,702 kB to 458 kB (84 kB gzipped), loading MapLibre GL strictly on demand when a map widget is rendered.
+
+### 21.5 WebGL Viewport Resizing via ResizeObserver
+- **Problem**: MapLibre GL renders to an HTML5 WebGL canvas with explicit pixel dimensions. When widgets were resized on the canvas or zoom levels changed, the container DOM dimensions shifted without notifying MapLibre, leading to clipped or stretched canvas buffers until manual mouse interaction.
+- **Solution**: Added a `ResizeObserver` in `RealXCTrackMap.tsx` attached to `containerRef.current`. Debounced with `requestAnimationFrame` to prevent ResizeObserver loop limit warnings, safely guarded with `if (typeof ResizeObserver === 'undefined') return;` for headless/jsdom unit test safety.
+
+### 21.6 Stable In-Memory Widget Keys & Export Purity
+- **Problem**: `ScreenCanvas.tsx` mapped widgets with `key={index}`. When widgets were reordered, deleted, or inserted, React reused DOM nodes at matching indices rather than matching logical widget identities. Conversely, adding persistent ID fields to `.xcfg` files would corrupt the standard XCTrack JSON export format.
+- **Solution**:
+  1. Created `src/utils/widgetId.ts` (`generateEditorId`, `assignEditorId`, `populateEditorIds`) attaching transient `_editorId` strings (e.g. `wid_...`) to widgets in memory upon config load, widget addition, and duplication (assigning a new unique ID to cloned widgets).
+  2. Used `widget._editorId || 'widget-${index}'` as stable React keys in `ScreenCanvas.tsx`.
+  3. Updated `cleanWidgetForExport` in `src/utils/xcfgSerializer.ts` to purge `_editorId` so that it is never written to exported `.xcfg` files.
+  4. Added `_editorId` to `ignoredKeys` in `diffEngine.ts` to ensure in-memory editor IDs are never flagged as semantic differences.

@@ -30,6 +30,7 @@ export interface XcfgWidget {
   _hide_labels?: boolean;
   _units?: string;
   UUID?: string; // legacy 0.9.10
+  _editorId?: string;
   [key: string]: unknown;
 }
 

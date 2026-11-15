@@ -345,7 +345,7 @@ export function computeSemanticDiff(orig: XcfgFile, curr: XcfgFile): SemanticCha
 
         // Property comparisons
         const propKeys = new Set([...Object.keys(origW), ...Object.keys(currW)]);
-        const ignoredKeys = new Set(['X1', 'Y1', 'X2', 'Y2', 'gridX1', 'gridY1', 'gridX2', 'gridY2']);
+        const ignoredKeys = new Set(['X1', 'Y1', 'X2', 'Y2', 'gridX1', 'gridY1', 'gridX2', 'gridY2', '_editorId']);
 
         for (const key of propKeys) {
           if (ignoredKeys.has(key)) continue;

@@ -109,6 +109,18 @@ function localXcfgPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), localXcfgPlugin()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-map': ['maplibre-gl'],
+          'vendor-lucide': ['lucide-react'],
+          'vendor-react': ['react', 'react-dom'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1200,
+  },
   server: {
     port: 3000,
     host: true,

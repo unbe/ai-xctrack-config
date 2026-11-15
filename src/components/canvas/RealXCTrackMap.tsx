@@ -213,6 +213,33 @@ export const RealXCTrackMap: React.FC<RealXCTrackMapProps> = ({
     };
   }, []);
 
+  // ResizeObserver to trigger map.resize() when container size changes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+
+    let rafId: number | null = null;
+    const observer = new ResizeObserver(() => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(() => {
+        if (mapRef.current) {
+          mapRef.current.resize();
+        }
+      });
+    });
+
+    observer.observe(container);
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      observer.disconnect();
+    };
+  }, [mapLoaded]);
+
   // Dynamically enable/disable map navigation based on widget selection state
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
