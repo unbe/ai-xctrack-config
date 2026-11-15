@@ -730,6 +730,47 @@ Every widget in `org.xcontest.XCTrack.widget.w.*` has:
   2. In `updateWidget` and `updateWidgetCoords` (`useEditorStore.ts`), explicitly purged any `gridX1`, `gridY1`, `gridX2`, `gridY2` fields.
   3. Added `cleanWidgetForExport` in `xcfgSerializer.ts` to sanitize all widgets during JSON serialization, ensuring rogue grid properties are never written to exported `.xcfg` or diff output.
 
+---
+
+## 20. Production Review & P0 Fixes (v0.25.0)
+
+### 20.1 Undo/Redo Window Listener Isolation
+- **Problem**: Both `App.tsx` and `ScreenCanvas.tsx` registered global window `keydown` listeners for `Ctrl/Cmd+Z` and `Ctrl/Cmd+Y`. When the user invoked an undo or redo shortcut while the canvas was mounted, both listeners executed in sequence, performing two undo/redo steps instead of one.
+- **Solution**: Removed the undo/redo keydown handling branches from `ScreenCanvas.tsx`. Global undo/redo is centralized in `App.tsx`, while canvas-specific shortcuts (`Delete`, `Escape`, `Ctrl/Cmd+D`, arrow nudging) remain in `ScreenCanvas.tsx`.
+
+### 20.2 Preferences Validation Issue Object Formatting
+- **Problem**: `validation.errors` holds `ValidationIssue` objects (`{ path: string, message: string, code: string }`). In `PreferencesEditor.tsx`, calling `validation.errors.join('; ')` coerced objects to string, rendering `[object Object]; [object Object]` in the UI.
+- **Solution**: Formatted issues as `${e.path}: ${e.message}`, rendering clear human-readable error descriptions.
+
+### 20.3 Coordinate Tooltip Percentage Precedence
+- **Problem**: In `ScreenCanvas.tsx`, the coordinate tooltip computed `{widget.X2 - widget.X1 / 100}%w`. Operator precedence evaluated division before subtraction (`X2 - (X1 / 100)`), yielding erroneous values such as `4990%w`.
+- **Solution**: Added explicit parentheses and rounding: `{Math.round((widget.X2 - widget.X1) / 100)}%w`.
+
+### 20.4 Multi-Widget Alignment and Nudging Single-Snapshot Undo
+- **Problem**: Iterating over selected widgets during multi-widget arrow nudges or alignment (`alignLeft`, `alignRight`, `alignTop`, `alignBottom`) invoked `updateWidgetCoords(..., true)`, pushing an undo snapshot per widget. A single user nudge of 5 widgets required 5 separate Ctrl+Z keystrokes to undo.
+- **Solution**: Captured a single undo snapshot prior to the loop via `editorStore.recordCustomUndo(editorStore.getState().config)` and passed `saveUndo = false` inside the iteration loop.
+
+### 20.5 Raw & Preserved Properties Section Restoration & Property Deletion
+- **Problem**: The state and filter logic for unmanaged properties existed in `WidgetPropertyInspector.tsx`, but the collapsible JSX container was omitted during collapsible section refactoring. Furthermore, `editorStore.updateWidget` used `Object.assign`, which did not delete properties when set to `undefined`.
+- **Solution**: Restored the "Raw & Preserved Properties" section with JSON view toggle, property input fields, deletion buttons, and custom property adder. Updated `updateWidget` in `useEditorStore.ts` to delete keys when their value is `undefined`.
+
+### 20.6 Page Orientation Conversion Safety (Duplicate Only)
+- **Problem**: `convertPageOrientation` allowed an `action: 'move'` option that spliced the page out of the source orientation. When converting the only page of a layout, this reduced the page array to 0 pages, violating XCTrack invariants.
+- **Solution**: Removed the `'move'` action entirely from `convertPageOrientation` and removed the action mode selector from `PageManagerPanel.tsx`. Conversion always duplicates into the opposite orientation, guaranteeing every layout orientation retains at least 1 page.
+
+### 20.7 SVG Gradient & Pattern ID Isolation via React `useId()`
+- **Problem**: `RealisticMapSection.tsx` used static SVG IDs (`massifGrad`, `westRidgeGrad`, `airspaceHatch`, `railTie`). When `MapStyleGalleryModal.tsx` rendered multiple preview thumbnails alongside the canvas, SVG gradient IDs collided across instances in the DOM.
+- **Solution**: Generated instance-unique IDs using React `useId().replace(/:/g, '')` in `RealisticMapSection.tsx`, dynamically scoping gradients and patterns.
+
+### 20.8 Tailwind Color Palette Extension (`darker: '#0d1017'`)
+- **Problem**: Multiple components used `bg-xctrack-darker`, but `darker` was not declared under `theme.extend.colors.xctrack` in `tailwind.config.js`.
+- **Solution**: Added `darker: '#0d1017'` to `colors.xctrack` in `tailwind.config.js`.
+
+### 20.9 Semantic Diff Engine Widget Geometry and Property Comparisons
+- **Problem**: `computeSemanticDiff` in `diffEngine.ts` compared overall page counts and widget counts, but did not detect changes to individual widget geometries (`X1, Y1, X2, Y2`), properties (`_title`, `titletext`, `_border`, `_bg`, etc.), or specific added/removed widgets.
+- **Solution**: Extended `computeSemanticDiff` to compare widget coordinates, property additions, property removals, property value modifications (ignoring non-standard coordinate keys), as well as added and removed widgets on matching pages, accompanied by a dedicated unit test suite in `diffEngine.test.ts`.
+
+
 
 
 

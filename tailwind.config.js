@@ -9,6 +9,7 @@ export default {
     extend: {
       colors: {
         xctrack: {
+          darker: '#0d1017',
           dark: '#12151a',
           card: '#1a1f29',
           border: '#2a3242',

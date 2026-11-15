@@ -219,7 +219,7 @@ describe('Editor Store Page Orientation Conversion Actions', () => {
     editorStore.setActivePage(0);
 
     // Duplicate & convert to landscape
-    editorStore.convertPageOrientation(0, { strategy: 'adaptive', action: 'duplicate' });
+    editorStore.convertPageOrientation(0, { strategy: 'adaptive' });
 
     const state = editorStore.getState();
     // Switched active orientation to landscape
@@ -233,28 +233,26 @@ describe('Editor Store Page Orientation Conversion Actions', () => {
     expect(state.activePageIndex).toBe(state.config.layout.landscape.length - 1);
   });
 
-  it('moves and converts page to opposite orientation', () => {
-    // Add an extra portrait page first so we can move one without leaving 0 pages
+  it('converts page to opposite orientation preserving source page (duplicate only, preventing 0 pages)', () => {
     editorStore.setOrientation('portrait');
-    editorStore.addPage('WPXCAssistant');
-
     const portraitCountBefore = editorStore.getState().config.layout.portrait.length;
     const landscapeCountBefore = editorStore.getState().config.layout.landscape.length;
 
-    // Move & convert to landscape
-    editorStore.convertPageOrientation(0, { strategy: 'adaptive', action: 'move' });
+    editorStore.convertPageOrientation(0, { strategy: 'adaptive' });
 
     const state = editorStore.getState();
     expect(state.activeOrientation).toBe('landscape');
     expect(state.config.layout.landscape.length).toBe(landscapeCountBefore + 1);
-    expect(state.config.layout.portrait.length).toBe(portraitCountBefore - 1);
+    // Source portrait orientation never loses pages
+    expect(state.config.layout.portrait.length).toBe(portraitCountBefore);
+    expect(state.config.layout.portrait.length).toBeGreaterThanOrEqual(1);
   });
 
   it('supports undo and redo for page conversion', () => {
     editorStore.setOrientation('portrait');
     const landscapeCountBefore = editorStore.getState().config.layout.landscape.length;
 
-    editorStore.convertPageOrientation(0, { strategy: 'adaptive', action: 'duplicate' });
+    editorStore.convertPageOrientation(0, { strategy: 'adaptive' });
     expect(editorStore.getState().config.layout.landscape.length).toBe(landscapeCountBefore + 1);
 
     // Undo

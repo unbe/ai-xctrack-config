@@ -181,21 +181,9 @@ export const ScreenCanvas: React.FC = () => {
         return;
       }
 
-      const isZ = e.key.toLowerCase() === 'z' || e.code === 'KeyZ';
-      const isY = e.key.toLowerCase() === 'y' || e.code === 'KeyY';
       const isD = e.key.toLowerCase() === 'd' || e.code === 'KeyD';
 
-      if ((e.ctrlKey || e.metaKey) && isZ) {
-        e.preventDefault();
-        if (e.shiftKey) {
-          editorStore.redo();
-        } else {
-          editorStore.undo();
-        }
-      } else if ((e.ctrlKey || e.metaKey) && isY) {
-        e.preventDefault();
-        editorStore.redo();
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         editorStore.deleteSelectedWidgets();
       } else if (e.key === 'Escape') {
@@ -217,6 +205,7 @@ export const ScreenCanvas: React.FC = () => {
         if (e.key === 'ArrowUp') dy = -stepY;
         if (e.key === 'ArrowDown') dy = stepY;
 
+        editorStore.recordCustomUndo(editorStore.getState().config);
         for (const idx of selectedIndices) {
           const w = widgets[idx];
           if (!w) continue;
@@ -224,7 +213,7 @@ export const ScreenCanvas: React.FC = () => {
           const wHeight = w.Y2 - w.Y1;
           const newX1 = Math.max(0, Math.min(10000 - wWidth, w.X1 + dx));
           const newY1 = Math.max(0, Math.min(10000 - wHeight, w.Y1 + dy));
-          editorStore.updateWidgetCoords(idx, newX1, newY1, newX1 + wWidth, newY1 + wHeight, true);
+          editorStore.updateWidgetCoords(idx, newX1, newY1, newX1 + wWidth, newY1 + wHeight, false);
         }
       }
     };
@@ -236,39 +225,43 @@ export const ScreenCanvas: React.FC = () => {
   // Multi-widget alignment actions
   const alignLeft = () => {
     if (selectedIndices.length < 2) return;
+    editorStore.recordCustomUndo(editorStore.getState().config);
     const minX1 = Math.min(...selectedIndices.map((i) => widgets[i].X1));
     for (const i of selectedIndices) {
       const w = widgets[i];
-      editorStore.updateWidgetCoords(i, minX1, w.Y1, minX1 + (w.X2 - w.X1), w.Y2, true);
+      editorStore.updateWidgetCoords(i, minX1, w.Y1, minX1 + (w.X2 - w.X1), w.Y2, false);
     }
   };
 
   const alignRight = () => {
     if (selectedIndices.length < 2) return;
+    editorStore.recordCustomUndo(editorStore.getState().config);
     const maxX2 = Math.max(...selectedIndices.map((i) => widgets[i].X2));
     for (const i of selectedIndices) {
       const w = widgets[i];
       const width = w.X2 - w.X1;
-      editorStore.updateWidgetCoords(i, maxX2 - width, w.Y1, maxX2, w.Y2, true);
+      editorStore.updateWidgetCoords(i, maxX2 - width, w.Y1, maxX2, w.Y2, false);
     }
   };
 
   const alignTop = () => {
     if (selectedIndices.length < 2) return;
+    editorStore.recordCustomUndo(editorStore.getState().config);
     const minY1 = Math.min(...selectedIndices.map((i) => widgets[i].Y1));
     for (const i of selectedIndices) {
       const w = widgets[i];
-      editorStore.updateWidgetCoords(i, w.X1, minY1, w.X2, minY1 + (w.Y2 - w.Y1), true);
+      editorStore.updateWidgetCoords(i, w.X1, minY1, w.X2, minY1 + (w.Y2 - w.Y1), false);
     }
   };
 
   const alignBottom = () => {
     if (selectedIndices.length < 2) return;
+    editorStore.recordCustomUndo(editorStore.getState().config);
     const maxY2 = Math.max(...selectedIndices.map((i) => widgets[i].Y2));
     for (const i of selectedIndices) {
       const w = widgets[i];
       const height = w.Y2 - w.Y1;
-      editorStore.updateWidgetCoords(i, w.X1, maxY2 - height, w.X2, maxY2, true);
+      editorStore.updateWidgetCoords(i, w.X1, maxY2 - height, w.X2, maxY2, false);
     }
   };
 
@@ -405,7 +398,7 @@ export const ScreenCanvas: React.FC = () => {
                   <>
                     {/* Live Grid Coordinates Tooltip */}
                     <div className="absolute -top-6 left-0 bg-sky-950/90 text-sky-200 border border-sky-600/60 rounded px-1.5 py-0.5 text-[9px] font-mono pointer-events-none whitespace-nowrap z-40 shadow">
-                      {gx2 - gx1}×{gy2 - gy1} cells ({widget.X2 - widget.X1 / 100}%w)
+                      {gx2 - gx1}×{gy2 - gy1} cells ({Math.round((widget.X2 - widget.X1) / 100)}%w)
                     </div>
 
                     {/* Drag Handle (for repositioning widgets that contain internal interactive canvas like Map) */}

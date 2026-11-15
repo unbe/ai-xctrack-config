@@ -1124,7 +1124,7 @@ export const PreferencesEditor: React.FC = () => {
                 <span className="text-[11px] opacity-80 block">
                   {validation.valid
                     ? 'All required keys, coordinates, and schemas strictly comply with XCTrack Android requirements.'
-                    : validation.errors.join('; ')}
+                    : validation.errors.map((e) => `${e.path}: ${e.message}`).join('; ')}
                 </span>
               </div>
             </div>

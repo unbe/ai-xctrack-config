@@ -35,7 +35,6 @@ export const PageManagerPanel: React.FC = () => {
   const [convertModalOpen, setConvertModalOpen] = useState(false);
   const [convertTargetPageIndex, setConvertTargetPageIndex] = useState<number | null>(null);
   const [convertStrategy, setConvertStrategy] = useState<ConversionStrategy>('adaptive');
-  const [convertAction, setConvertAction] = useState<'move' | 'duplicate'>('duplicate');
 
   const pages = store.config.layout[store.activeOrientation] || [];
   const currentPage = pages[store.activePageIndex];
@@ -54,7 +53,6 @@ export const PageManagerPanel: React.FC = () => {
     const pageIdx = convertTargetPageIndex !== null ? convertTargetPageIndex : store.activePageIndex;
     editorStore.convertPageOrientation(pageIdx, {
       strategy: convertStrategy,
-      action: convertAction,
     });
     setConvertModalOpen(false);
   };
@@ -478,60 +476,6 @@ export const PageManagerPanel: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Action: Duplicate vs Move */}
-              <div className="border-t border-slate-800 pt-3 mb-5">
-                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                  Action Mode
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <label
-                    onClick={() => setConvertAction('duplicate')}
-                    className={`p-2.5 rounded-lg border cursor-pointer flex flex-col justify-between transition-colors ${
-                      convertAction === 'duplicate'
-                        ? 'bg-sky-600/15 border-sky-500 text-white'
-                        : 'bg-slate-950/60 border-slate-800 text-gray-400 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-medium text-xs mb-1">
-                      <input
-                        type="radio"
-                        name="convertAction"
-                        checked={convertAction === 'duplicate'}
-                        onChange={() => setConvertAction('duplicate')}
-                        className="text-sky-600 focus:ring-0"
-                      />
-                      <span>Duplicate & Convert</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 leading-tight">
-                      Keep original page in {store.activeOrientation}.
-                    </span>
-                  </label>
-
-                  <label
-                    onClick={() => setConvertAction('move')}
-                    className={`p-2.5 rounded-lg border cursor-pointer flex flex-col justify-between transition-colors ${
-                      convertAction === 'move'
-                        ? 'bg-sky-600/15 border-sky-500 text-white'
-                        : 'bg-slate-950/60 border-slate-800 text-gray-400 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-medium text-xs mb-1">
-                      <input
-                        type="radio"
-                        name="convertAction"
-                        checked={convertAction === 'move'}
-                        onChange={() => setConvertAction('move')}
-                        className="text-sky-600 focus:ring-0"
-                      />
-                      <span>Move & Convert</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 leading-tight">
-                      Remove from {store.activeOrientation} after converting.
-                    </span>
-                  </label>
                 </div>
               </div>
 

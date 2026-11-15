@@ -357,7 +357,13 @@ export const editorStore = {
     delete cleanProps.gridX2;
     delete cleanProps.gridY2;
 
-    Object.assign(targetWidget, cleanProps);
+    for (const [k, v] of Object.entries(cleanProps)) {
+      if (v === undefined) {
+        delete targetWidget[k];
+      } else {
+        targetWidget[k] = v;
+      }
+    }
 
     currentState = { ...currentState, config: newConfig };
     emitChange();
@@ -593,10 +599,9 @@ export const editorStore = {
     pageIndex: number,
     options?: {
       strategy?: ConversionStrategy;
-      action?: 'move' | 'duplicate';
     }
   ) {
-    const { strategy = 'adaptive', action = 'duplicate' } = options || {};
+    const { strategy = 'adaptive' } = options || {};
     const fromOrientation = currentState.activeOrientation;
     const toOrientation: Orientation = fromOrientation === 'portrait' ? 'landscape' : 'portrait';
     const sourcePages = currentState.config.layout[fromOrientation] || [];
@@ -619,10 +624,6 @@ export const editorStore = {
 
     newConfig.layout[toOrientation].push(convertedPage);
 
-    if (action === 'move') {
-      newConfig.layout[fromOrientation].splice(pageIndex, 1);
-    }
-
     currentState = {
       ...currentState,
       config: newConfig,
@@ -634,7 +635,7 @@ export const editorStore = {
   },
 
   copyPageToOppositeOrientation(pageIndex: number) {
-    this.convertPageOrientation(pageIndex, { strategy: 'adaptive', action: 'duplicate' });
+    this.convertPageOrientation(pageIndex, { strategy: 'adaptive' });
   },
 
   setDevice(device: DevicePreset, options?: { autoResnap?: boolean }) {

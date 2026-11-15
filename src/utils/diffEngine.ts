@@ -316,6 +316,97 @@ export function computeSemanticDiff(orig: XcfgFile, curr: XcfgFile): SemanticCha
           newValue: `${currP.widgets.length} widgets`,
         });
       }
+
+      const origWidgets = origP.widgets || [];
+      const currWidgets = currP.widgets || [];
+      const minWidgets = Math.min(origWidgets.length, currWidgets.length);
+
+      for (let w = 0; w < minWidgets; w++) {
+        const origW = origWidgets[w];
+        const currW = currWidgets[w];
+        const widgetName = currW.titletext || currW.CLASS?.split('.').pop() || origW.titletext || origW.CLASS?.split('.').pop() || `Widget ${w + 1}`;
+
+        // Geometry comparison
+        if (
+          origW.X1 !== currW.X1 ||
+          origW.Y1 !== currW.Y1 ||
+          origW.X2 !== currW.X2 ||
+          origW.Y2 !== currW.Y2
+        ) {
+          changes.push({
+            type: 'modified',
+            category: 'layout',
+            path: `layout.${orientation}[${p}].widgets[${w}].geometry`,
+            description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) position/size changed`,
+            oldValue: `(${origW.X1}, ${origW.Y1}) - (${origW.X2}, ${origW.Y2})`,
+            newValue: `(${currW.X1}, ${currW.Y1}) - (${currW.X2}, ${currW.Y2})`,
+          });
+        }
+
+        // Property comparisons
+        const propKeys = new Set([...Object.keys(origW), ...Object.keys(currW)]);
+        const ignoredKeys = new Set(['X1', 'Y1', 'X2', 'Y2', 'gridX1', 'gridY1', 'gridX2', 'gridY2']);
+
+        for (const key of propKeys) {
+          if (ignoredKeys.has(key)) continue;
+
+          const hasOld = key in origW;
+          const hasNew = key in currW;
+
+          if (!hasOld && hasNew) {
+            changes.push({
+              type: 'added',
+              category: 'layout',
+              path: `layout.${orientation}[${p}].widgets[${w}].${key}`,
+              description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) property "${key}" added`,
+              newValue: typeof currW[key] === 'object' ? JSON.stringify(currW[key]) : String(currW[key]),
+            });
+          } else if (hasOld && !hasNew) {
+            changes.push({
+              type: 'removed',
+              category: 'layout',
+              path: `layout.${orientation}[${p}].widgets[${w}].${key}`,
+              description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) property "${key}" removed`,
+              oldValue: typeof origW[key] === 'object' ? JSON.stringify(origW[key]) : String(origW[key]),
+            });
+          } else if (JSON.stringify(origW[key]) !== JSON.stringify(currW[key])) {
+            changes.push({
+              type: 'modified',
+              category: 'layout',
+              path: `layout.${orientation}[${p}].widgets[${w}].${key}`,
+              description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) property "${key}" modified`,
+              oldValue: typeof origW[key] === 'object' ? JSON.stringify(origW[key]) : String(origW[key]),
+              newValue: typeof currW[key] === 'object' ? JSON.stringify(currW[key]) : String(currW[key]),
+            });
+          }
+        }
+      }
+
+      // Added widgets on page
+      for (let w = minWidgets; w < currWidgets.length; w++) {
+        const currW = currWidgets[w];
+        const widgetName = currW.titletext || currW.CLASS?.split('.').pop() || `Widget ${w + 1}`;
+        changes.push({
+          type: 'added',
+          category: 'layout',
+          path: `layout.${orientation}[${p}].widgets[${w}]`,
+          description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) added`,
+          newValue: currW.CLASS?.split('.').pop(),
+        });
+      }
+
+      // Removed widgets on page
+      for (let w = minWidgets; w < origWidgets.length; w++) {
+        const origW = origWidgets[w];
+        const widgetName = origW.titletext || origW.CLASS?.split('.').pop() || `Widget ${w + 1}`;
+        changes.push({
+          type: 'removed',
+          category: 'layout',
+          path: `layout.${orientation}[${p}].widgets[${w}]`,
+          description: `Page ${p + 1} (${orientation}) widget #${w + 1} (${widgetName}) removed`,
+          oldValue: origW.CLASS?.split('.').pop(),
+        });
+      }
     }
   }
 

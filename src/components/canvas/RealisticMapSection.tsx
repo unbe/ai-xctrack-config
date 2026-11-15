@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Navigation, Compass, Wind, Flag } from 'lucide-react';
 import { MapThemeDef, TerrainDef } from '../../data/map-styles';
 import { ELEVATION_PROFILES } from '../../data/xctrack-vtm-specs';
@@ -77,6 +77,14 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
     color: s.color,
   }));
 
+  // React useId for unique SVG gradient and pattern IDs per component instance
+  const rawId = useId();
+  const uid = rawId.replace(/:/g, '');
+  const massifGradId = `massifGrad-${uid}`;
+  const westRidgeGradId = `westRidgeGrad-${uid}`;
+  const airspaceHatchId = `airspaceHatch-${uid}`;
+  const railTieId = `railTie-${uid}`;
+
   // Natural shadow tone: warm alpine olive-brown for XContest, never pitch black
   const svgShadowColor = terrain.id === 'XContest'
     ? '#28321e'
@@ -96,7 +104,7 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
       >
         <defs>
           {/* Elevation Relief Topographic Gradient for Mountain Massif (Top Right) */}
-          <radialGradient id="massifGrad" cx="78%" cy="28%" r="65%">
+          <radialGradient id={massifGradId} cx="78%" cy="28%" r="65%">
             {reliefStops.map((stop, i) => (
               <stop
                 key={i}
@@ -108,7 +116,7 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
           </radialGradient>
 
           {/* Elevation Relief Gradient for West Ridge (Left) */}
-          <radialGradient id="westRidgeGrad" cx="15%" cy="50%" r="55%">
+          <radialGradient id={westRidgeGradId} cx="15%" cy="50%" r="55%">
             {reliefStops.map((stop, i) => (
               <stop
                 key={i}
@@ -120,12 +128,12 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
           </radialGradient>
 
           {/* Airspace Hatch Pattern */}
-          <pattern id="airspaceHatch" width="20" height="20" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+          <pattern id={airspaceHatchId} width="20" height="20" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
             <line x1="0" y1="0" x2="0" y2="20" stroke="rgba(239, 68, 68, 0.35)" strokeWidth="2" />
           </pattern>
 
           {/* Railway Cross-Tie Pattern */}
-          <pattern id="railTie" width="12" height="12" patternUnits="userSpaceOnUse">
+          <pattern id={railTieId} width="12" height="12" patternUnits="userSpaceOnUse">
             <line x1="6" y1="0" x2="6" y2="12" stroke={isDark ? '#94a3b8' : '#475569'} strokeWidth="1.5" />
           </pattern>
         </defs>
@@ -141,13 +149,13 @@ export const RealisticMapSection: React.FC<RealisticMapSectionProps> = ({
             {/* West Mountain Flank */}
             <path
               d="M 0 0 L 320 0 Q 380 320 280 600 T 320 1000 L 0 1000 Z"
-              fill="url(#westRidgeGrad)"
+              fill={`url(#${westRidgeGradId})`}
             />
 
             {/* East High Massif (Mont Tournette massif) */}
             <path
               d="M 450 0 L 1000 0 L 1000 850 Q 820 800 680 550 T 480 200 Z"
-              fill="url(#massifGrad)"
+              fill={`url(#${massifGradId})`}
             />
           </g>
         )}
