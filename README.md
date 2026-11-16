@@ -1,0 +1,57 @@
+# XCTrack Config Editor
+
+A web-based visual configuration editor for [XCTrack](https://xctrack.org/) `.xcfg` / `.json` files (`pages` and `backup` exports). Built with React, TypeScript, Vite, Tailwind CSS, and MapLibre GL.
+
+## Features
+
+- **Visual Screen Canvas & Grid Math**: Interactive drag-and-drop and resize canvas using XCTrack's physical ~3 mm grid (`0..10000` normalized coordinates), smart grid resnapping on device changes, multi-widget alignment/nudging, and undo/redo history.
+- **Device Presets**: Built-in presets for 32+ device families (phones, tablets, e-ink devices, and smart glasses) plus custom viewport dimensions.
+- **85 Registered Widgets**: Full widget palette with search, category filters, layer Z-order management, and a property inspector (geometry, transparency/theme, widget-specific options, and raw/preserved properties).
+- **Live Map & Terrain Preview**: `WXCAssistant` and `WCompMap` render OpenStreetMap vector tiles and Terrarium elevation/hillshading via MapLibre GL with XCTrack VTM themes, KK7 thermal layers, and simulated rain radar, plus an interactive Map Style Gallery.
+- **Page Management**: Add, duplicate, reorder, and delete portrait/landscape pages, configure automatic task navigation rules, and copy layouts across orientations.
+- **Preferences & Acoustic Vario**: Edit pilot/glider info, display & unit settings, hardware keybindings, event triggers, sensors, and custom acoustic vario curves with a live Web Audio synthesizer.
+- **Diff, Validation & Round-Trip Export**: Live schema validation, semantic + unified JSON diff against the original file, drag-and-drop `.xcfg` import, session autosave, and `.xcfg` export that preserves unedited keys.
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+The dev server starts at `http://localhost:3000/`.
+
+## Scripts
+
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Type-check (`tsc -b`) and build production bundle |
+| `npm run typecheck` | Run TypeScript project-reference type-checking (`tsc -b`) |
+| `npm run lint` | Run ESLint across the repository |
+| `npm test` | Run the Vitest unit and component test suite |
+| `npm run preview` | Preview the production build locally |
+
+## Project Structure
+
+```text
+src/
+├── App.tsx                  # Root shell, keyboard shortcuts, drag-and-drop import
+├── components/
+│   ├── canvas/              # ScreenCanvas, WidgetPreview, RealXCTrackMap, RealisticMapSection
+│   ├── inspector/           # WidgetPropertyInspector, MapStyleGalleryModal, sections/
+│   ├── json/                # JsonDiffViewer
+│   ├── preferences/         # PreferencesEditor and tabs/
+│   ├── sidebar/             # PageManagerPanel, WidgetPalettePanel, LayerOrderPanel
+│   ├── toolbar/             # TopToolbar, DeviceViewportBar
+│   └── ui/                  # ErrorBoundary, DialogContainer
+├── data/                    # devices.json, widgets-catalog.ts, map-styles.ts, page-templates.ts, sample-configs.ts
+├── store/                   # useEditorStore.ts, useDialogStore.ts
+├── types/                   # TypeScript schemas for .xcfg files and widgets
+└── utils/                   # gridMath, smartGridResnap, configValidator, diffEngine, xcfgSerializer, colorMath
+```
+
+## Supported File Formats
+
+- **Supported**: Plaintext UTF-8 `.xcfg` and `.json` files with `exportType` `"pages"` or `"backup"`.
+- **Not supported**: `.xczfg` archives and `"backupwithmedia"` exports.
